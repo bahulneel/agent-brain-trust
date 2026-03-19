@@ -1,0 +1,59 @@
+# Hierarchical topic taxonomy. Leaves list expert_ids (basenames without .md).
+# The same id may appear under multiple leaves. Index experts by topic id path + expert id.
+
+version: 1
+
+taxonomy:
+  id: root
+  label: Brain Trust knowledge map
+  children:
+    - id: software-systems
+      label: Software systems
+      children:
+        - id: languages-semantics-and-relations
+          label: Languages, semantics, and relations
+          expert_ids:
+            - william-e-byrd
+            - gerald-jay-sussman
+            - guy-l-steele-jr
+        - id: distributed-systems-and-lineage
+          label: Distributed systems and causal lineage
+          expert_ids:
+            - peter-alvaro
+        - id: structure-simplicity-and-design
+          label: Structure, simplicity, and design
+          expert_ids:
+            - rich-hickey
+            - m-c-escher
+    - id: written-exposition
+      label: Written exposition and communication
+      children:
+        - id: precision-craft-and-prose
+          label: Precision, craft, and technical prose
+          expert_ids:
+            - donald-e-knuth
+            - brian-w-kernighan
+        - id: narrative-stakes-and-scene
+          label: Narrative, stakes, and human scene
+          expert_ids:
+            - tracy-kidder
+        - id: ideas-context-and-lineage
+          label: Ideas, context, and intellectual lineage
+          expert_ids:
+            - james-gleick
+        - id: readers-learning-and-cognition
+          label: Readers, learning, and cognition
+          expert_ids:
+            - kathy-sierra
+        - id: practice-patterns-and-clarity
+          label: Practice, patterns, and working clarity
+          expert_ids:
+            - martin-fowler
+        - id: honesty-explanation-and-demystification
+          label: Honesty, explanation, and demystification
+          expert_ids:
+            - richard-p-feynman
+        - id: voice-memory-and-style
+          label: Voice, memory, and stylistic lift
+          expert_ids:
+            - douglas-adams

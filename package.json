@@ -1,0 +1,35 @@
+{
+  "name": "agent-brain-trust",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Agent Brain Trust: composable skills, Cursor plugin, MCP",
+  "type": "module",
+  "packageManager": "npm@10.8.2",
+  "engines": {
+    "node": ">=20"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "typecheck": "tsc --build",
+    "build": "turbo run build && tsx scripts/build.ts build",
+    "build:packages": "turbo run build",
+    "build:plugin": "tsx scripts/build.ts build",
+    "db:build": "turbo run build --filter=brain-trust-db",
+    "db:test": "turbo run build --filter=brain-trust-core --filter=brain-trust-db && tsx scripts/db-test.ts",
+    "db:cli": "turbo run build --filter=brain-trust-core --filter=brain-trust-db && tsx scripts/db-cli-runner.ts",
+    "validate": "tsx scripts/build.ts validate"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "brain-trust-core": "workspace:*",
+    "brain-trust-db": "workspace:*",
+    "esbuild": "^0.24.2",
+    "skills-ref": "^0.1.5",
+    "tsx": "^4.19.2",
+    "turbo": "^2.4.4",
+    "typescript": "^5.7.2",
+    "yaml": "^2.7.0"
+  }
+}

@@ -16,6 +16,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "brain-trust-core": "file:../brain-trust-core",
     "yaml": "^2.7.0"
   },
   "devDependencies": {

@@ -1,19 +1,7 @@
-import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { collectTaxonomyExpertIds, readTaxonomy } from "brain-trust-core";
+import { cp, mkdir, readFile, writeFile } from "node:fs/promises";
 import { readdir } from "node:fs/promises";
 import { join } from "node:path";
-import { parse as parseYaml } from "yaml";
-
-export interface TaxonomyNode {
-  id: string;
-  label?: string;
-  expert_ids?: string[];
-  children?: TaxonomyNode[];
-}
-
-interface TaxonomyFile {
-  version: number;
-  taxonomy: TaxonomyNode;
-}
 
 /** Build `experts/rost.json`: `{ version, experts: { [id]: markdown } }` from `experts/*.md`. */
 export async function writeExpertsRostJson(expertsDir: string): Promise<void> {
@@ -35,26 +23,21 @@ export async function writeExpertsRostJson(expertsDir: string): Promise<void> {
   await writeFile(join(expertsDir, "rost.json"), JSON.stringify(out, null, 2), "utf8");
 }
 
-function collectTaxonomyExpertIds(node: TaxonomyNode): Set<string> {
-  const s = new Set<string>();
-  for (const id of node.expert_ids ?? []) s.add(id);
-  for (const c of node.children ?? []) {
-    for (const x of collectTaxonomyExpertIds(c)) s.add(x);
-  }
-  return s;
-}
-
 /** Ensure every taxonomy leaf id has a matching `experts/<id>.md` and every expert file appears on some leaf. */
 export async function validateExpertsAgainstTaxonomy(contentRoot: string): Promise<void> {
   const expertsDir = join(contentRoot, "experts");
   const mdNames = (await readdir(expertsDir)).filter((f) => f.endsWith(".md"));
   const fileIds = new Set(mdNames.map((n) => n.replace(/\.md$/, "")));
-  const taxPath = join(contentRoot, "topics", "taxonomy.yaml");
-  const doc = parseYaml(await readFile(taxPath, "utf8")) as TaxonomyFile;
-  const fromTax = collectTaxonomyExpertIds(doc.taxonomy);
+  const doc = await readTaxonomy(contentRoot);
+  if (!doc?.taxonomy) {
+    throw new Error(
+      "no taxonomy found: add topics/taxonomy/manifest.yaml + topics/taxonomy/clades/*.yaml, or legacy topics/taxonomy.yaml"
+    );
+  }
+  const fromTax = new Set(collectTaxonomyExpertIds(doc.taxonomy));
   for (const id of fromTax) {
     if (!fileIds.has(id)) {
-      throw new Error(`taxonomy.yaml references unknown expert id (no ${id}.md): ${id}`);
+      throw new Error(`taxonomy references unknown expert id (no ${id}.md): ${id}`);
     }
   }
   for (const id of fileIds) {

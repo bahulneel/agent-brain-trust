@@ -1,0 +1,12 @@
+# Composable taxonomy: each entry in `clades/` is one top-level clade (ordered children under root).
+# Add a new file under clades/ and list it here to extend the map without editing other clades.
+
+version: 2
+
+root:
+  id: root
+  label: Brain Trust knowledge map
+
+clades:
+  - software-systems.yaml
+  - written-exposition.yaml

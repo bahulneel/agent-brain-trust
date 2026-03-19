@@ -6,11 +6,11 @@ Composable [Agent Skills](https://agentskills.io/specification) (BASHES, Writers
 
 | Path | Purpose |
 | ---- | ------- |
-| `content/skills/*.md` | Skill entries (YAML frontmatter + `@include` + `@if plugin` / `@if skill-zip`) |
-| `content/skill-fragments/` | Shared markdown fragments; suite bodies may `@include` a single file that lists further `@include` chains (personas, guest protocol, debate tail) |
+| `content/skills/*.md` | Skill entries: YAML `compose:` (profile, roster, fidelity, …) becomes the initial include env; stripped from built `SKILL.md`. Body uses `@include` + `scripts/compose.ts` (merged env, `{{name}}`, `@repeat roster` … `@endrepeat`, `guest=` → roster) |
+| `content/skill-fragments/` | **`profiles/`** (prefix/suffix per variation), **`common/`** (`skill-protocol-body`, persona fidelity, guest/debate/footer), **`fidelity/`** (one room-specific anti-caricature block per profile); roster is CSV in query params |
 | `content/topics/` | Topic index (`index.yaml`) copied into skill `assets/` and plugin `resources/` |
 | `content/experts/` | One `.md` per expert (kebab-case from full name); build emits **`rost.json`** (`id` → markdown) for MCP/CLI. Composed via `@include experts/<file>.md` |
-| `content/topics/taxonomy.yaml` | Hierarchical topic tree; **leaves** list `expert_ids` (experts indexed by topic; ids refer to `rost` / `.md` basenames) |
+| `content/topics/taxonomy/` | Composable expert index: **`manifest.yaml`** lists **clade** files under **`clades/`** (one YAML subtree per clade); merged at build; **leaves** list `expert_ids`. Legacy single-file `taxonomy.yaml` still supported |
 | `content/references/` | General rules (discovery, MCP/CLI usage, dialogue); copied to `references/` next to each built `SKILL.md` and to `resources/references/` for MCP ([file references](https://agentskills.io/specification#file-references)) |
 | `packages/brain-trust-core` | Discovery helpers + CLI bundled into every skill |
 | `packages/brain-trust-db` | Taxonomy validation + `materializeExpertAssets` + `dist/assets` for local CLI tests |
@@ -26,7 +26,7 @@ npm run validate      # quick checks
 npm run build         # turbo (brain-trust-db + brain-trust-core) then Cursor plugin / zips / MCP
 npm run db:build      # taxonomy validation + materialize `packages/brain-trust-db/dist/assets` + `rost.json`
 npm run db:test       # build packages + smoke-test roster/taxonomy via brain-trust-core
-npm run db:cli        # build packages + run brain-trust-cli from test-skill cwd (default: list-experts)
+npm run db:cli        # build packages + run brain-trust-cli from test-skill cwd (no args: discovery help)
 # npm run db:cli -- get-expert william-e-byrd
 # npm run db:cli -- get-experts-rost
 ```

@@ -30,7 +30,7 @@ server.registerTool(
   "list_topics",
   {
     description:
-      "Return topics/index.yaml if present. Expert indexing uses topics/taxonomy.yaml (hierarchical); see get_topic_taxonomy.",
+      "Return topics/index.yaml if present. Expert indexing uses topics/taxonomy/manifest.yaml + clades/ (or legacy taxonomy.yaml); see get_topic_taxonomy.",
     inputSchema: z.object({}),
   },
   async () => {
@@ -50,7 +50,7 @@ server.registerTool(
   "get_topic_taxonomy",
   {
     description:
-      "Return hierarchical topic taxonomy (topics/taxonomy.yaml): topic nodes with expert_ids on leaves; same expert id may appear under multiple leaves.",
+      "Return hierarchical topic taxonomy (manifest + clades or legacy taxonomy.yaml): topic nodes with expert_ids on leaves; same expert id may appear under multiple leaves.",
     inputSchema: z.object({}),
   },
   async () => {

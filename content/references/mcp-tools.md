@@ -7,7 +7,7 @@ When the Agent Brain Trust Cursor plugin (or another client) exposes the **brain
 | Tool | Purpose |
 | ---- | ------- |
 | `list_topics` | Whether `topics/index.yaml` exists and its parsed content |
-| `get_topic_taxonomy` | Hierarchical taxonomy (`topics/taxonomy.yaml`): topic nodes; **leaves** have `expert_ids` (same id may appear under multiple leaves) |
+| `get_topic_taxonomy` | Hierarchical taxonomy (`topics/taxonomy/manifest.yaml` + `topics/taxonomy/clades/*.yaml`, or legacy `taxonomy.yaml`): topic nodes; **leaves** have `expert_ids` (same id may appear under multiple leaves) |
 | `list_experts` | Expert **ids** (basename without `.md`); roster also in `experts/rost.json` as `id →` markdown |
 | `get_expert` | One persona by **id** (e.g. `william-e-byrd`) or path; prefers `rost.json` |
 | `get_experts_rost` | Full `{ version, experts: { [id]: markdown } }` for bulk/script use |

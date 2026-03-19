@@ -1,23 +1,14 @@
 import { readdir, readFile, stat } from "node:fs/promises";
 import { join, relative } from "node:path";
+import { readTaxonomyMerged } from "./taxonomy-load.js";
+import type { TaxonomyDoc, TaxonomyNode } from "./taxonomy-types.js";
+
+export type { TaxonomyDoc, TaxonomyNode } from "./taxonomy-types.js";
 
 export interface TopicIndex {
   skills?: string[];
-  /** @deprecated Prefer taxonomy.yaml for expert indexing */
+  /** @deprecated Prefer taxonomy (manifest + clades or taxonomy.yaml) for expert indexing */
   experts?: string[];
-}
-
-/** Root or branch node; leaves include `expert_ids` (may repeat across leaves). */
-export interface TaxonomyNode {
-  id: string;
-  label: string;
-  expert_ids?: string[];
-  children?: TaxonomyNode[];
-}
-
-export interface TaxonomyDoc {
-  version: number;
-  taxonomy: TaxonomyNode;
 }
 
 /** Bundled expert roster: id (markdown basename without extension) → markdown body. */
@@ -43,17 +34,12 @@ export async function readTopicIndex(assetsRoot: string): Promise<TopicIndex | n
   }
 }
 
+/**
+ * Hierarchical expert index: either `topics/taxonomy/manifest.yaml` + `topics/taxonomy/clades/*.yaml`,
+ * or legacy monolithic `topics/taxonomy.yaml`.
+ */
 export async function readTaxonomy(assetsRoot: string): Promise<TaxonomyDoc | null> {
-  const p = join(assetsRoot, "topics", "taxonomy.yaml");
-  try {
-    const s = await stat(p);
-    if (!s.isFile()) return null;
-    const { parse } = await import("yaml");
-    const text = await readFile(p, "utf8");
-    return parse(text) as TaxonomyDoc;
-  } catch {
-    return null;
-  }
+  return readTaxonomyMerged(assetsRoot);
 }
 
 export async function readExpertsRost(assetsRoot: string): Promise<ExpertsRost | null> {

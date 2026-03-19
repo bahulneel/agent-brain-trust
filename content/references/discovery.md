@@ -15,4 +15,4 @@
 ## Experts vs references
 
 - **`references/`** — general rules (tools, dialogue, discovery).  
-- **`assets/experts/`** (and plugin `resources/experts/`) — **full roster**: `rost.json` is `{ version, experts: { [id]: markdown } }` for scripts/MCP; one `*.md` per figure remains for authoring (id = basename without `.md`). **`assets/topics/taxonomy.yaml`** — hierarchical **topic tree**; each **leaf** lists **`expert_ids`** (many experts can share a leaf; the same id may appear under multiple leaves). Resolve personas by **id**, not by suite.
+- **`assets/experts/`** (and plugin `resources/experts/`) — **full roster**: `rost.json` is `{ version, experts: { [id]: markdown } }` for scripts/MCP; one `*.md` per figure remains for authoring (id = basename without `.md`). **`assets/topics/taxonomy/`** — **`manifest.yaml`** composes **clade** files under **`clades/`** into one hierarchical **topic tree** (legacy monolithic `taxonomy.yaml` is still supported); each **leaf** lists **`expert_ids`** (many experts can share a leaf; the same id may appear under multiple leaves). Resolve personas by **id**, not by suite.

@@ -1,0 +1,6 @@
+id: product
+label: Product
+children:
+  - product-strategy
+  - product-discovery
+

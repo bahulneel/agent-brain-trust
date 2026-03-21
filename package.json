@@ -12,7 +12,7 @@
     "packages/*"
   ],
   "scripts": {
-    "typecheck": "tsc --build",
+    "typecheck": "npm run build --workspace=brain-trust-core && tsc --build",
     "build": "turbo run build && tsx scripts/build.ts build",
     "build:packages": "turbo run build",
     "build:plugin": "tsx scripts/build.ts build",

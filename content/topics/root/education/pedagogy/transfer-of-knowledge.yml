@@ -1,0 +1,10 @@
+id: transfer-of-knowledge
+label: Transfer of knowledge
+expert_ids:
+  - david-parnas
+  - barbara-liskov
+keywords:
+  - transfer
+  - generalisation
+  - application
+

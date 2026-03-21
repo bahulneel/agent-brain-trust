@@ -16,6 +16,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "fuse.js": "^7.1.0",
     "yaml": "^2.7.0"
   },
   "devDependencies": {

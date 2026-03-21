@@ -14,6 +14,7 @@ Each command prints **human-oriented** output with **Next** hints unless you pas
 node scripts/brain-trust-cli.js
 node scripts/brain-trust-cli.js help
 node scripts/brain-trust-cli.js get-topic-taxonomy
+node scripts/brain-trust-cli.js search-topics distributed systems
 node scripts/brain-trust-cli.js list-experts
 node scripts/brain-trust-cli.js get-expert william-e-byrd
 node scripts/brain-trust-cli.js list-references
@@ -29,7 +30,7 @@ node scripts/brain-trust-cli.js get-experts-rost --json
 ```
 
 - **Experts**: `assets/experts/rost.json` maps **id →** markdown. Prefer `get-expert <id>`; use `get-experts-rost --json` when a tool needs the full object.
-- **Taxonomy**: composed from `assets/topics/taxonomy/manifest.yaml` and `assets/topics/taxonomy/clades/*.yaml` (one clade file per top-level subtree). `get-topic-taxonomy` prints a **tree** (default) or `--json` for the merged document.
+- **Taxonomy**: rooted **`assets/topics/root/topic.yml`** tree when present; otherwise flat `assets/topics/<clade>.yaml` (excluding `index.yaml`), merged at load. `get-topic-taxonomy` prints a **tree** (default) or `--json` for the merged document. **`search-topics`** uses **`assets/topics/topics-search.json`** when the build emitted it.
 - **References**: `references/*.md` — `list-references` then `get-reference <path>`.
 
 Use the same discovery protocol as [discovery.md](discovery.md): narrow iteratively; load one file at a time when possible.

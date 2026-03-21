@@ -9,6 +9,6 @@ Bundled markdown beside each skill’s `SKILL.md` (`references/`). Load **on dem
 | [cli-assets.md](cli-assets.md) | Skill is used as a zip / you run `brain-trust-cli.js` |
 | [dialogue.md](dialogue.md) | Running Grounding inquiry, user Q&A, or confirmation rounds |
 
-**Topics:** the hierarchical expert index is **`topics/taxonomy/manifest.yaml`** plus one file per **clade** under **`topics/taxonomy/clades/`** (bundled under `assets/topics/`). Use MCP `get_topic_taxonomy` or CLI `get-topic-taxonomy` before loading experts by subject.
+**Topics:** the hierarchical expert index is the **rooted** tree under `assets/topics/root/` (plus build-time **`topics-search.json`**). Use MCP `get_topic_taxonomy` / `search_topics` or CLI `get-topic-taxonomy` / `search-topics` before loading experts by subject.
 
 Start with **discovery.md**, then pull **mcp-tools.md** or **cli-assets.md** depending on environment.

@@ -3,8 +3,10 @@ import { spawnSync } from "node:child_process";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { readdir } from "node:fs/promises";
+import { stringify } from "yaml";
 import esbuild from "esbuild";
 import { materializeExpertAssets } from "brain-trust-db";
+import { buildTopicSearchRecords, readTaxonomy } from "brain-trust-core";
 import { loadAndCompose } from "./compose.js";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, "..");
@@ -49,6 +51,13 @@ async function materialiseSkill(stem, parentDir, target) {
 async function copyTree(src, dest) {
     await cp(src, dest, { recursive: true, force: true });
 }
+/** Precomputed rows for fuzzy topic search (Fuse.js) under `assets/topics/topics-search.json`. */
+async function writeTopicSearchIndex(assetsRoot) {
+    const doc = await readTaxonomy(assetsRoot);
+    const records = buildTopicSearchRecords(doc);
+    await mkdir(join(assetsRoot, "topics"), { recursive: true });
+    await writeFile(join(assetsRoot, "topics", "topics-search.json"), JSON.stringify(records, null, 2), "utf8");
+}
 async function bundleCliWithYaml(skillDir) {
     const entry = join(ROOT, "packages", "brain-trust-core", "src", "cli.ts");
     await esbuild.build({
@@ -64,6 +73,7 @@ async function bundleCliWithYaml(skillDir) {
 async function copyAssetsToSkill(skillDir) {
     try {
         await materializeExpertAssets(CONTENT, join(skillDir, "assets"));
+        await writeTopicSearchIndex(join(skillDir, "assets"));
     }
     catch {
         /* optional */
@@ -107,11 +117,14 @@ async function buildZipSkills(stems) {
     }
     await rm(stage, { recursive: true, force: true });
 }
-async function copyResourcesToPlugin() {
+async function copyResourcesToPlugin(stems) {
     const res = join(PLUGIN_OUT, "resources");
     await mkdir(res, { recursive: true });
     try {
         await materializeExpertAssets(CONTENT, res);
+        const skills = [...stems].sort();
+        await writeFile(join(res, "topics", "index.yaml"), stringify({ skills }, { lineWidth: 0 }) + "\n", "utf8");
+        await writeTopicSearchIndex(res);
     }
     catch {
         /* empty */
@@ -129,7 +142,7 @@ async function writePluginManifest(version) {
     const manifest = {
         name: "agent-brain-trust",
         version,
-        description: "Agent Brain Trust: BASHES, Writers Room, Librarian skills with MCP",
+        description: "Agent Brain Trust: BT workshop/editorial skills, expert-opinion, MCP",
         author: { name: "agent-brain-trust" },
     };
     await writeFile(join(dir, "plugin.json"), JSON.stringify(manifest, null, 2), "utf8");
@@ -208,7 +221,7 @@ async function cmdBuild() {
     }
     await mkdir(PLUGIN_OUT, { recursive: true });
     await buildPluginSkills(stems);
-    await copyResourcesToPlugin();
+    await copyResourcesToPlugin(stems);
     await writePluginManifest(version);
     await writeMcpConfig();
     await bundleMcpServer();

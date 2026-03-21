@@ -1,0 +1,12 @@
+id: logic-relational-programming
+label: Logic, relational programming
+expert_ids:
+  - william-e-byrd
+  - gerald-jay-sussman
+  - carl-hewitt
+keywords:
+  - logic
+  - relations
+  - constraints
+  - miniKanren
+

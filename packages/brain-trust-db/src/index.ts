@@ -1,5 +1,5 @@
-import { collectTaxonomyExpertIds, readTaxonomy } from "brain-trust-core";
-import { cp, mkdir, readFile, writeFile } from "node:fs/promises";
+import { buildTopicSearchRecords, collectTaxonomyExpertIds, readTaxonomy } from "brain-trust-core";
+import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { readdir } from "node:fs/promises";
 import { join } from "node:path";
 
@@ -31,7 +31,7 @@ export async function validateExpertsAgainstTaxonomy(contentRoot: string): Promi
   const doc = await readTaxonomy(contentRoot);
   if (!doc?.taxonomy) {
     throw new Error(
-      "no taxonomy found: add topics/taxonomy/manifest.yaml + topics/taxonomy/clades/*.yaml, or legacy topics/taxonomy.yaml"
+      "no taxonomy found: add topics/root/topic.yml (rooted tree), legacy topics/*.yaml clades, or topics/taxonomy.yaml"
     );
   }
   const fromTax = new Set(collectTaxonomyExpertIds(doc.taxonomy));
@@ -57,9 +57,18 @@ export async function materializeExpertAssets(contentRoot: string, assetsOutRoot
   const srcTopics = join(contentRoot, "topics");
   const destExperts = join(assetsOutRoot, "experts");
   const destTopics = join(assetsOutRoot, "topics");
+  await rm(destExperts, { recursive: true, force: true });
+  await rm(destTopics, { recursive: true, force: true });
   await mkdir(destExperts, { recursive: true });
   await mkdir(destTopics, { recursive: true });
   await cp(srcExperts, destExperts, { recursive: true, force: true });
   await cp(srcTopics, destTopics, { recursive: true, force: true });
+  const taxDoc = await readTaxonomy(contentRoot);
+  const searchRecords = buildTopicSearchRecords(taxDoc);
+  await writeFile(
+    join(destTopics, "topics-search.json"),
+    JSON.stringify(searchRecords, null, 2),
+    "utf8"
+  );
   await writeExpertsRostJson(destExperts);
 }

@@ -8,13 +8,17 @@ The Moderator drives this phase. Before trajectory setting, cohort construction,
 
 The writer then responds: confirming, correcting, or clarifying. If the writer confirms and readings are aligned, the Moderator proceeds to Value Constraints.
 
-### 2. Inquiry (Optional)
+### 2. Inquiry (Triggered)
 
-**Presented AFTER Readings.** Triggered when:
+**Presented AFTER Readings.** Inquiry is **mandatory** when:
+
+- The writer **disagrees with**, **rejects**, or **disputes** any member's reading or the collective framing of the draft or brief. Open Inquiry **before** Value Constraints; do not proceed until readings are reconciled or the writer explicitly accepts proceeding with a recorded disagreement.
+
+Inquiry is **also** appropriate when:
 
 - The request is brief or under-specified.
 - The panel's readings diverge significantly.
-- The writer's response reveals unresolved uncertainty about audience, genre, or purpose.
+- The writer's response reveals unresolved uncertainty about audience, genre, or purpose (and the writer has not simply disputed the readings — that case uses the mandatory rule above).
 
 Each member may ask the writer up to **2 questions** to resolve ambiguities or conflicts in understanding. Questions are posed round-robin by member, not by cohort. Members should only ask questions that genuinely block a useful editorial reading.
 

@@ -5,6 +5,10 @@ export interface TaxonomyNode {
   label?: string;
   expert_ids?: string[];
   children?: TaxonomyNode[];
+  /** Discovery / fuzzy search (optional). */
+  keywords?: string[];
+  aliases?: string[];
+  description?: string;
 }
 
 export interface TaxonomyDoc {

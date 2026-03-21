@@ -1,0 +1,6 @@
+id: rhetoric-style-prose
+label: Rhetoric, style, prose
+children:
+  - prose-craft
+  - humour-irony
+

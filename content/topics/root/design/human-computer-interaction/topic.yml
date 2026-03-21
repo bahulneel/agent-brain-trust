@@ -1,0 +1,8 @@
+id: human-computer-interaction
+label: Human–computer interaction
+children:
+  - interaction-design
+  - usability
+  - user-research
+  - information-architecture
+

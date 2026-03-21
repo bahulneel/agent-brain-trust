@@ -3,6 +3,9 @@ import {
   resolveDataRoot,
   readTopicIndex,
   readTaxonomy,
+  readTopicSearchRecords,
+  buildTopicSearchRecords,
+  searchTopicRecords,
   listExpertIds,
   readExpertFile,
   readExpertsRost,
@@ -43,11 +46,12 @@ Full roster (large)           get-experts-rost   (add --json for scripts)
 This skill’s frontmatter      read-skill-md
 
 Commands:
-  get-topic-taxonomy [--json]   Merged topic tree (manifest + clades/); leaves list expert_ids
+  get-topic-taxonomy [--json]   Topic tree (topics/root/ or legacy); leaves list expert_ids
+  search-topics <q> [--json]    Fuzzy topic search (Fuse.js); uses topics-search.json if present
   list-experts [--json]         All expert ids (rost keys)
   get-expert <id>               One persona markdown (try an id from taxonomy or list-experts)
   get-experts-rost [--json]     Full { experts: { id: body } } — prefer get-expert for one voice
-  get-topic-index [--json]      Parsed topics/index.yaml
+  get-topic-index [--json]      Parsed topics/index.yaml (optional; plugin resources may include build-generated skills list)
   list-topics [--json]          Whether index exists + path reminder
   list-references [--json]      Paths under references/
   get-reference <path>          One reference doc (see list-references)
@@ -69,7 +73,7 @@ Examples (iterative):
 
 function printTaxonomyHuman(doc: { version: number; taxonomy: TaxonomyNode } | null, assets: string): void {
   if (!doc?.taxonomy) {
-    console.log(`No taxonomy found under ${join(assets, "topics")} (expect taxonomy/manifest.yaml + clades/ or taxonomy.yaml)`);
+    console.log(`No taxonomy found under ${join(assets, "topics")} (expect topics/root/topic.yml, legacy *.yaml clades, or taxonomy.yaml)`);
     console.log(`\nNext: confirm assets path (cwd should be a skill with assets/topics/).`);
     return;
   }
@@ -210,6 +214,40 @@ Next:
       return;
     }
     printTaxonomyHuman(tax, assets);
+    return;
+  }
+
+  if (cmd === "search-topics") {
+    const q = rest.slice(1).join(" ").trim();
+    if (!q) {
+      console.error(`usage: search-topics <query>
+
+Example:
+  brain-trust-cli search-topics distributed consistency
+`);
+      process.exit(1);
+    }
+    let records = await readTopicSearchRecords(assets);
+    if (!records?.length) {
+      const tax = await readTaxonomy(assets);
+      records = buildTopicSearchRecords(tax);
+    }
+    const hits = await searchTopicRecords(records, q, 15);
+    if (json) {
+      console.log(JSON.stringify({ query: q, hits }, null, 2));
+      return;
+    }
+    console.log(`Topic search: "${q}" (${hits.length} hit(s))\n`);
+    for (const h of hits) {
+      const path = h.item.pathLabels.join(" → ");
+      console.log(`  • ${h.item.label} [${h.item.id}]`);
+      console.log(`    path: ${path}`);
+      if (h.item.expert_ids?.length) {
+        console.log(`    experts: ${h.item.expert_ids.join(", ")}`);
+      }
+      console.log("");
+    }
+    console.log(`Next: get-topic-taxonomy  |  get-expert <id>`);
     return;
   }
 

@@ -8,13 +8,17 @@ The Moderator drives this phase. Before trajectory setting, cohort construction,
 
 The user then responds: confirming, correcting, or clarifying. If the user confirms and readings are aligned, the Moderator proceeds to Value Constraints.
 
-### 2. Inquiry (Optional)
+### 2. Inquiry (Triggered)
 
-**Presented AFTER Readings.** Triggered when:
+**Presented AFTER Readings.** Inquiry is **mandatory** when:
+
+- The user **disagrees with**, **rejects**, or **disputes** any member's reading or the collective framing of the topic. Open Inquiry **before** Value Constraints; do not proceed until readings are reconciled or the user explicitly accepts proceeding with a recorded disagreement.
+
+Inquiry is **also** appropriate when:
 
 - The original request is notably brief or ambiguous.
 - Member readings diverge significantly from each other.
-- The user's response to the readings reveals unresolved confusion.
+- The user's response to the readings reveals unresolved confusion (and the user has not simply disputed the readings — that case uses the mandatory rule above).
 
 Each member may ask the user up to **2 questions** to resolve ambiguities or conflicts in their understanding. Questions are posed round‑robin by member (not by cohort — cohorts do not yet exist). Members should only ask questions that genuinely block their understanding; do not exhaust the allowance for curiosity's sake.
 

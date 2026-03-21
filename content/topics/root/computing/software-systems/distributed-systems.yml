@@ -1,0 +1,15 @@
+id: distributed-systems
+label: Distributed systems
+expert_ids:
+  - peter-alvaro
+  - leslie-lamport
+  - werner-vogels
+  - eric-brewer
+  - pat-helland
+keywords:
+  - distributed
+  - consistency
+  - availability
+  - partitioning
+  - causality
+

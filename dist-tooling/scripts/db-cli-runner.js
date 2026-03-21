@@ -11,7 +11,8 @@ const root = join(__dirname, "..");
 const cli = join(root, "packages", "brain-trust-core", "dist", "cli.js");
 const cwd = join(root, "packages", "brain-trust-db", "test-skill");
 const args = process.argv.slice(2);
-const sub = args.length ? args : ["list-experts"];
+/** Empty args → CLI prints discovery help (navigation-first). */
+const sub = args.length ? args : [];
 const r = spawnSync(process.execPath, [cli, ...sub], { cwd, stdio: "inherit" });
 process.exit(r.status ?? 1);
 //# sourceMappingURL=db-cli-runner.js.map

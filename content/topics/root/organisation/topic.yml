@@ -1,0 +1,6 @@
+id: organisation
+label: Organisation
+children:
+  - organisation-design
+  - management-collaboration
+

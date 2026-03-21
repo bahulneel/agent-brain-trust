@@ -2,12 +2,19 @@ import { readdir, readFile, stat } from "node:fs/promises";
 import { join, relative } from "node:path";
 import { readTaxonomyMerged } from "./taxonomy-load.js";
 import type { TaxonomyDoc, TaxonomyNode } from "./taxonomy-types.js";
+import type { TopicSearchRecord } from "./topic-search.js";
 
 export type { TaxonomyDoc, TaxonomyNode } from "./taxonomy-types.js";
+export type { TopicSearchRecord, TopicSearchHit } from "./topic-search.js";
+export {
+  buildTopicSearchRecords,
+  flattenTopicRecords,
+  searchTopicRecords,
+} from "./topic-search.js";
 
 export interface TopicIndex {
   skills?: string[];
-  /** @deprecated Prefer taxonomy (manifest + clades or taxonomy.yaml) for expert indexing */
+  /** @deprecated Prefer flat topics/*.yaml clades or legacy taxonomy.yaml for expert indexing */
   experts?: string[];
 }
 
@@ -35,11 +42,24 @@ export async function readTopicIndex(assetsRoot: string): Promise<TopicIndex | n
 }
 
 /**
- * Hierarchical expert index: either `topics/taxonomy/manifest.yaml` + `topics/taxonomy/clades/*.yaml`,
- * or legacy monolithic `topics/taxonomy.yaml`.
+ * Hierarchical expert index: rooted `topics/root/topic.yml` tree, legacy flat `topics/*.yaml` clades,
+ * or monolithic `topics/taxonomy.yaml`.
  */
 export async function readTaxonomy(assetsRoot: string): Promise<TaxonomyDoc | null> {
   return readTaxonomyMerged(assetsRoot);
+}
+
+/** Precomputed fuzzy-search rows under `assets/topics/topics-search.json`, or null. */
+export async function readTopicSearchRecords(assetsRoot: string): Promise<TopicSearchRecord[] | null> {
+  const p = join(assetsRoot, "topics", "topics-search.json");
+  try {
+    const s = await stat(p);
+    if (!s.isFile()) return null;
+    const raw = JSON.parse(await readFile(p, "utf8")) as unknown;
+    return Array.isArray(raw) ? (raw as TopicSearchRecord[]) : null;
+  } catch {
+    return null;
+  }
 }
 
 export async function readExpertsRost(assetsRoot: string): Promise<ExpertsRost | null> {

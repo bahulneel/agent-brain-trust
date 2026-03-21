@@ -1,0 +1,13 @@
+id: compilers-runtimes
+label: Compilers, runtimes
+expert_ids:
+  - anders-hejlsberg
+  - james-gosling
+  - guido-van-rossum
+  - simon-peyton-jones
+keywords:
+  - compiler
+  - runtime
+  - JIT
+  - VM
+

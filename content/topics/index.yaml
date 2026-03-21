@@ -1,6 +1,0 @@
-skills:
-  - bashes
-  - writers-room
-  - librarian
-
-# Flat expert roster and hierarchical indexing: see topics/taxonomy/manifest.yaml + clades/ (topics → leaves → expert_ids).

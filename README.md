@@ -1,6 +1,6 @@
 # Agent Brain Trust
 
-Composable [Agent Skills](https://agentskills.io/specification) (BASHES, Writers' Room, Librarian), a **Cursor plugin** bundle, and a **Brain Trust MCP** server. Authoring lives under `content/`; TypeScript tooling under `packages/` and `scripts/build.ts`.
+Composable [Agent Skills](https://agentskills.io/specification) (`expert-opinion`, `bt-*` workshops/editorial skills), a **Cursor plugin** bundle, and a **Brain Trust MCP** server. Authoring lives under `content/`; TypeScript tooling under `packages/` and `scripts/build.ts`.
 
 ## Layout
 
@@ -8,9 +8,8 @@ Composable [Agent Skills](https://agentskills.io/specification) (BASHES, Writers
 | ---- | ------- |
 | `content/skills/*.md` | Skill entries: YAML `compose:` (profile, roster, fidelity, …) becomes the initial include env; stripped from built `SKILL.md`. Body uses `@include` + `scripts/compose.ts` (merged env, `{{name}}`, `@repeat roster` … `@endrepeat`, `guest=` → roster) |
 | `content/skill-fragments/` | **`profiles/`** (prefix/suffix per variation), **`common/`** (`skill-protocol-body`, persona fidelity, guest/debate/footer), **`fidelity/`** (one room-specific anti-caricature block per profile); roster is CSV in query params |
-| `content/topics/` | Topic index (`index.yaml`) copied into skill `assets/` and plugin `resources/` |
+| `content/topics/` | **Flat folder**: one **`<clade>.yaml` per broad topic space** (top-level `id`/`label`/`children`; leaves list `expert_ids`). Loader merges files (sorted by name) under a synthetic root. Optional legacy **`taxonomy.yaml`**. **`index.yaml`** is not authored here — the plugin build **writes** it under `resources/topics/` from `content/skills/*.md`. Copied into skill `assets/` and plugin `resources/` |
 | `content/experts/` | One `.md` per expert (kebab-case from full name); build emits **`rost.json`** (`id` → markdown) for MCP/CLI. Composed via `@include experts/<file>.md` |
-| `content/topics/taxonomy/` | Composable expert index: **`manifest.yaml`** lists **clade** files under **`clades/`** (one YAML subtree per clade); merged at build; **leaves** list `expert_ids`. Legacy single-file `taxonomy.yaml` still supported |
 | `content/references/` | General rules (discovery, MCP/CLI usage, dialogue); copied to `references/` next to each built `SKILL.md` and to `resources/references/` for MCP ([file references](https://agentskills.io/specification#file-references)) |
 | `packages/brain-trust-core` | Discovery helpers + CLI bundled into every skill |
 | `packages/brain-trust-db` | Taxonomy validation + `materializeExpertAssets` + `dist/assets` for local CLI tests |
@@ -42,7 +41,8 @@ Outputs:
 Validate a built skill:
 
 ```bash
-npx skills-ref validate dist/agent-brain-trust-cursor-plugin/skills/bashes
+npx skills-ref validate dist/agent-brain-trust-cursor-plugin/skills/expert-opinion
+npx skills-ref validate dist/agent-brain-trust-cursor-plugin/skills/bt-software-systems-workshop
 ```
 
 ## Requirements

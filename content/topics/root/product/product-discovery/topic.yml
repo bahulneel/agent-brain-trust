@@ -1,0 +1,7 @@
+id: product-discovery
+label: Product discovery
+children:
+  - discovery-research
+  - experiments
+  - evidence-for-decisions
+

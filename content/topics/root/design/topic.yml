@@ -1,0 +1,6 @@
+id: design
+label: Design
+children:
+  - human-computer-interaction
+  - visual-communication
+

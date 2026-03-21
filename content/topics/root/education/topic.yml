@@ -1,0 +1,5 @@
+id: education
+label: Education
+children:
+  - pedagogy
+

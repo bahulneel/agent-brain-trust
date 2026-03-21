@@ -1,0 +1,10 @@
+id: guided-demonstration
+label: Guided demonstration
+expert_ids:
+  - donald-e-knuth
+  - brian-w-kernighan
+keywords:
+  - walkthrough
+  - example
+  - show
+

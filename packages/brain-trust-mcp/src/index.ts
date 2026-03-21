@@ -8,6 +8,9 @@ import {
   readReferenceFile,
   readTopicIndex,
   readTaxonomy,
+  readTopicSearchRecords,
+  buildTopicSearchRecords,
+  searchTopicRecords,
   listSkillFrontmatter,
 } from "brain-trust-core";
 import { join, resolve } from "node:path";
@@ -30,7 +33,7 @@ server.registerTool(
   "list_topics",
   {
     description:
-      "Return topics/index.yaml if present. Expert indexing uses topics/taxonomy/manifest.yaml + clades/ (or legacy taxonomy.yaml); see get_topic_taxonomy.",
+      "Return topics/index.yaml if present (plugin resources include a build-generated skills list). Expert indexing uses topics/root/ tree or legacy layout; see get_topic_taxonomy.",
     inputSchema: z.object({}),
   },
   async () => {
@@ -50,13 +53,36 @@ server.registerTool(
   "get_topic_taxonomy",
   {
     description:
-      "Return hierarchical topic taxonomy (manifest + clades or legacy taxonomy.yaml): topic nodes with expert_ids on leaves; same expert id may appear under multiple leaves.",
+      "Return hierarchical topic taxonomy (flat topics/*.yaml merged under a root, or legacy taxonomy.yaml): topic nodes with expert_ids on leaves; same expert id may appear under multiple leaves.",
     inputSchema: z.object({}),
   },
   async () => {
     const tax = await readTaxonomy(resourcesRoot);
     return {
       content: [{ type: "text", text: JSON.stringify(tax ?? {}, null, 2) }],
+    };
+  }
+);
+
+server.registerTool(
+  "search_topics",
+  {
+    description:
+      "Fuzzy search topic nodes by id, label, path, keywords, aliases (Fuse.js). Uses topics/topics-search.json when present, else builds from taxonomy.",
+    inputSchema: z.object({
+      query: z.string().describe("Search string"),
+      limit: z.number().int().positive().max(50).optional().describe("Max results (default 12)"),
+    }),
+  },
+  async ({ query, limit }) => {
+    let records = await readTopicSearchRecords(resourcesRoot);
+    if (!records?.length) {
+      const tax = await readTaxonomy(resourcesRoot);
+      records = buildTopicSearchRecords(tax);
+    }
+    const hits = await searchTopicRecords(records, query, limit ?? 12);
+    return {
+      content: [{ type: "text", text: JSON.stringify({ query, hits }, null, 2) }],
     };
   }
 );

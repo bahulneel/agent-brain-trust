@@ -1,0 +1,12 @@
+id: knowledge-work
+label: Knowledge work
+children:
+  - computing
+  - design
+  - writing
+  - editing
+  - explanation
+  - education
+  - product
+  - organisation
+

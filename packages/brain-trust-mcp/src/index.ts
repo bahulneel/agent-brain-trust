@@ -33,7 +33,7 @@ server.registerTool(
   "list_topics",
   {
     description:
-      "Return topics/index.yaml if present (plugin resources include a build-generated skills list). Expert indexing uses topics/root/ tree or legacy layout; see get_topic_taxonomy.",
+      "Return topics/index.yaml if present (plugin resources include a build-generated skills list). Expert indexing uses topics/knowledge-work/ tree or legacy layout; see get_topic_taxonomy.",
     inputSchema: z.object({}),
   },
   async () => {

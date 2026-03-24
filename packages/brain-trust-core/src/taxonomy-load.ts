@@ -1,12 +1,18 @@
 import { readFile, readdir, stat } from "node:fs/promises";
-import { join } from "node:path";
+import { basename, join } from "node:path";
 import { parse } from "yaml";
 import type { TaxonomyDoc, TaxonomyNode } from "./taxonomy-types.js";
 
-/** Merged root id when loading from `topics/root/topic.yml`. */
+/**
+ * Merged root id when loading **legacy** flat `topics/*.yaml` clades under a synthetic root.
+ * Not used for the rooted `topics/knowledge-work/` tree (that node's id is `knowledge-work`).
+ */
 export const DEFAULT_TAXONOMY_ROOT_ID = "root";
 export const DEFAULT_TAXONOMY_ROOT_LABEL = "Brain Trust knowledge map";
 export const DEFAULT_TAXONOMY_VERSION = 2;
+
+/** Directory under `topics/` that contains the rooted clade (`topic.yml`). */
+export const ROOTED_TOPIC_CLADE_DIR = "knowledge-work";
 
 /** Filenames under `topics/` that are not taxonomy nodes. */
 const EXCLUDED_TOPIC_FILES = new Set(["index.yaml", "index.yml"]);
@@ -47,18 +53,104 @@ async function isFile(p: string): Promise<boolean> {
   }
 }
 
-export interface TopicBranchFile {
-  id: string;
+/** Parsed branch `topic.yml` / `topic.yaml`: metadata only; `id` and `children` come from the filesystem. */
+export interface TopicBranchMeta {
   label: string;
-  children?: string[];
   description?: string;
   keywords?: string[];
   aliases?: string[];
 }
 
+/** Parsed leaf `*.yml`: metadata only; `id` comes from the filename stem. */
+export interface TopicLeafMeta {
+  label: string;
+  expert_ids?: string[];
+  description?: string;
+  keywords?: string[];
+  aliases?: string[];
+}
+
+function yamlStem(filename: string): string {
+  if (filename.endsWith(".yaml")) return filename.slice(0, -".yaml".length);
+  if (filename.endsWith(".yml")) return filename.slice(0, -".yml".length);
+  return filename;
+}
+
+function assertBranchYamlNoFilesystemKeys(raw: Record<string, unknown>, branchPath: string): void {
+  if (Object.prototype.hasOwnProperty.call(raw, "id")) {
+    throw new Error(`taxonomy: branch ${branchPath} must not contain id (directory name is the id)`);
+  }
+  if (Object.prototype.hasOwnProperty.call(raw, "children")) {
+    throw new Error(`taxonomy: branch ${branchPath} must not contain children (discovered from directory)`);
+  }
+}
+
+function assertLeafYamlNoIdKey(raw: Record<string, unknown>, leafPath: string): void {
+  if (Object.prototype.hasOwnProperty.call(raw, "id")) {
+    throw new Error(`taxonomy: leaf ${leafPath} must not contain id (filename stem is the id)`);
+  }
+}
+
+type ChildSlot = { kind: "branch"; path: string } | { kind: "leaf"; path: string };
+
 /**
- * Load a branch from `dir/topic.yml` or `dir/topic.yaml`, then resolve each child id as either
- * `dir/<id>/` (subtree) or `dir/<id>.yml` / `dir/<id>.yaml` (leaf).
+ * Discover immediate child topics: subdirectories with `topic.yml`/`topic.yaml`, or leaf `*.yml`/`*.yaml`
+ * (excluding `topic.*` and index files). Sorted lexicographically by id (dir name or leaf stem).
+ */
+async function discoverChildSlots(dir: string): Promise<ChildSlot[]> {
+  let entries: import("node:fs").Dirent[];
+  try {
+    entries = await readdir(dir, { withFileTypes: true });
+  } catch {
+    return [];
+  }
+
+  const byStem = new Map<string, ChildSlot>();
+
+  for (const ent of entries) {
+    if (ent.name.startsWith(".")) continue;
+
+    if (ent.isDirectory()) {
+      const subDir = join(dir, ent.name);
+      const hasBranch =
+        (await isFile(join(subDir, "topic.yml"))) || (await isFile(join(subDir, "topic.yaml")));
+      if (!hasBranch) continue;
+
+      const stem = ent.name;
+      const existing = byStem.get(stem);
+      if (existing) {
+        throw new Error(
+          `taxonomy: ambiguous child "${stem}" under ${dir}: both branch dir and leaf file exist`,
+        );
+      }
+      byStem.set(stem, { kind: "branch", path: subDir });
+      continue;
+    }
+
+    if (!ent.isFile()) continue;
+    if (!ent.name.endsWith(".yml") && !ent.name.endsWith(".yaml")) continue;
+    if (ent.name === "topic.yml" || ent.name === "topic.yaml") continue;
+    if (EXCLUDED_TOPIC_FILES.has(ent.name)) continue;
+
+    const stem = yamlStem(ent.name);
+    const filePath = join(dir, ent.name);
+    const existing = byStem.get(stem);
+    if (existing) {
+      throw new Error(
+        `taxonomy: ambiguous child "${stem}" under ${dir}: both branch dir and leaf file exist`,
+      );
+    }
+    byStem.set(stem, { kind: "leaf", path: filePath });
+  }
+
+  return [...byStem.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([, slot]) => slot);
+}
+
+/**
+ * Load a branch from `dir/topic.yml` or `dir/topic.yaml`. Node `id` is `basename(dir)`; children are
+ * discovered from the directory (subtrees or leaf YAML siblings).
  */
 export async function loadTopicBranchDir(dir: string): Promise<TaxonomyNode> {
   const yml = join(dir, "topic.yml");
@@ -67,30 +159,25 @@ export async function loadTopicBranchDir(dir: string): Promise<TaxonomyNode> {
   if (!branchPath) {
     throw new Error(`taxonomy: missing topic.yml in ${dir}`);
   }
-  const raw = parse(await readFile(branchPath, "utf8")) as TopicBranchFile;
-  if (!raw?.id || typeof raw.id !== "string") {
-    throw new Error(`taxonomy: branch ${branchPath} must have string id`);
-  }
-  if (!raw.label || typeof raw.label !== "string") {
+  const rawUnknown = parse(await readFile(branchPath, "utf8")) as Record<string, unknown>;
+  assertBranchYamlNoFilesystemKeys(rawUnknown, branchPath);
+  const raw = rawUnknown as unknown as TopicBranchMeta;
+  if (!raw?.label || typeof raw.label !== "string") {
     throw new Error(`taxonomy: branch ${branchPath} must have string label`);
   }
-  const childIds = raw.children ?? [];
+
+  const id = basename(dir);
+  const slots = await discoverChildSlots(dir);
   const children: TaxonomyNode[] = [];
-  for (const childId of childIds) {
-    const subDir = join(dir, childId);
-    const leafYml = join(dir, `${childId}.yml`);
-    const leafYaml = join(dir, `${childId}.yaml`);
-    if (await isDirectory(subDir)) {
-      children.push(await loadTopicBranchDir(subDir));
-    } else if (await isFile(leafYml)) {
-      children.push(await loadTopicLeafFile(leafYml));
-    } else if (await isFile(leafYaml)) {
-      children.push(await loadTopicLeafFile(leafYaml));
+  for (const slot of slots) {
+    if (slot.kind === "branch") {
+      children.push(await loadTopicBranchDir(slot.path));
     } else {
-      throw new Error(`taxonomy: child "${childId}" not found under ${dir} (expect dir or ${childId}.yml)`);
+      children.push(await loadTopicLeafFile(slot.path));
     }
   }
-  const node: TaxonomyNode = { id: raw.id, label: raw.label, children };
+
+  const node: TaxonomyNode = { id, label: raw.label, children };
   if (raw.description) node.description = raw.description;
   if (raw.keywords?.length) node.keywords = raw.keywords;
   if (raw.aliases?.length) node.aliases = raw.aliases;
@@ -98,18 +185,17 @@ export async function loadTopicBranchDir(dir: string): Promise<TaxonomyNode> {
 }
 
 async function loadTopicLeafFile(filePath: string): Promise<TaxonomyNode> {
-  const raw = parse(await readFile(filePath, "utf8")) as TaxonomyNode;
-  if (!raw?.id || typeof raw.id !== "string") {
-    throw new Error(`taxonomy: leaf ${filePath} must have string id`);
-  }
-  if (!raw.label || typeof raw.label !== "string") {
+  const rawUnknown = parse(await readFile(filePath, "utf8")) as Record<string, unknown>;
+  assertLeafYamlNoIdKey(rawUnknown, filePath);
+  const raw = rawUnknown as unknown as TopicLeafMeta;
+  if (!raw?.label || typeof raw.label !== "string") {
     throw new Error(`taxonomy: leaf ${filePath} must have string label`);
   }
+  const id = yamlStem(basename(filePath));
   const node: TaxonomyNode = {
-    id: raw.id,
+    id,
     label: raw.label,
     expert_ids: raw.expert_ids,
-    children: raw.children,
   };
   if (raw.description) node.description = raw.description;
   if (raw.keywords?.length) node.keywords = raw.keywords;
@@ -118,17 +204,17 @@ async function loadTopicLeafFile(filePath: string): Promise<TaxonomyNode> {
 }
 
 /**
- * True if `topics/root/topic.yml` exists (new rooted layout).
+ * True if `topics/knowledge-work/topic.yml` exists (rooted clade layout).
  */
 export async function hasRootedTopicLayout(topicsDir: string): Promise<boolean> {
-  const rootDir = join(topicsDir, "root");
-  const yml = join(rootDir, "topic.yml");
-  const yaml = join(rootDir, "topic.yaml");
+  const cladeDir = join(topicsDir, ROOTED_TOPIC_CLADE_DIR);
+  const yml = join(cladeDir, "topic.yml");
+  const yaml = join(cladeDir, "topic.yaml");
   return (await isFile(yml)) || (await isFile(yaml));
 }
 
 /**
- * List legacy flat clade files: `topics/*.yaml` excluding index and the `root/` directory.
+ * List legacy flat clade files: `topics/*.yaml` excluding index (rooted clade lives in a subdirectory).
  */
 export async function listLegacyTopicCladeFilenames(topicsDir: string): Promise<string[]> {
   let names: string[];
@@ -157,7 +243,7 @@ async function loadLegacyFlatClades(topicsDir: string): Promise<TaxonomyNode[]> 
 }
 
 /**
- * Load taxonomy from `topics/root/topic.yml` (rooted tree), else legacy flat `topics/*.yml` clades
+ * Load taxonomy from `topics/knowledge-work/topic.yml` (rooted tree), else legacy flat `topics/*.yml` clades
  * merged under a synthetic root, else `topics/taxonomy.yaml`.
  */
 export async function readTaxonomyMerged(assetsRoot: string): Promise<TaxonomyDoc | null> {
@@ -166,8 +252,8 @@ export async function readTaxonomyMerged(assetsRoot: string): Promise<TaxonomyDo
   const legacyPathYml = join(topicsDir, "taxonomy.yml");
 
   if (await hasRootedTopicLayout(topicsDir)) {
-    const rootDir = join(topicsDir, "root");
-    const taxonomy = await loadTopicBranchDir(rootDir);
+    const cladeDir = join(topicsDir, ROOTED_TOPIC_CLADE_DIR);
+    const taxonomy = await loadTopicBranchDir(cladeDir);
     assertUniqueTaxonomyNodeIds(taxonomy);
     return { version: DEFAULT_TAXONOMY_VERSION, taxonomy };
   }

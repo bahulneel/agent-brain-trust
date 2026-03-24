@@ -46,7 +46,7 @@ Full roster (large)           get-experts-rost   (add --json for scripts)
 This skill’s frontmatter      read-skill-md
 
 Commands:
-  get-topic-taxonomy [--json]   Topic tree (topics/root/ or legacy); leaves list expert_ids
+  get-topic-taxonomy [--json]   Topic tree (topics/knowledge-work/ or legacy); leaves list expert_ids
   search-topics <q> [--json]    Fuzzy topic search (Fuse.js); uses topics-search.json if present
   list-experts [--json]         All expert ids (rost keys)
   get-expert <id>               One persona markdown (try an id from taxonomy or list-experts)
@@ -73,7 +73,7 @@ Examples (iterative):
 
 function printTaxonomyHuman(doc: { version: number; taxonomy: TaxonomyNode } | null, assets: string): void {
   if (!doc?.taxonomy) {
-    console.log(`No taxonomy found under ${join(assets, "topics")} (expect topics/root/topic.yml, legacy *.yaml clades, or taxonomy.yaml)`);
+    console.log(`No taxonomy found under ${join(assets, "topics")} (expect topics/knowledge-work/topic.yml, legacy *.yaml clades, or taxonomy.yaml)`);
     console.log(`\nNext: confirm assets path (cwd should be a skill with assets/topics/).`);
     return;
   }

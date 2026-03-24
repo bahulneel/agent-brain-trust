@@ -1,0 +1,12 @@
+label: Type systems, formal methods
+expert_ids:
+  - tony-hoare
+  - barbara-liskov
+  - edsger-w-dijkstra
+  - phil-wadler
+keywords:
+  - types
+  - semantics
+  - verification
+  - proof
+

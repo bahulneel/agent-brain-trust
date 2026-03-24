@@ -7,7 +7,7 @@ When the Agent Brain Trust Cursor plugin (or another client) exposes the **brain
 | Tool | Purpose |
 | ---- | ------- |
 | `list_topics` | Parsed `topics/index.yaml` if present (plugin `resources/` includes a **build-generated** `skills:` list from `content/skills/*.md`; per-skill zips usually have no index file) |
-| `get_topic_taxonomy` | Hierarchical taxonomy: **rooted** `topics/root/topic.yml` tree when present; otherwise flat `topics/*.yaml` clades merged under a synthetic root, or legacy `taxonomy.yaml`. **Leaves** may list `expert_ids` |
+| `get_topic_taxonomy` | Hierarchical taxonomy: **rooted** `topics/knowledge-work/topic.yml` tree when present; otherwise flat `topics/*.yaml` clades merged under a synthetic root, or legacy `taxonomy.yaml`. **Leaves** may list `expert_ids` |
 | `search_topics` | Fuzzy search over the topic index (`topics-search.json`): labels, ids, aliases, keywords; returns path context for disambiguation |
 | `list_experts` | Expert **ids** (basename without `.md`); roster also in `experts/rost.json` as `id →` markdown |
 | `get_expert` | One persona by **id** (e.g. `william-e-byrd`) or path; prefers `rost.json` |

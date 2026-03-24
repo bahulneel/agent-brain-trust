@@ -9,7 +9,7 @@ This document covers the three kinds of content contribution -- adding an **expe
 | `content/skills/<name>.md` | Skill entry: YAML frontmatter (`compose:` block) + body text + `@include` directives |
 | `content/skill-fragments/` | Shared protocol fragments: `profiles/` (prefix/suffix per profile type), `common/` (persona fidelity, guest protocol, debate mechanics, footer) |
 | `content/experts/<id>.md` | One persona card per expert, kebab-case id matching the filename |
-| `content/topics/root/…` | Rooted YAML tree: branch `topic.yml` files list `children`, leaf `*.yml` files list `expert_ids` and `keywords` |
+| `content/topics/knowledge-work/…` | Rooted YAML tree: branch directories contain `topic.yml` with **`label` only** (children are discovered from subdirs / leaf files); leaf `*.yml` files list **`expert_ids`** and **`keywords`** (no `id` in YAML — it is the filename stem) |
 | `content/references/` | General-purpose reference docs shipped alongside every built skill |
 
 The build system (`scripts/compose.ts`) reads `content/skills/*.md`, resolves `@include` directives against `content/skill-fragments/`, injects expert personas via `@repeat roster`, and strips the `compose:` block from the output `SKILL.md`.
@@ -70,7 +70,7 @@ Guidelines for substantive cards:
 
 ### 2. Register on a taxonomy leaf
 
-Every expert file must appear on at least one taxonomy leaf. Find the leaf that best fits the expert's domain under `content/topics/root/…/` and add the id to its `expert_ids` list. If no suitable leaf exists, create one (see "Adding a topic" below).
+Every expert file must appear on at least one taxonomy leaf. Find the leaf that best fits the expert's domain under `content/topics/knowledge-work/…/` and add the id to its `expert_ids` list. If no suitable leaf exists, create one (see "Adding a topic" below).
 
 ### 3. Validate
 
@@ -84,10 +84,9 @@ Topics organise the taxonomy tree that the `expert-opinion` skill uses to match 
 
 ### Leaf topics
 
-A leaf is a YAML file under `content/topics/root/…/` that lists expert ids and keywords:
+A leaf is a YAML file under `content/topics/knowledge-work/…/` named **`<id>.yml`** (the file stem is the topic id). It lists expert ids and keywords — **do not** put `id` in the file:
 
 ```yaml
-id: concurrency-models
 label: Concurrency models
 expert_ids:
   - joe-armstrong
@@ -100,31 +99,20 @@ keywords:
   - message passing
 ```
 
-- `id` must match the filename (without `.yml`).
+Save as e.g. `concurrency-models.yml` next to sibling leaves or under the right branch directory.
+
 - `expert_ids` lists every expert relevant to this topic. Each id must have a corresponding `content/experts/<id>.md`.
 - `keywords` feed the fuzzy search index (`topics-search.json`).
 
-After creating the leaf, register it in the nearest parent branch's `topic.yml` by adding its id to the `children` list:
-
-```yaml
-id: software-systems
-label: Software systems
-children:
-  - software-architecture
-  - design-patterns
-  - concurrency-models
-  - distributed-systems
-  - data-intensive-systems
-  - software-evolution
-```
+The parent branch discovers leaves and child branches automatically from the directory; **no `children` list** in `topic.yml`.
 
 ### Branch topics
 
-A branch is a `topic.yml` that groups children (other branches or leaves). If you need a new mid-level grouping:
+A branch is a directory with `topic.yml` containing **`label` only** (optional `description`, `keywords`, `aliases`). The branch **id** is the **directory name**. If you need a new mid-level grouping:
 
-1. Create a directory under the appropriate parent in `content/topics/root/…/`.
-2. Add a `topic.yml` inside it with `id`, `label`, and `children`.
-3. Register the new branch id in its parent's `children` list.
+1. Create a directory under the appropriate parent in `content/topics/knowledge-work/…/` (directory name = topic id).
+2. Add `topic.yml` inside it with at least `label:`.
+3. Add child branch directories or leaf `*.yml` files as siblings under that directory — order on disk is lexicographic by name.
 
 ### Validate
 

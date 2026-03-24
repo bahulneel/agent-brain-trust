@@ -1,6 +1,6 @@
 {
   "name": "@bahulneel/brain-trust-mcp",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Brain Trust MCP server: taxonomy, experts, references",
   "license": "MIT",
   "private": false,
@@ -20,9 +20,10 @@
     "node": ">=20"
   },
   "bin": {
-    "brain-trust-mcp": "./dist/brain-trust-mcp.js"
+    "brain-trust-mcp": "./bin/brain-trust-mcp.cjs"
   },
   "files": [
+    "bin/brain-trust-mcp.cjs",
     "dist/brain-trust-mcp.js",
     "resources",
     "README.md",

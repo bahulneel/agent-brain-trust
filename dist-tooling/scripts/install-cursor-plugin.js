@@ -85,7 +85,7 @@ async function main() {
     console.log(`Copied: ${PLUGIN_SRC} -> ${destPath}`);
     console.log(`Registered ${PLUGIN_ID} in ~/.claude/plugins/installed_plugins.json`);
     console.log(`Enabled ${PLUGIN_ID} in ~/.claude/settings.json`);
-    console.log("MCP: installed plugin .mcp.json uses npx for @bahulneel/brain-trust-mcp. Re-run after npm run build. Repo contributors: use .cursor/mcp.json (packages/brain-trust-mcp/dist/… after build).");
+    console.log("MCP: the plugin includes .mcp.json (npx @bahulneel/brain-trust-mcp). Re-run this install after npm run build to refresh.");
     console.log("Restart Cursor or run “Developer: Reload Window”.");
 }
 main().catch((e) => {

@@ -1,11 +1,9 @@
 ---
 name: bt-prompt-engineering-trust
 description: >-
-  Run a multi-voice workshop on prompt engineering, agent skills, and trustworthy
-  human–machine collaboration — Weng, Zhou, Karpathy, Ng, and Mollick argue across
-  instruction design, reasoning scaffolds, systems constraints, and organisational
-  trust. Use this skill when the user is designing prompts, SKILL packages, tool
-  boundaries, or team norms for AI-assisted work.
+  Run a multi-voice workshop on prompt engineering, agent skills, and trustworthy human–machine
+  collaboration. Use this skill when designing prompts, agent skill packages, tool boundaries,
+  or team norms for AI-assisted work.
 compose:
   profile: technical-dialectic
   roster:

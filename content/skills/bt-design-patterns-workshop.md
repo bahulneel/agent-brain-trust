@@ -1,11 +1,10 @@
 ---
 name: bt-design-patterns-workshop
 description: >-
-  Run a multi-voice design-patterns workshop — Gamma, Helm, Johnson, Vlissides, Fowler, and
-  Hickey debate OO pattern catalogs, forces and consequences, naming, and when simpler data-first
-  models subsume pattern-heavy structure. Use this skill when the user is choosing or applying
-  design patterns, refactoring toward or away from classic GoF shapes, comparing pattern catalogs
-  to context, or weighing object collaboration against values, immutability, and de-complecting.
+  Run a multi-voice design-patterns workshop debating pattern catalogs, forces and consequences,
+  naming, and when simpler data-first models beat pattern-heavy structure. Use this skill when
+  choosing or applying design patterns, refactoring toward or away from classic GoF shapes, or
+  weighing object collaboration against values and immutability.
 compose:
   profile: technical-dialectic
   roster:

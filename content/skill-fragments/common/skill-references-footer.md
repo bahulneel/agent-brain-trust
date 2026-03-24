@@ -4,6 +4,7 @@ Per [Agent Skills: file references](https://agentskills.io/specification#file-re
 
 - [references/INDEX.md](references/INDEX.md) — which file to open when
 - [references/discovery.md](references/discovery.md) — how to list and read bundled rules
+- Skill **`draft-experts`** — find experts for one or more topics via the taxonomy (`resolve_topics` / `resolve-topics`; fall back to search/taxonomy browse)
 
 @if plugin|claude-code
 

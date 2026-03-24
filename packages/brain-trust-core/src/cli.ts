@@ -6,6 +6,7 @@ import {
   readTopicSearchRecords,
   buildTopicSearchRecords,
   searchTopicRecords,
+  resolveTopicRecords,
   listExpertIds,
   readExpertFile,
   readExpertsRost,
@@ -35,11 +36,11 @@ function printDiscoveryHelp(skillRoot: string, assets: string): void {
   console.log(`Brain Trust CLI — iterative discovery (skill root: ${skillRoot})
 Assets: ${assets}
 
-How to move (repeat and narrow):
-  1. Map the domain     →  get-topic-taxonomy
-  2. List persona ids    →  list-experts
-  3. Open one voice      →  get-expert <id>
-  4. Bundled playbooks   →  list-references  →  get-reference <path>
+How to move (fast resolve vs broad browse):
+  • Several task keywords  →  resolve-topics <q1> [q2 ...] [--strategy merge|intersect|converge]
+  • Broad / exploratory    →  search-topics <q>  then  get-topic-taxonomy  as needed
+  • Personas                              →  list-experts  →  get-expert <id>
+  • Bundled playbooks                     →  list-references  →  get-reference <path>
 
 Topic index (skills list)     get-topic-index | list-topics
 Full roster (large)           get-experts-rost   (add --json for scripts)
@@ -47,7 +48,10 @@ This skill’s frontmatter      read-skill-md
 
 Commands:
   get-topic-taxonomy [--json]   Topic tree (topics/knowledge-work/ or legacy); leaves list expert_ids
-  search-topics <q> [--json]    Fuzzy topic search (Fuse.js); uses topics-search.json if present
+  search-topics <q> [--json]    Fuzzy topic search (Fuse.js); catch-all progressive discovery
+  resolve-topics [opts] <q1> [q2 ...] [--json]
+                                Multi-query resolution: --strategy merge (default) | intersect | converge
+                                --limit N  --per-query-limit N
   list-experts [--json]         All expert ids (rost keys)
   get-expert <id>               One persona markdown (try an id from taxonomy or list-experts)
   get-experts-rost [--json]     Full { experts: { id: body } } — prefer get-expert for one voice
@@ -62,13 +66,59 @@ Commands:
 Global:
   --json                        Raw JSON only (no hints); use for automation.
 
-Examples (iterative):
+Examples:
+  brain-trust-cli resolve-topics --strategy converge distributed consistency
   brain-trust-cli get-topic-taxonomy
   brain-trust-cli list-experts
   brain-trust-cli get-expert william-e-byrd
   brain-trust-cli list-references
   brain-trust-cli get-reference discovery.md
 `);
+}
+
+type ResolveCliStrategy = "merge" | "intersect" | "converge";
+
+function parseResolveTopicsArgv(argv: string[]): {
+  json: boolean;
+  strategy: ResolveCliStrategy;
+  limit?: number;
+  perQueryLimit?: number;
+  maxConvergeIterations?: number;
+  positional: string[];
+} {
+  let json = false;
+  let strategy: ResolveCliStrategy = "merge";
+  let limit: number | undefined;
+  let perQueryLimit: number | undefined;
+  let maxConvergeIterations: number | undefined;
+  const positional: string[] = [];
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (a === "--json") {
+      json = true;
+      continue;
+    }
+    if (a === "--strategy" && argv[i + 1]) {
+      const v = argv[++i] as ResolveCliStrategy;
+      if (v === "merge" || v === "intersect" || v === "converge") strategy = v;
+      continue;
+    }
+    if (a === "--limit" && argv[i + 1]) {
+      limit = Number.parseInt(argv[++i], 10);
+      continue;
+    }
+    if (a === "--per-query-limit" && argv[i + 1]) {
+      perQueryLimit = Number.parseInt(argv[++i], 10);
+      continue;
+    }
+    if (a === "--max-converge-iterations" && argv[i + 1]) {
+      maxConvergeIterations = Number.parseInt(argv[++i], 10);
+      continue;
+    }
+    if (a.startsWith("-")) continue;
+    positional.push(a);
+  }
+  return { json, strategy, limit, perQueryLimit, maxConvergeIterations, positional };
 }
 
 function printTaxonomyHuman(doc: { version: number; taxonomy: TaxonomyNode } | null, assets: string): void {
@@ -247,7 +297,59 @@ Example:
       }
       console.log("");
     }
-    console.log(`Next: get-topic-taxonomy  |  get-expert <id>`);
+    console.log(`Next: get-topic-taxonomy  |  get-expert <id>  |  resolve-topics …`);
+    return;
+  }
+
+  if (cmd === "resolve-topics") {
+    const ro = parseResolveTopicsArgv(rest.slice(1));
+    const queries = ro.positional.map((s) => s.trim()).filter(Boolean);
+    if (queries.length === 0) {
+      console.error(`usage: resolve-topics [options] <query1> [query2 ...]
+
+Options:
+  --strategy merge|intersect|converge   default merge
+  --limit N                             max merged results (default 12)
+  --per-query-limit N                   fuse depth per query
+  --max-converge-iterations N           cap for converge (default 3)
+  --json
+
+Examples:
+  brain-trust-cli resolve-topics distributed consistency
+  brain-trust-cli resolve-topics --strategy intersect organisation squads
+  brain-trust-cli resolve-topics --strategy converge --json agent skills MCP
+`);
+      process.exit(1);
+    }
+    let records = await readTopicSearchRecords(assets);
+    if (!records?.length) {
+      const tax = await readTaxonomy(assets);
+      records = buildTopicSearchRecords(tax);
+    }
+    const result = await resolveTopicRecords(records, {
+      queries,
+      limit: ro.limit,
+      perQueryLimit: ro.perQueryLimit,
+      strategy: ro.strategy,
+      maxConvergeIterations: ro.maxConvergeIterations,
+    });
+    if (ro.json) {
+      console.log(JSON.stringify(result, null, 2));
+      return;
+    }
+    console.log(
+      `resolve-topics: strategy=${result.strategy} iterations=${result.iterations} converged=${result.converged} queries=${JSON.stringify(result.queries)}\n`
+    );
+    for (const h of result.hits) {
+      const path = h.item.pathLabels.join(" → ");
+      console.log(`  • ${h.item.label} [${h.item.id}]  support=${h.support} score≈${h.bestScore.toFixed(4)}`);
+      console.log(`    path: ${path}`);
+      if (h.item.expert_ids?.length) {
+        console.log(`    experts: ${h.item.expert_ids.join(", ")}`);
+      }
+      console.log("");
+    }
+    console.log(`Next: get-expert <id>  |  search-topics <broader q>  |  get-topic-taxonomy`);
     return;
   }
 

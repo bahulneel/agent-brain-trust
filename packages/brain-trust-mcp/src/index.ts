@@ -11,6 +11,7 @@ import {
   readTopicSearchRecords,
   buildTopicSearchRecords,
   searchTopicRecords,
+  resolveTopicRecords,
   listSkillFrontmatter,
 } from "brain-trust-core";
 import { existsSync } from "node:fs";
@@ -110,6 +111,64 @@ server.registerTool(
     const hits = await searchTopicRecords(records, query, limit ?? 12);
     return {
       content: [{ type: "text", text: JSON.stringify({ query, hits }, null, 2) }],
+    };
+  }
+);
+
+server.registerTool(
+  "resolve_topics",
+  {
+    description:
+      "Multi-query topic resolution: merge (vote across strings), intersect (topic must appear for every query), or converge (merge + fixed-point refinement from top hit). Prefer when you have several task keywords; keep search_topics for broad progressive discovery.",
+    inputSchema: z
+      .object({
+        query: z.string().optional().describe("One search string (optional if queries[] is non-empty)"),
+        queries: z.array(z.string()).optional().describe("More search strings; combined with query, trimmed and deduped"),
+        limit: z.number().int().positive().max(50).optional().describe("Max results after resolution (default 12)"),
+        per_query_limit: z
+          .number()
+          .int()
+          .positive()
+          .max(50)
+          .optional()
+          .describe("Fuse depth per query before merge (default max(limit, 10))"),
+        strategy: z
+          .enum(["merge", "intersect", "converge"])
+          .optional()
+          .describe("merge = vote; intersect = AND across queries; converge = merge then refine until stable top"),
+        max_converge_iterations: z
+          .number()
+          .int()
+          .positive()
+          .max(8)
+          .optional()
+          .describe("Cap for converge strategy (default 3)"),
+      })
+      .refine(
+        (d) =>
+          [...(d.queries ?? []), ...(d.query ? [d.query] : [])].some((s) => typeof s === "string" && s.trim().length > 0),
+        { message: "Provide query and/or queries with at least one non-empty string" }
+      ),
+  },
+  async ({ query, queries, limit, per_query_limit, strategy, max_converge_iterations }) => {
+    const combined = [...(queries ?? []), ...(query ? [query] : [])]
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const unique = [...new Set(combined)];
+    let records = await readTopicSearchRecords(resourcesRoot);
+    if (!records?.length) {
+      const tax = await readTaxonomy(resourcesRoot);
+      records = buildTopicSearchRecords(tax);
+    }
+    const result = await resolveTopicRecords(records, {
+      queries: unique,
+      limit: limit ?? 12,
+      perQueryLimit: per_query_limit,
+      strategy: strategy ?? "merge",
+      maxConvergeIterations: max_converge_iterations,
+    });
+    return {
+      content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
     };
   }
 );

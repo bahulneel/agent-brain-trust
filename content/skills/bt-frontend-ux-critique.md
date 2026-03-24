@@ -1,10 +1,10 @@
 ---
 name: bt-frontend-ux-critique
 description: >-
-  Run a multi-voice UX critique — Zhuo, Norman, and Nielsen argue through interaction
-  quality, usability evidence, and user-centred tradeoffs. Use this skill when the user
-  is reviewing a UI, questioning whether a flow makes sense, asking for feedback on a
-  wireframe or prototype, or debating layout and navigation choices.
+  Run a multi-voice UX critique arguing through interaction quality, usability evidence, and
+  user-centred tradeoffs. Use this skill when reviewing a UI, questioning whether a flow makes
+  sense, getting feedback on a wireframe or prototype, or debating layout and navigation
+  choices.
 compose:
   profile: technical-dialectic
   roster:

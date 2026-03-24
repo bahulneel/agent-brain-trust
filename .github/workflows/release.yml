@@ -1,9 +1,8 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - "v*"
+  release:
+    types: [published]
   workflow_dispatch:
 
 jobs:
@@ -11,20 +10,62 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      id-token: write # OIDC for npm trusted publishing (no NPM_TOKEN on publish)
     steps:
       - uses: actions/checkout@v4
+        if: github.event_name == 'release'
+        with:
+          ref: ${{ github.event.release.tag_name }}
+      - uses: actions/checkout@v4
+        if: github.event_name != 'release'
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          # Trusted publishing needs Node 22.14+ and npm 11.5.1+ (see npm docs).
+          node-version: "22"
+          registry-url: https://registry.npmjs.org
           cache: npm
+      - name: npm version for trusted publishing
+        run: npm install -g npm@^11.5.1
       - run: npm ci
+      # Scripts import brain-trust-core / brain-trust-db; exports target dist/ — compile packages before tsc on scripts/.
+      - run: npm run build:packages
+      - run: npm run build:tooling
+      - name: Check dist-tooling matches scripts
+        run: git diff --exit-code dist-tooling
       - run: npm run build
-      - name: Upload dist artefacts
+      - name: Pack release archives
+        run: |
+          mkdir -p release/plugins release/skills
+          cd dist
+          zip -q -r ../release/plugins/agent-brain-trust-cursor-plugin.zip agent-brain-trust-cursor-plugin
+          zip -q -r ../release/plugins/agent-brain-trust-claude-plugin.zip agent-brain-trust-claude-plugin
+          cp skill-zips/*.zip ../release/skills/
+      - name: Upload Cursor plugin artefact
         uses: actions/upload-artifact@v4
         with:
-          name: agent-brain-trust-dist
-          path: |
-            dist/agent-brain-trust-cursor-plugin
-            dist/agent-brain-trust-claude-plugin
-            dist/agent-brain-trust-mcp
-            dist/skill-zips
+          name: agent-brain-trust-cursor-plugin
+          path: release/plugins/agent-brain-trust-cursor-plugin.zip
+      - name: Upload Claude plugin artefact
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-brain-trust-claude-plugin
+          path: release/plugins/agent-brain-trust-claude-plugin.zip
+      - name: Upload skill zip artefacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: brain-trust-skill-zips
+          path: release/skills/*.zip
+      - name: Upload assets to GitHub Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.release.tag_name }}
+          files: |
+            release/plugins/agent-brain-trust-cursor-plugin.zip
+            release/plugins/agent-brain-trust-claude-plugin.zip
+            release/skills/*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish MCP to npm (OIDC trusted publisher)
+        if: github.event_name == 'release'
+        run: npm publish -w @bahulneel/brain-trust-mcp --access public

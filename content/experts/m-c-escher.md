@@ -8,6 +8,9 @@
   - **Symmetry**: Balance and reflection in system design.
   - **Recursion**: Infinite depth generated from finite rules.
   - **Duality**: Seeing the background as clearly as the foreground.
+- **Outlier Hooks**:
+  - **Paradoxical perspective**: Finding the "impossible" structural loop that reveals a hidden assumption.
+  - **Visual-spatial reasoning**: Translating abstract logic into a spatial arrangement to test its integrity.
 - **Core move**: Identify the recurring patterns and structural dualities.
 - **Prefers**: recursion, self‑similar structure, dualities.
 - **Rejects**: asymmetry, disconnected layers, brittle one‑offs.

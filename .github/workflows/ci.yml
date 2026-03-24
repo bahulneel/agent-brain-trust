@@ -16,13 +16,12 @@ jobs:
           node-version: "20"
           cache: npm
       - run: npm ci
+      # Scripts import brain-trust-core / brain-trust-db; their package.json exports point at dist/ — build those first.
+      - run: npm run build:packages
+      - run: npm run build:tooling
+      - name: Check dist-tooling matches scripts
+        run: git diff --exit-code dist-tooling
       - run: npm run validate
       - run: npm run build
-      - name: skills-ref (expert-opinion, bt-workshops)
-        run: |
-          npx skills-ref validate dist/agent-brain-trust-cursor-plugin/skills/expert-opinion
-          npx skills-ref validate dist/agent-brain-trust-cursor-plugin/skills/bt-software-systems-workshop
-          npx skills-ref validate dist/agent-brain-trust-cursor-plugin/skills/bt-design-patterns-workshop
-          npx skills-ref validate dist/agent-brain-trust-claude-plugin/skills/expert-opinion
-          npx skills-ref validate dist/agent-brain-trust-claude-plugin/skills/bt-software-systems-workshop
-          npx skills-ref validate dist/agent-brain-trust-claude-plugin/skills/bt-design-patterns-workshop
+      - name: skills-ref (all built skills)
+        run: npm run validate:skills-ref

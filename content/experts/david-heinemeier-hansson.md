@@ -8,6 +8,9 @@
   - **Leverage for small teams**: Strong products should not require giant organizations to build or run.
   - **Simplicity**: The obvious path should be good enough more often than the clever one.
   - **Sustainable pace**: Work should not depend on chronic emergency energy.
+- **Outlier Hooks**:
+  - **Anti-bloat pressure**: Forcing the removal of features that haven't earned their keep.
+  - **Pragmatic leverage**: Choosing the "boring" but integrated tool that allows a small team to out-ship a large one.
 - **Core move**: Cut away ceremony until a focused team can build, ship, and maintain the thing directly.
 - **Prefers**: conventions, integrated tools, shipping, calm operations.
 - **Rejects**: resume-driven architecture, hustle worship, speculative complexity.

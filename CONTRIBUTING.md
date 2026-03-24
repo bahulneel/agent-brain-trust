@@ -8,9 +8,11 @@ This document covers the three kinds of content contribution -- adding an **expe
 | ---- | ------------- |
 | `content/skills/<name>.md` | Skill entry: YAML frontmatter (`compose:` block) + body text + `@include` directives |
 | `content/skill-fragments/` | Shared protocol fragments: `profiles/` (prefix/suffix per profile type), `common/` (persona fidelity, guest protocol, debate mechanics, footer) |
-| `content/experts/<id>.md` | One persona card per expert, kebab-case id matching the filename |
+| `content/experts/<id>.md` | One persona card per expert, kebab-case id matching the filename. Experts in the **contrapuntal voice** (the outlier) seat of a panel must include **Outlier Hooks**. |
 | `content/topics/knowledge-work/…` | Rooted YAML tree: branch directories contain `topic.yml` with **`label` only** (children are discovered from subdirs / leaf files); leaf `*.yml` files list **`expert_ids`** and **`keywords`** (no `id` in YAML — it is the filename stem) |
 | `content/references/` | General-purpose reference docs shipped alongside every built skill |
+
+For the full workspace layout (including packages and scripts) and for build outputs and validation commands, see [docs/repository-layout.md](docs/repository-layout.md) and [docs/build.md](docs/build.md).
 
 The build system (`scripts/compose.ts`) reads `content/skills/*.md`, resolves `@include` directives against `content/skill-fragments/`, injects expert personas via `@repeat roster`, and strips the `compose:` block from the output `SKILL.md`.
 
@@ -35,6 +37,8 @@ Use this **persona card template** for every expert. Replace every field with re
   - **Drive name**: One sentence.
   - **Drive name**: One sentence.
   - **Drive name**: One sentence.
+- **Outlier Hooks**: (Optional, max 2)
+  - **Hook name**: One sentence. Only for the **contrapuntal voice** (typically the last seat in a roster) or single-voice modes.
 - **Core move**: How they typically advance understanding.
 - **Prefers**: comma-separated tendencies.
 - **Rejects**: comma-separated anti-patterns.
@@ -99,6 +103,17 @@ Guidelines when filling the template:
     > Operational mercy: Prefer designs that fail in ways humans can recover from.
     >
     > Composability: Parts should combine without hidden coupling.
+
+- **`Outlier Hooks`: use them when the outlier needs extra pull beyond their core center of gravity.** Hooks are optional and should stay rare. Reach for them when the expert's value in a room depends on a direction, pressure, or provocation that is not already legible from the `Core Drives` alone.
+  - **Bad** — Repeating the core in slightly different words:
+    > Simplicity: Remove needless complexity.
+    >
+    > De-complecting: Separate braided concerns.
+  - **Good** — A distinct directional pull that may only matter in certain rooms:
+    > Reader delight: A technically correct draft may still fail if it leaves no mental residue.
+  - **Better** — A hook that explains why this person changes the room's trajectory:
+    > Defamiliarization: Make the familiar strange enough that a room full of specialists stops taking its own assumptions for granted.
+  - Hooks are **not** backup drives, bonus traits, or a second personality. They are targeted levers that become useful when the expert is acting as the room's outlier or when a single-voice response needs that extra angle.
 
 - **`Signature question`: make it unmistakably theirs.** It should sound like something they would actually ask in conversation, not a generic coaching prompt.
   - **Bad** — Generic coaching language:
@@ -189,28 +204,28 @@ The profile determines the prefix (operating principles, moderator role) and suf
 
 The roster is the list of expert ids who form the panel's permanent members. Guests are drafted dynamically by the protocol at runtime; the roster defines the fixed core.
 
-**Roster size is flexible.** Existing panels range from 3 members (e.g. `bt-frontend-ux-critique`) to 8 (e.g. `bt-technical-writing-editorial`). The `technical-dialectic` suffix text references "six" members in some places, but the protocol adapts to any count -- smaller panels produce fewer cohorts. Choose the number that gives you the voices you need without padding.
+**Roster size is flexible.** The protocol adapts to different counts, but in practice you should aim for enough permanent members to support more than one cohort during debate. As a rule of thumb, that usually means at least **4** members, and more often **6-8** for a fully developed room. Choose the number that gives you the voices you need without padding.
 
 #### The N + contrapuntal voice pattern
 
-This is soft guidance, not a hard rule, but it produces better dialectic:
+This is soft guidance, not a hard rule, but it often produces better dialectic:
 
-- **N domain-matched voices** who share the panel's core territory but disagree on emphasis, style, or philosophy within it.
-- **1 contrapuntal voice** who brings a perspective the domain group would typically lack or underweight -- not as a "wildcard" but for an **explicitly stated reason** that addresses a real blind spot.
+- **N domain-matched voices** who share the panel's core territory but disagree on emphasis, style, or philosophy within it. In practice, `N` is usually **3-5**: enough for meaningful internal disagreement, not so many that the room loses shape.
+- **1 contrapuntal voice** who brings a perspective the domain group would typically lack or underweight.
 
-The contrapuntal voice is justified in the skill body (the paragraph before `@include common/skill-protocol-body.md`). State concretely what the domain group tends to miss and why this voice fills that gap. Examples from existing panels:
+When this pattern works, the outlier should feel obvious from the roster itself. Their inclusion should make sense because of who they are in relation to the other members, not because the skill body pauses to explain it.
 
-| Panel | Domain voices | Contrapuntal voice | Stated reason |
-| ----- | ------------- | ------------------ | ------------- |
-| `bt-software-systems-workshop` | Byrd, Alvaro, Sussman, Hickey, Steele | M. C. Escher | Structural symmetry, recursion, and visual/spatial reasoning about system shape -- perspectives that pure-code thinkers underweight |
-| `bt-design-patterns-workshop` | Gamma, Helm, Johnson, Vlissides, Fowler | Rich Hickey | OO pattern discussions omit data-first / de-complecting pressure: when values beat object graphs, when patterns braid concerns that should stay separate |
-| `bt-technical-writing-editorial` | Knuth, Kernighan, Kidder, Gleick, Sierra, Fowler, Feynman | Douglas Adams | Irreverence, reader delight, and the editorial instinct that technical prose can be too serious for its own good |
-
-A panel of 3 tightly scoped experts (e.g. `bt-visual-communication-critique`: Tufte, Escher, Spiekermann) may not need a contrapuntal voice at all -- when every seat is load-bearing and the scope is narrow, do not pad.
+Very small panels are now the exception, not the default. You can still retract a room if the material truly wants it, but the default should be enough voices to support more than one group in the debate. If the room cannot naturally split into multiple cohorts, it may be too small for the full dialectical protocol.
 
 ### 3. Write expert persona cards
 
 Each expert referenced from the taxonomy needs a substantive persona card at `content/experts/<id>.md`. See "Adding an expert" above for the card format and guidelines. **Roster members must already meet that bar** before they appear in a panel's `compose.roster`.
+
+In practice, panel authors will often be assembling a room from **existing** experts rather than writing fresh cards. In the normal case, an existing card should already be largely right, because it is a profile of that person rather than of a specific room.
+
+The main exception is when an expert is being drafted as the room's outlier. In that case, you may need to add `Outlier Hooks` so the expert pulls in the direction you want during debate, especially when that pressure would be hard to anticipate or encode in advance as part of their ordinary center of gravity.
+
+Treat this as a targeted adjustment, not a rewrite of the whole card. Most reused experts should need no changes; add hooks only when the outlier function is important to the room and not already legible from the existing profile.
 
 ### 4. Write the skill entry
 
@@ -231,8 +246,7 @@ compose:
     - expert-id-three
 ---
 
-Body text: the collective's identity, framing, and any explicit rationale
-for non-obvious roster choices (e.g. the contrapuntal voice justification).
+Body text: the room's identity, framing, and stakes.
 
 @include common/skill-protocol-body.md
 ```
@@ -244,13 +258,12 @@ for non-obvious roster choices (e.g. the contrapuntal voice justification).
 | `profile` | Yes | Which prefix/suffix pair to use (`technical-dialectic` or `editorial-room`) |
 | `roster` | Yes | YAML array of expert ids; order determines speaking order in `@repeat roster` |
 
-The `compose:` block is stripped from the built `SKILL.md`; only `name` and `description` ship to the agent.
+The `compose:` block is stripped from the built `SKILL.md`; only `name` and `description` ship to the agent. Clients use those fields first to decide when to load the full skill; for phrasing, trigger testing, and eval-style prompts, see [Optimizing skill descriptions](https://agentskills.io/skill-creation/optimizing-descriptions) on the Agent Skills site.
 
 **Body text guidelines:**
 
-- Name the collective. Some panels have acronyms (BASHES); others use descriptive names ("the Design Patterns collective," "the Writing Collective").
+- Set the scene. Describe the world or room where this debate is happening (e.g., "a Strange Loop hallway whiteboard", "the weekly editorial conference of a serious technical periodical"). Use a contextually appropriate but generic role for the agent (e.g., `delegate`, `editor`, `facilitator`, `reviewer`) and focus on the context and stakes of the dialectic rather than listing the experts. Avoid title-like proper-noun role names.
 - One paragraph framing the domain and dialectic purpose.
-- If the roster includes a contrapuntal voice, state the reason explicitly in the body. See the `bt-design-patterns-workshop` Rich Hickey paragraph as an example.
 - End with `@include common/skill-protocol-body.md`. This pulls in the full shared protocol (prefix, persona fidelity, expert cards, suffix, references).
 
 ### 5. Register in the taxonomy
@@ -260,19 +273,25 @@ Any new experts must be registered on at least one taxonomy leaf. See "Adding an
 ### 6. Update cross-references
 
 - **`content/skills/expert-opinion.md`** -- add the new `bt-*` skill name to the collective skills list so `expert-opinion` can point users toward it.
-- **`.github/workflows/ci.yml`** -- add `npx skills-ref validate` lines for both the Cursor and Claude plugin paths.
-- **`README.md`** -- optionally mirror the same validate commands in the "Validate a built skill" section.
+- **`.github/workflows/ci.yml`** -- no per-skill lines needed; CI runs `npm run validate:skills-ref` over every folder under `dist/.../skills/`.
+- **`README.md`** -- add a **Skills catalog** subsection for the new `bt-*` skill (natural-language and direct examples), consistent with existing workshops.
+- **`docs/build.md`** -- only if you change how validation works; the default is `npm run validate:skills-ref` after `npm run build`.
 
 ### 7. Build and validate
 
 ```bash
 npm run db:build    # taxonomy validation + expert materialization
+npm run build:packages  # if packages/*/dist is missing — needed so tooling tsc can resolve brain-trust-core / brain-trust-db
+npm run build:tooling   # if you changed scripts/**/*.ts — compile to dist-tooling/ and commit
 npm run build       # full plugin + zip + MCP build
 
-# Validate the new skill
-npx skills-ref validate dist/agent-brain-trust-cursor-plugin/skills/bt-<name>
-npx skills-ref validate dist/agent-brain-trust-claude-plugin/skills/bt-<name>
+# Validate all built skills (includes the new one)
+npm run validate:skills-ref
 ```
+
+If you edit **`scripts/**/*.ts`**, ensure **`npm run build:packages`** has been run (so workspace **`dist/`** exists), then **`npm run build:tooling`**, and include the regenerated **`dist-tooling/`** files in your PR; CI fails if they are out of sync.
+
+When you bump the repo **`version`** in root **`package.json`**, set **`packages/brain-trust-mcp/package.json`** `version` to the same value — the build fails if they differ (npm publish and plugin **`npx`** spec stay aligned).
 
 Common validation failures:
 
@@ -302,13 +321,13 @@ The build system (`scripts/compose.ts`) processes skill entries through these st
 
 ## Checklist for a new panel
 
-- [ ] Roster constructed: domain voices + contrapuntal voice (if warranted) with explicit rationale
+- [ ] Roster constructed: domain voices + contrapuntal voice (if warranted)
 - [ ] All roster experts have substantive persona cards (no stubs or TBD fields)
 - [ ] Skill entry at `content/skills/bt-<name>.md` with compose block and body
 - [ ] Taxonomy leaf created or updated with all roster expert ids
 - [ ] Taxonomy leaf registered in parent `topic.yml` children
 - [ ] `expert-opinion.md` collective skills list updated
-- [ ] CI workflow updated with `skills-ref validate` lines
+- [ ] `README.md` skills catalog updated for the new `bt-*` skill
 - [ ] `npm run db:build` passes (taxonomy + expert validation)
 - [ ] `npm run build` passes (full build)
-- [ ] `npx skills-ref validate` passes for both Cursor and Claude plugin outputs
+- [ ] `npm run validate:skills-ref` passes (CI runs this after build)

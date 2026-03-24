@@ -1,4 +1,4 @@
-import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { cp, copyFile, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { spawnSync } from "node:child_process";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -16,8 +16,37 @@ const FRAGMENTS = join(CONTENT, "skill-fragments");
 const DIST = join(ROOT, "dist");
 const PLUGIN_OUT = join(DIST, "agent-brain-trust-cursor-plugin");
 const CLAUDE_PLUGIN_OUT = join(DIST, "agent-brain-trust-claude-plugin");
-const MCP_OUT = join(DIST, "agent-brain-trust-mcp");
+/** Publishable MCP package (manifest + README in repo; bundle + resources written here by build). */
+const MCP_PKG_ROOT = join(ROOT, "packages", "brain-trust-mcp");
+const MCP_PKG_JSON = join(MCP_PKG_ROOT, "package.json");
 const SKILL_ZIPS = join(DIST, "skill-zips");
+async function readMcpWorkspacePackage() {
+    const j = JSON.parse(await readFile(MCP_PKG_JSON, "utf8"));
+    const name = j.name;
+    const version = j.version;
+    if (typeof name !== "string" || typeof version !== "string") {
+        throw new Error("packages/brain-trust-mcp/package.json must include string name and version");
+    }
+    return { name, version };
+}
+async function readAndAssertMcpPackageMatchesRoot() {
+    const mcp = await readMcpWorkspacePackage();
+    const rootV = await readPkgVersion();
+    if (mcp.version !== rootV) {
+        throw new Error(`packages/brain-trust-mcp/package.json version (${mcp.version}) must match root package.json (${rootV})`);
+    }
+    return mcp;
+}
+function publishMcpPackageName(pkgName) {
+    return process.env.NPM_MCP_PACKAGE_NAME ?? pkgName;
+}
+function resolveMcpNpxSpec(version, publishName) {
+    const override = process.env.BRAIN_TRUST_MCP_NPX_SPEC;
+    if (override !== undefined && override.length > 0) {
+        return override;
+    }
+    return `${publishName}@${version}`;
+}
 async function readPkgVersion() {
     const p = join(ROOT, "package.json");
     const j = JSON.parse(await readFile(p, "utf8"));
@@ -171,58 +200,71 @@ async function writeClaudePluginManifest(version) {
     };
     await writeFile(join(dir, "plugin.json"), JSON.stringify(manifest, null, 2), "utf8");
 }
+/**
+ * Shipped plugin MCP config: stdio via npx and a pinned package spec (npm publish).
+ * Override at build time: BRAIN_TRUST_MCP_NPX_SPEC, NPM_MCP_PACKAGE_NAME (npx spec only).
+ */
 async function writeMcpConfigAt(pluginRoot) {
-    const mcpEntry = join("scripts", "mcp-server.js");
+    const mcp = await readAndAssertMcpPackageMatchesRoot();
+    const publishName = publishMcpPackageName(mcp.name);
+    const spec = resolveMcpNpxSpec(mcp.version, publishName);
     const cfg = {
         mcpServers: {
             "brain-trust": {
-                command: "node",
-                args: [mcpEntry],
-                env: {
-                    BRAIN_TRUST_RESOURCES: "${workspaceFolder}/resources",
-                },
+                type: "stdio",
+                command: "npx",
+                args: ["-y", spec],
             },
         },
     };
     await writeFile(join(pluginRoot, ".mcp.json"), JSON.stringify(cfg, null, 2), "utf8");
 }
 async function bundleMcpServer() {
-    const entry = join(ROOT, "packages", "brain-trust-mcp", "src", "index.ts");
+    await readAndAssertMcpPackageMatchesRoot();
+    await rm(join(MCP_PKG_ROOT, "brain-trust-mcp.js"), { force: true });
+    await rm(join(MCP_PKG_ROOT, "resources"), { recursive: true, force: true });
+    await rm(join(MCP_PKG_ROOT, "LICENSE"), { force: true });
+    const entry = join(MCP_PKG_ROOT, "src", "index.ts");
     await mkdir(join(PLUGIN_OUT, "scripts"), { recursive: true });
     const mcpAlias = { "brain-trust-core": CORE_SRC };
-    await esbuild.build({
-        entryPoints: [entry],
-        bundle: true,
-        platform: "node",
-        target: "node20",
-        format: "esm",
-        outfile: join(PLUGIN_OUT, "scripts", "mcp-server.js"),
-        packages: "bundle",
-        alias: mcpAlias,
-    });
-    await mkdir(MCP_OUT, { recursive: true });
-    await esbuild.build({
-        entryPoints: [entry],
-        bundle: true,
-        platform: "node",
-        target: "node20",
-        format: "esm",
-        outfile: join(MCP_OUT, "brain-trust-mcp.js"),
-        packages: "bundle",
-        alias: mcpAlias,
-    });
-    const pkg = {
-        name: "agent-brain-trust-mcp-dist",
-        version: await readPkgVersion(),
-        type: "module",
-        bin: { "brain-trust-mcp": "./brain-trust-mcp.js" },
+    // CommonJS: ESM bundles pulled in yaml (CJS) and hit esbuild's unsupported dynamic require for `process`.
+    // CJS output has no import.meta.url; banner runs in this file’s scope so __filename is the bundle path.
+    const mcpBanner = {
+        js: `globalThis.__BT_IMPORT_META_URL__ = require("url").pathToFileURL(__filename).href;\n`,
     };
-    await writeFile(join(MCP_OUT, "package.json"), JSON.stringify(pkg, null, 2), "utf8");
+    await esbuild.build({
+        entryPoints: [entry],
+        bundle: true,
+        platform: "node",
+        target: "node20",
+        format: "cjs",
+        outfile: join(PLUGIN_OUT, "scripts", "mcp-server.cjs"),
+        packages: "bundle",
+        alias: mcpAlias,
+        banner: mcpBanner,
+    });
+    await esbuild.build({
+        entryPoints: [entry],
+        bundle: true,
+        platform: "node",
+        target: "node20",
+        format: "cjs",
+        outfile: join(MCP_PKG_ROOT, "brain-trust-mcp.js"),
+        packages: "bundle",
+        alias: mcpAlias,
+        banner: mcpBanner,
+    });
     try {
-        await copyTree(join(PLUGIN_OUT, "resources"), join(MCP_OUT, "resources"));
+        await copyFile(join(ROOT, "LICENSE"), join(MCP_PKG_ROOT, "LICENSE"));
     }
     catch {
-        await mkdir(join(MCP_OUT, "resources"), { recursive: true });
+        /* optional */
+    }
+    try {
+        await copyTree(join(PLUGIN_OUT, "resources"), join(MCP_PKG_ROOT, "resources"));
+    }
+    catch {
+        await mkdir(join(MCP_PKG_ROOT, "resources"), { recursive: true });
     }
 }
 async function copyMcpBundleToClaudePlugin() {
@@ -256,8 +298,8 @@ export async function cmdBuild() {
     await copyResourcesToPluginRoot(CLAUDE_PLUGIN_OUT, stems);
     await writePluginManifest(version);
     await writeClaudePluginManifest(version);
-    await writeMcpConfigAt(PLUGIN_OUT);
     await bundleMcpServer();
+    await writeMcpConfigAt(PLUGIN_OUT);
     await copyMcpBundleToClaudePlugin();
     await buildZipSkills(stems);
     const readme = `# agent-brain-trust plugin (built)\n\nVersion ${version}\n`;
@@ -267,6 +309,6 @@ export async function cmdBuild() {
         await runSkillsRef(join(PLUGIN_OUT, "skills", stem));
         await runSkillsRef(join(CLAUDE_PLUGIN_OUT, "skills", stem));
     }
-    console.log("Build complete:", PLUGIN_OUT, CLAUDE_PLUGIN_OUT, MCP_OUT, SKILL_ZIPS);
+    console.log("Build complete:", PLUGIN_OUT, CLAUDE_PLUGIN_OUT, MCP_PKG_ROOT, SKILL_ZIPS);
 }
 //# sourceMappingURL=build-impl.js.map

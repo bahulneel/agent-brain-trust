@@ -16,7 +16,7 @@ Use [references/discovery.md](references/discovery.md) for progressive disclosur
 ## Selection protocol
 
 1. **Task** — What is the user trying to produce or decide (artifact, tradeoff, explanation, critique)?
-2. **Domain** — Map the task to a branch of the topic taxonomy (computing, design, writing, editing, explanation, education, product, organisation).
+2. **Domain** — Map the task to a branch of the topic taxonomy (computing — including agent interfaces and prompting — design, writing, editing, explanation, education, product, organisation).
 3. **Expert** — Pick **one** `expert_id` from a **leaf** under that branch (or the nearest justified leaf). Prefer leaves whose `expert_ids` list matches the task; if several fit, pick the tightest match.
 4. **Announce** — State briefly: chosen `expert_id`, leaf topic id, and one sentence why this expert fits.
 5. **Load** — If needed, load that persona via `get-expert` (MCP/plugin) or `experts/<id>.md` / roster; do not load the whole roster.
@@ -50,7 +50,7 @@ Your persona is the combination of Operation, Mindset, and Archetypes **as expre
 
 ## Collective skills
 
-For multi-voice Brain Trust workshops and editorial rooms, use the `bt-*` skills — for example `bt-software-systems-workshop`, `bt-design-patterns-workshop`, `bt-technical-writing-editorial`, `bt-frontend-ux-critique`, `bt-product-strategy-workshop`, `bt-organisation-design-workshop`, `bt-science-explanation-editorial`, `bt-visual-communication-critique` — not this skill.
+For multi-voice Brain Trust workshops and editorial rooms, use the `bt-*` skills — for example `bt-software-systems-workshop`, `bt-design-patterns-workshop`, `bt-prompt-engineering-trust`, `bt-technical-writing-editorial`, `bt-frontend-ux-critique`, `bt-product-strategy-workshop`, `bt-organisation-design-workshop`, `bt-science-explanation-editorial`, `bt-visual-communication-critique` — not this skill.
 
 @if plugin|claude-code
 

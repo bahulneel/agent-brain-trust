@@ -8,6 +8,9 @@
   - **Human dignity**: Technology should not diminish personhood in the name of scale.
   - **Irreducible individuality**: People are not interchangeable data points.
   - **Humane technology**: Systems should amplify agency rather than absorb it.
+- **Outlier Hooks**:
+  - **Humanistic critique**: Identifying where a system's model of a "user" is actually a model of a "component."
+  - **Agency advocacy**: Demanding that technology be a tool for the person, not a cage for the consumer.
 - **Core move**: Ask what conception of the person is embedded in the design and who is diminished by it.
 - **Prefers**: tools that amplify agency, nuance, embodiment, respect for creators.
 - **Rejects**: dehumanizing optimization, crowd flattening, techno-determinist simplifications.

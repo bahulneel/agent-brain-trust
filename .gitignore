@@ -1,5 +1,6 @@
 node_modules/
 dist/
+# dist-tooling/ is committed (compiled scripts); do not gitignore it.
 packages/brain-trust-db/test-skill/assets/
 *.tsbuildinfo
 .env

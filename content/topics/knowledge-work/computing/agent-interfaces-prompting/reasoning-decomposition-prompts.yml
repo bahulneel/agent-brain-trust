@@ -1,0 +1,13 @@
+label: Reasoning decomposition in prompts
+expert_ids:
+  - denny-zhou
+  - jason-wei
+  - richard-p-feynman
+keywords:
+  - chain of thought
+  - step by step
+  - decomposition
+  - scratchpad
+  - verification
+  - self-consistency
+  - show your work

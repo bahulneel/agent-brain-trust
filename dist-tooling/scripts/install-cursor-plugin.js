@@ -85,6 +85,7 @@ async function main() {
     console.log(`Symlink: ${linkPath} -> ${PLUGIN_SRC}`);
     console.log(`Registered ${PLUGIN_ID} in ~/.claude/plugins/installed_plugins.json`);
     console.log(`Enabled ${PLUGIN_ID} in ~/.claude/settings.json`);
+    console.log("MCP: plugin .mcp.json uses npx for the published package; symlink ~/.cursor/plugins/local/agent-brain-trust matches install docs. For repo dev, use .cursor/mcp.json (workspace dist path).");
     console.log("Restart Cursor or run “Developer: Reload Window”.");
 }
 main().catch((e) => {

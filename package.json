@@ -1,8 +1,13 @@
 {
   "name": "agent-brain-trust",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.1",
   "description": "Agent Brain Trust: composable skills, Cursor plugin, MCP",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bahulneel/agent-brain-trust.git"
+  },
   "type": "module",
   "packageManager": "npm@10.8.2",
   "engines": {
@@ -13,6 +18,7 @@
   ],
   "scripts": {
     "typecheck": "npm run build --workspace=brain-trust-core && tsc --build",
+    "build:tooling": "tsc -p tsconfig.json",
     "build": "turbo run build && tsx scripts/build.ts build",
     "build:packages": "turbo run build",
     "build:plugin": "tsx scripts/build.ts build",
@@ -20,8 +26,12 @@
     "db:test": "turbo run build --filter=brain-trust-core --filter=brain-trust-db && tsx scripts/db-test.ts",
     "db:cli": "turbo run build --filter=brain-trust-core --filter=brain-trust-db && tsx scripts/db-cli-runner.ts",
     "validate": "tsx scripts/build.ts validate",
+    "validate:skills-ref": "tsx scripts/validate-skills-ref.ts",
+    "test:mcp-drafting": "tsx scripts/test-mcp-drafting-protocol.ts",
     "install:cursor-plugin": "npm run build && tsx scripts/install-cursor-plugin.ts",
-    "install:claude-plugin": "npm run build && tsx scripts/install-claude-plugin.ts"
+    "install:claude-plugin": "npm run build && tsx scripts/install-claude-plugin.ts",
+    "pack:mcp": "npm run build && npm pack -w @bahulneel/brain-trust-mcp",
+    "publish:mcp": "npm publish -w @bahulneel/brain-trust-mcp --access public"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",

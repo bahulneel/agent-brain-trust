@@ -19,7 +19,8 @@
     "db:build": "turbo run build --filter=brain-trust-db",
     "db:test": "turbo run build --filter=brain-trust-core --filter=brain-trust-db && tsx scripts/db-test.ts",
     "db:cli": "turbo run build --filter=brain-trust-core --filter=brain-trust-db && tsx scripts/db-cli-runner.ts",
-    "validate": "tsx scripts/build.ts validate"
+    "validate": "tsx scripts/build.ts validate",
+    "install:cursor-plugin": "npm run build && tsx scripts/install-cursor-plugin.ts"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",

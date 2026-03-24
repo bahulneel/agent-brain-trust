@@ -1,8 +1,10 @@
 ---
 name: bt-technical-writing-editorial
 description: >-
-  Brain Trust technical-writing editorial room (Knuth, Kernighan, Kidder, Gleick, Sierra,
-  Fowler, Feynman, Adams). Structured editorial feedback and clarity work on technical prose.
+  Run a multi-voice technical-writing editorial — Knuth, Kernighan, Kidder, Gleick, Sierra,
+  Fowler, Feynman, and Adams give structured feedback on clarity, structure, and audience
+  fit. Use this skill when the user has technical prose to improve — docs, a blog post, a
+  README, an RFC — or is drafting technical content and wants it reviewed as they go.
 compose:
   profile: editorial-room
   roster:

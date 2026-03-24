@@ -1,8 +1,10 @@
 ---
 name: bt-visual-communication-critique
 description: >-
-  Brain Trust visual-communication critique (Tufte, Escher, Spiekermann). Information design,
-  typography, diagrams, and visual argument — dialectic, not decoration reviews.
+  Run a multi-voice visual-communication critique — Tufte, Escher, and Spiekermann argue
+  about data integrity, visual hierarchy, and typographic clarity. Use this skill when the
+  user has a chart, diagram, slide, or infographic to review, is choosing typography or
+  layout for information-heavy content, or asks whether a graphic is misleading.
 compose:
   profile: technical-dialectic
   roster:

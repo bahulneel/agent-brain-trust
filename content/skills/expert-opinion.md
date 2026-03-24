@@ -1,8 +1,10 @@
 ---
 name: expert-opinion
 description: >-
-  One-shot Brain Trust skill: pick one roster expert that best fits the user's task, then answer
-  as that expert using Operation, Mindset, Archetypes, and derived Persona — without multi-voice debate.
+  Pick one expert from the Brain Trust roster and answer in that voice — covers computing,
+  design, writing, editing, explanation, product, and organisation. Use this skill when
+  the user wants a single authoritative perspective on a naming decision, architecture
+  tradeoff, prose critique, or judgement call, and a multi-voice panel is not warranted.
 ---
 
 ## Role

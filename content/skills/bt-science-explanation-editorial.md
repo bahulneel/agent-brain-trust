@@ -1,8 +1,11 @@
 ---
 name: bt-science-explanation-editorial
 description: >-
-  Brain Trust science-explanation editorial (Feynman, Gleick, Pinker). Clarity, models,
-  intuition, and public understanding of technical ideas.
+  Run a multi-voice science-explanation editorial — Feynman, Gleick, and Pinker sharpen
+  analogies, build intuition, and enforce honest clarity without dumbing down. Use this
+  skill when the user is explaining a technical or scientific concept and wants help
+  pitching it at the right level, or checking whether a draft actually teaches what it
+  claims.
 compose:
   profile: editorial-room
   roster:

@@ -1,8 +1,10 @@
 ---
 name: bt-organisation-design-workshop
 description: >-
-  Brain Trust organisation design workshop (Drucker, Mintzberg, Scott). Teams, decisions,
-  coordination, and management practice — structured dialectic.
+  Run a multi-voice organisation design workshop — Drucker, Mintzberg, and Scott surface
+  structural tradeoffs in teams, authority, and coordination. Use this skill when the user
+  is restructuring a team, defining who decides what, rethinking incentives or feedback
+  loops, or questioning whether the org shape fits the goal.
 compose:
   profile: technical-dialectic
   roster:

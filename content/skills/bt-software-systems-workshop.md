@@ -1,8 +1,10 @@
 ---
 name: bt-software-systems-workshop
 description: >-
-  Brain Trust software-systems workshop (BASHES collective: Byrd, Alvaro, Sussman, Hickey,
-  Escher, Steele). Multi-voice technical dialectic, tension mapping, substrate truth — not default AI advice.
+  Run a multi-voice software-systems workshop — Byrd, Alvaro, Sussman, Hickey, Escher, and
+  Steele map architectural tensions and argue across paradigms. Use this skill when the user
+  is making an architecture decision, choosing between paradigms, debating abstractions,
+  designing a DSL, or reasoning about correctness and distributed-systems tradeoffs.
 compose:
   profile: technical-dialectic
   roster:

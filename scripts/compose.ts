@@ -1,6 +1,13 @@
 import { readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
-import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
+import {
+  isMap,
+  isScalar,
+  parse as parseYaml,
+  parseDocument,
+  Scalar,
+  stringify as stringifyYaml,
+} from "yaml";
 
 export type ComposeTarget = "plugin" | "skill-zip" | "mcp";
 
@@ -190,22 +197,43 @@ export function extractComposeEnv(frontmatterBlock: string): {
     return { frontmatterOut: frontmatterBlock, composeEnv: {} };
   }
   const inner = frontmatterBlock.slice(3, end).trim();
-  let doc: Record<string, unknown>;
+  let docJs: Record<string, unknown>;
   try {
-    doc = parseYaml(inner) as Record<string, unknown>;
+    docJs = parseYaml(inner) as Record<string, unknown>;
   } catch {
     return { frontmatterOut: frontmatterBlock, composeEnv: {} };
   }
-  const rawCompose = doc.compose;
-  delete doc.compose;
+  const rawCompose = docJs.compose;
+  const composeEnv = flattenComposeParams(rawCompose);
+
+  const yamlDoc = parseDocument(inner);
+  if (yamlDoc.errors.length > 0) {
+    return { frontmatterOut: frontmatterBlock, composeEnv };
+  }
+  const root = yamlDoc.contents;
+  if (!isMap(root)) {
+    return { frontmatterOut: frontmatterBlock, composeEnv };
+  }
+
+  root.items = root.items.filter((pair) => {
+    const keyStr = isScalar(pair.key) ? String(pair.key.value) : "";
+    return keyStr !== "compose";
+  });
+
+  for (const pair of root.items) {
+    if (isScalar(pair.value) && typeof pair.value.value === "string") {
+      const v = pair.value.value;
+      if (v.includes("\n") || v.includes(":") || v.length > 72) {
+        pair.value.type = Scalar.BLOCK_FOLDED;
+      }
+    }
+  }
+
   const frontmatterOut =
-    Object.keys(doc).length === 0
+    root.items.length === 0
       ? "---\n---\n"
-      : `---\n${stringifyYaml(doc, { lineWidth: 0 }).trimEnd()}\n---\n`;
-  return {
-    frontmatterOut,
-    composeEnv: flattenComposeParams(rawCompose),
-  };
+      : `---\n${stringifyYaml(yamlDoc, { lineWidth: 0 }).trimEnd()}\n---\n`;
+  return { frontmatterOut, composeEnv };
 }
 
 function flattenComposeParams(raw: unknown): Record<string, string> {

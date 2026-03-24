@@ -165,6 +165,7 @@ async function writePluginManifest(version: string): Promise<void> {
     version,
     description: "Agent Brain Trust: BT workshop/editorial skills, expert-opinion, MCP",
     author: { name: "agent-brain-trust" },
+    skills: "./skills",
   };
   await writeFile(join(dir, "plugin.json"), JSON.stringify(manifest, null, 2), "utf8");
 }

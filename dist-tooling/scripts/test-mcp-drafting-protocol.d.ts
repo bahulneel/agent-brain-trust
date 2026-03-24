@@ -6,7 +6,7 @@
  * Usage: from repo root, after `npm run build`:
  *   tsx scripts/test-mcp-drafting-protocol.ts
  *
- * Requires: dist/agent-brain-trust-cursor-plugin/scripts/mcp-server.cjs and resources/
+ * Runs the same bundle and resources layout as the published npm package (`@bahulneel/brain-trust-mcp`).
  */
 export {};
 //# sourceMappingURL=test-mcp-drafting-protocol.d.ts.map

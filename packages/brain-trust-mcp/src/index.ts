@@ -20,7 +20,7 @@ import { z } from "zod";
 
 type GlobalWithMeta = typeof globalThis & { __BT_IMPORT_META_URL__?: string };
 
-/** Directory containing this bundle file (plugin `scripts/mcp-server.cjs` or flat `brain-trust-mcp.js`). */
+/** Directory containing this bundle file (`dist/brain-trust-mcp.js` on npm; plugin build copies it as `mcp-server.cjs`). */
 function bundleFileDir(): string {
   const href = (globalThis as GlobalWithMeta).__BT_IMPORT_META_URL__;
   if (typeof href === "string") return dirname(fileURLToPath(href));

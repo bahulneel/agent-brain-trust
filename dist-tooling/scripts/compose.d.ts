@@ -1,4 +1,4 @@
-export type ComposeTarget = "plugin" | "claude-code" | "skill-zip" | "mcp";
+export type ComposeTarget = "plugin" | "claude-code" | "skill-zip";
 /**
  * `@include` forms:
  * - `@include path/to/file.md`

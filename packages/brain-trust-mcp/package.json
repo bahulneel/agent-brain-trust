@@ -1,6 +1,6 @@
 {
   "name": "@bahulneel/brain-trust-mcp",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Brain Trust MCP server: taxonomy, experts, references",
   "license": "MIT",
   "private": false,
@@ -20,21 +20,24 @@
     "node": ">=20"
   },
   "bin": {
-    "brain-trust-mcp": "./brain-trust-mcp.js"
+    "brain-trust-mcp": "./dist/brain-trust-mcp.js"
   },
   "files": [
-    "brain-trust-mcp.js",
+    "dist/brain-trust-mcp.js",
     "resources",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
+    "build": "node scripts/bundle-cli.cjs",
+    "prepack": "npm run build",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {},
   "devDependencies": {
     "@modelcontextprotocol/sdk": "^1.12.0",
     "brain-trust-core": "*",
+    "esbuild": "^0.24.2",
     "typescript": "^5.7.2",
     "zod": "^3.24.0"
   }

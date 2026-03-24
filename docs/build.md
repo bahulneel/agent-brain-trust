@@ -57,7 +57,7 @@ After editing any `scripts/**/*.ts`, run **`npm run build:tooling`** and commit 
 | `NPM_MCP_PACKAGE_NAME` | Overrides the **npx** package name in generated plugin `.mcp.json` only; **`packages/brain-trust-mcp/package.json`** `name` is what **`npm publish`** uses. |
 | `BRAIN_TRUST_MCP_NPX_SPEC` | Full spec passed to `npx -y` in generated `.mcp.json` (e.g. pin or dist-tag). If unset, defaults to `NPM_MCP_PACKAGE_NAME@` monorepo version from root `package.json`. |
 
-**Contributors:** repo **[`.cursor/mcp.json`](../.cursor/mcp.json)** runs **`packages/brain-trust-mcp/dist/brain-trust-mcp.js`** with **`BRAIN_TRUST_RESOURCES`** set to **`packages/brain-trust-mcp/resources`** after **`npm run build`** — same layout as the published package, no registry.
+**Contributors:** this repo does **not** ship a project-level Cursor MCP file (avoids duplicating the plugin’s **`npx`** story). After **`npm run build`**, use the **installed plugin** (its **`.mcp.json`**), **`npx -y @bahulneel/brain-trust-mcp@…`**, or add a **user-level** MCP server in Cursor settings if you need to run **`node`** on **`packages/brain-trust-mcp/dist/brain-trust-mcp.js`** with **`BRAIN_TRUST_RESOURCES`** pointing at **`packages/brain-trust-mcp/resources`**.
 
 ## Validating built skills
 

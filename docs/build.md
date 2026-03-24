@@ -8,6 +8,7 @@
 
 ```bash
 npm install
+npm run build:packages   # brain-trust-core + brain-trust-db dist/ (required before tooling tsc resolves those imports)
 npm run build:tooling # compile scripts/**/*.ts → dist-tooling/ (must match repo; CI checks git diff)
 npm run validate      # quick checks
 npm run build         # turbo (brain-trust-db + brain-trust-core) then Cursor plugin / zips / MCP

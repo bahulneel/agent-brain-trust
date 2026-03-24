@@ -9,7 +9,7 @@ import {
   stringify as stringifyYaml,
 } from "yaml";
 
-export type ComposeTarget = "plugin" | "claude-code" | "skill-zip" | "mcp";
+export type ComposeTarget = "plugin" | "claude-code" | "skill-zip";
 
 const MAX_INCLUDE_DEPTH = 12;
 

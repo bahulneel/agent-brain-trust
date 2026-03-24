@@ -1,11 +1,11 @@
 {
   "mcpServers": {
     "brain-trust": {
-      "type": "stdio",
       "command": "node",
-      "args": [
-        "${workspaceFolder}/dist/agent-brain-trust-cursor-plugin/scripts/mcp-server.cjs"
-      ]
+      "args": ["${workspaceFolder}/packages/brain-trust-mcp/dist/brain-trust-mcp.js"],
+      "env": {
+        "BRAIN_TRUST_RESOURCES": "${workspaceFolder}/packages/brain-trust-mcp/resources"
+      }
     }
   }
 }

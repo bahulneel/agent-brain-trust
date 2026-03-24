@@ -16,9 +16,9 @@ Open **[Releases](https://github.com/bahulneel/agent-brain-trust/releases)** and
 | `agent-brain-trust-claude-plugin.zip` | Claude Code as a plugin |
 | `expert-opinion.zip`, `bt-*.zip`, … | One skill at a time |
 
-**Standalone MCP** is published to npm as [`@bahulneel/brain-trust-mcp`](https://www.npmjs.com/package/@bahulneel/brain-trust-mcp) — use `npx -y @bahulneel/brain-trust-mcp` with a version or dist-tag, or `npm install -g @bahulneel/brain-trust-mcp` (see [docs/install-prebuilt.md](docs/install-prebuilt.md)). Older releases may still include `agent-brain-trust-mcp.zip`; new releases do not.
+**Standalone MCP** is only on npm as [`@bahulneel/brain-trust-mcp`](https://www.npmjs.com/package/@bahulneel/brain-trust-mcp) — `npx -y @bahulneel/brain-trust-mcp` or `npm install -g` (see [docs/install-prebuilt.md](docs/install-prebuilt.md)).
 
-Step-by-step install (symlinks, `installed_plugins.json`, `--plugin-dir`, etc.): **[docs/install-prebuilt.md](docs/install-prebuilt.md)**.
+Step-by-step install (copy or `npm run install:*`, `installed_plugins.json`, `--plugin-dir`, etc.): **[docs/install-prebuilt.md](docs/install-prebuilt.md)**.
 
 ### GitHub Actions (CI or manual runs)
 
@@ -226,9 +226,9 @@ Direct (/bt-science-explanation-editorial):
 
 **Published plugin zips** ship **`.mcp.json`** that runs the server via **`npx -y`** and a pinned package spec such as **`@bahulneel/brain-trust-mcp@x.y.z`** (see the generated `.mcp.json` in the zip). The process resolves **`resources/`** via **`BRAIN_TRUST_RESOURCES`** when set, or next to the npm-installed entry (see package README). Put the unpacked plugin at **`~/.cursor/plugins/local/agent-brain-trust`** as usual.
 
-**This repo** includes **`.cursor/mcp.json`** so opening the workspace runs MCP from **`dist/agent-brain-trust-cursor-plugin/scripts/mcp-server.cjs`** after `npm run build` (no registry required for contributors).
+**This repo** includes **`.cursor/mcp.json`**: after `npm run build`, it runs the same **`packages/brain-trust-mcp/dist/brain-trust-mcp.js`** the npm package ships (no registry).
 
-For MCP **without** a plugin, install from npm: **`@bahulneel/brain-trust-mcp`**, or run **`npm run build`** and run **`packages/brain-trust-mcp/brain-trust-mcp.js`** locally ([docs/install-prebuilt.md](docs/install-prebuilt.md), [docs/build.md](docs/build.md)).
+For MCP **without** a plugin, install from npm: **`@bahulneel/brain-trust-mcp`**, or run **`npm run build`** and run **`packages/brain-trust-mcp/dist/brain-trust-mcp.js`** locally ([docs/install-prebuilt.md](docs/install-prebuilt.md), [docs/build.md](docs/build.md)).
 
 ## Documentation
 

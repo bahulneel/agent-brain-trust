@@ -283,7 +283,7 @@ Any new experts must be registered on at least one taxonomy leaf. See "Adding an
 npm run db:build    # taxonomy validation + expert materialization
 npm run build:packages  # if packages/*/dist is missing — needed so tooling tsc can resolve brain-trust-core / brain-trust-db
 npm run build:tooling   # if you changed scripts/**/*.ts — compile to dist-tooling/ and commit
-npm run build       # full plugin + zip + MCP build
+npm run build       # turbo (includes `packages/brain-trust-mcp` → `dist/brain-trust-mcp.js`) then plugin + zips + MCP `resources/`/`LICENSE`
 
 # Validate all built skills (includes the new one)
 npm run validate:skills-ref
@@ -317,7 +317,7 @@ The build system (`scripts/compose.ts`) processes skill entries through these st
 2. **Template variables** -- `{{name}}` in any fragment is replaced from the merged environment.
 3. **`@repeat roster` / `@endrepeat`** -- expands the inner block once per roster id, setting `{{id}}` each iteration.
 4. **`@include path/to/file.md`** -- resolves against `content/skill-fragments/` (or `content/experts/` for paths starting with `experts/`). Supports query params (`?k=v`) and comma-separated params after `.md`.
-5. **`@if target` / `@endif`** -- conditional blocks for `plugin`, `claude-code`, `skill-zip`, or `mcp` targets.
+5. **`@if target` / `@endif`** -- conditional blocks for `plugin`, `claude-code`, or `skill-zip` targets.
 
 ## Checklist for a new panel
 

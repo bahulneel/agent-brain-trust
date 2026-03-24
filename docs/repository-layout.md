@@ -11,6 +11,6 @@ Authoring lives under `content/`; TypeScript tooling under `packages/` and `scri
 | `content/references/` | General rules (discovery, MCP/CLI usage, dialogue); copied to `references/` next to each built `SKILL.md` and to `resources/references/` for MCP ([file references](https://agentskills.io/specification#file-references)). Runtime behaviour for agents is documented in that tree, not duplicated here. |
 | `packages/brain-trust-core` | Discovery helpers + CLI bundled into every skill |
 | `packages/brain-trust-db` | Taxonomy validation + `materializeExpertAssets` + `dist/assets` for local CLI tests |
-| `packages/brain-trust-mcp` | MCP server (stdio) |
-| `turbo.json` | `turbo run build` compiles workspace packages before the plugin build |
-| `scripts/build.ts` | Compose markdown, esbuild bundles, plugin + zips + MCP dist |
+| `packages/brain-trust-mcp` | MCP server (stdio): package **`build`** emits **`dist/brain-trust-mcp.js`**; root build adds **`resources/`** + **`LICENSE`** for publish |
+| `turbo.json` | `turbo run build` compiles workspace packages (including MCP bundle) before the plugin build |
+| `scripts/build.ts` | Compose markdown, skill CLI bundles, plugin + zips; copies MCP **`dist/`** bundle into plugins and materializes **`resources/`** into the MCP package |

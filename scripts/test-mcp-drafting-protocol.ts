@@ -6,7 +6,7 @@
  * Usage: from repo root, after `npm run build`:
  *   tsx scripts/test-mcp-drafting-protocol.ts
  *
- * Requires: dist/agent-brain-trust-cursor-plugin/scripts/mcp-server.cjs and resources/
+ * Runs the same bundle and resources layout as the published npm package (`@bahulneel/brain-trust-mcp`).
  */
 
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
@@ -17,8 +17,8 @@ import { existsSync } from "node:fs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, "..");
-const MCP_SERVER = join(ROOT, "dist/agent-brain-trust-cursor-plugin/scripts/mcp-server.cjs");
-const RESOURCES = join(ROOT, "dist/agent-brain-trust-cursor-plugin/resources");
+const MCP_SERVER = join(ROOT, "packages/brain-trust-mcp/dist/brain-trust-mcp.js");
+const RESOURCES = join(ROOT, "packages/brain-trust-mcp/resources");
 
 function firstText(result: Awaited<ReturnType<Client["callTool"]>>): string {
   const content = result.content;

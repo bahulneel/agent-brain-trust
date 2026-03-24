@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { cp, copyFile, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { spawnSync } from "node:child_process";
 import { join, dirname } from "node:path";
@@ -10,7 +11,6 @@ import { buildTopicSearchRecords, readTaxonomy } from "brain-trust-core";
 import { loadAndCompose } from "./compose.js";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, "..");
-const CORE_SRC = join(ROOT, "packages", "brain-trust-core", "src", "index.ts");
 const CONTENT = join(ROOT, "content");
 const FRAGMENTS = join(CONTENT, "skill-fragments");
 const DIST = join(ROOT, "dist");
@@ -221,39 +221,15 @@ async function writeMcpConfigAt(pluginRoot) {
 }
 async function bundleMcpServer() {
     await readAndAssertMcpPackageMatchesRoot();
-    await rm(join(MCP_PKG_ROOT, "brain-trust-mcp.js"), { force: true });
     await rm(join(MCP_PKG_ROOT, "resources"), { recursive: true, force: true });
     await rm(join(MCP_PKG_ROOT, "LICENSE"), { force: true });
-    const entry = join(MCP_PKG_ROOT, "src", "index.ts");
+    const mcpBundle = join(MCP_PKG_ROOT, "dist", "brain-trust-mcp.js");
+    if (!existsSync(mcpBundle)) {
+        throw new Error(`Missing ${mcpBundle}. The MCP package must be built first (turbo): run npm run build:packages or full npm run build before the plugin pipeline.`);
+    }
     await mkdir(join(PLUGIN_OUT, "scripts"), { recursive: true });
-    const mcpAlias = { "brain-trust-core": CORE_SRC };
-    // CommonJS: ESM bundles pulled in yaml (CJS) and hit esbuild's unsupported dynamic require for `process`.
-    // CJS output has no import.meta.url; banner runs in this file’s scope so __filename is the bundle path.
-    const mcpBanner = {
-        js: `globalThis.__BT_IMPORT_META_URL__ = require("url").pathToFileURL(__filename).href;\n`,
-    };
-    await esbuild.build({
-        entryPoints: [entry],
-        bundle: true,
-        platform: "node",
-        target: "node20",
-        format: "cjs",
-        outfile: join(PLUGIN_OUT, "scripts", "mcp-server.cjs"),
-        packages: "bundle",
-        alias: mcpAlias,
-        banner: mcpBanner,
-    });
-    await esbuild.build({
-        entryPoints: [entry],
-        bundle: true,
-        platform: "node",
-        target: "node20",
-        format: "cjs",
-        outfile: join(MCP_PKG_ROOT, "brain-trust-mcp.js"),
-        packages: "bundle",
-        alias: mcpAlias,
-        banner: mcpBanner,
-    });
+    // Same bytes as npm `bin` (`@bahulneel/brain-trust-mcp`); plugins ship a `.cjs` copy for `node …/mcp-server.cjs`.
+    await copyFile(mcpBundle, join(PLUGIN_OUT, "scripts", "mcp-server.cjs"));
     try {
         await copyFile(join(ROOT, "LICENSE"), join(MCP_PKG_ROOT, "LICENSE"));
     }

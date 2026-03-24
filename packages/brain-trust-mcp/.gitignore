@@ -1,7 +1,4 @@
-# Bundled publish output (produced by repo `npm run build`)
-brain-trust-mcp.js
+# Publish outputs from repo root `npm run build` (resources, LICENSE) and package `npm run build` (dist/)
+dist/
 resources/
 LICENSE
-
-# Local tsc output (package source is ESM; the published CLI is the esbuild bundle above)
-dist/

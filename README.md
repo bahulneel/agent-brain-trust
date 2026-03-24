@@ -94,6 +94,22 @@ Direct (/bt-software-systems-workshop):
 
 > /bt-software-systems-workshop We’re choosing between event sourcing and a simple Postgres model—surface the real tradeoffs.
 
+#### bt-prompt-engineering-trust
+
+Multi-voice workshop on prompt design, agent skills, tool boundaries, and trustworthy human–machine collaboration in production (Weng, Zhou, Karpathy, Ng, Mollick).
+
+Natural language:
+
+> We’re rolling out a company-wide “AI playbook” but every team ships different system prompts and nobody owns eval when a bad completion reaches a customer—I need a structured debate on instruction design, guardrails, and who carries the risk.
+
+or
+
+> Drafting a `SKILL.md` for our deployment agent: reviewers want maximal freedom, security wants a tiny allow-listed tool surface—I’m stuck between brittle prompts and a package nobody will maintain.
+
+Direct (/bt-prompt-engineering-trust):
+
+> /bt-prompt-engineering-trust Stress-test this agent skill boundary—interfaces, failure modes, and org trust, not clever wording alone.
+
 #### bt-design-patterns-workshop
 
 Multi-voice debate on patterns, GoF-style forces, naming, and when simpler data-first designs beat pattern-heavy structure (Gamma, Helm, Johnson, Vlissides, Fowler, Hickey).

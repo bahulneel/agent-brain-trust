@@ -273,8 +273,9 @@ Any new experts must be registered on at least one taxonomy leaf. See "Adding an
 ### 6. Update cross-references
 
 - **`content/skills/expert-opinion.md`** -- add the new `bt-*` skill name to the collective skills list so `expert-opinion` can point users toward it.
-- **`.github/workflows/ci.yml`** -- add `npx skills-ref validate` lines for both the Cursor and Claude plugin paths.
-- **`docs/build.md`** -- optionally extend the `skills-ref validate` examples in the "Validating built skills" section when you add a new skill.
+- **`.github/workflows/ci.yml`** -- no per-skill lines needed; CI runs `npm run validate:skills-ref` over every folder under `dist/.../skills/`.
+- **`README.md`** -- add a **Skills catalog** subsection for the new `bt-*` skill (natural-language and direct examples), consistent with existing workshops.
+- **`docs/build.md`** -- only if you change how validation works; the default is `npm run validate:skills-ref` after `npm run build`.
 
 ### 7. Build and validate
 
@@ -282,9 +283,8 @@ Any new experts must be registered on at least one taxonomy leaf. See "Adding an
 npm run db:build    # taxonomy validation + expert materialization
 npm run build       # full plugin + zip + MCP build
 
-# Validate the new skill
-npx skills-ref validate dist/agent-brain-trust-cursor-plugin/skills/bt-<name>
-npx skills-ref validate dist/agent-brain-trust-claude-plugin/skills/bt-<name>
+# Validate all built skills (includes the new one)
+npm run validate:skills-ref
 ```
 
 Common validation failures:
@@ -321,7 +321,7 @@ The build system (`scripts/compose.ts`) processes skill entries through these st
 - [ ] Taxonomy leaf created or updated with all roster expert ids
 - [ ] Taxonomy leaf registered in parent `topic.yml` children
 - [ ] `expert-opinion.md` collective skills list updated
-- [ ] CI workflow updated with `skills-ref validate` lines
+- [ ] `README.md` skills catalog updated for the new `bt-*` skill
 - [ ] `npm run db:build` passes (taxonomy + expert validation)
 - [ ] `npm run build` passes (full build)
-- [ ] `npx skills-ref validate` passes for both Cursor and Claude plugin outputs
+- [ ] `npm run validate:skills-ref` passes (CI runs this after build)

@@ -18,13 +18,5 @@ jobs:
       - run: npm ci
       - run: npm run validate
       - run: npm run build
-      - name: skills-ref (expert-opinion, bt-workshops)
-        run: |
-          npx skills-ref validate dist/agent-brain-trust-cursor-plugin/skills/expert-opinion
-          npx skills-ref validate dist/agent-brain-trust-cursor-plugin/skills/bt-software-systems-workshop
-          npx skills-ref validate dist/agent-brain-trust-cursor-plugin/skills/bt-design-patterns-workshop
-          npx skills-ref validate dist/agent-brain-trust-cursor-plugin/skills/bt-prompt-engineering-trust
-          npx skills-ref validate dist/agent-brain-trust-claude-plugin/skills/expert-opinion
-          npx skills-ref validate dist/agent-brain-trust-claude-plugin/skills/bt-software-systems-workshop
-          npx skills-ref validate dist/agent-brain-trust-claude-plugin/skills/bt-design-patterns-workshop
-          npx skills-ref validate dist/agent-brain-trust-claude-plugin/skills/bt-prompt-engineering-trust
+      - name: skills-ref (all built skills)
+        run: npm run validate:skills-ref

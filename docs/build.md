@@ -39,16 +39,20 @@ Install steps: [install-prebuilt.md](install-prebuilt.md).
 
 ## Validating built skills
 
+After `npm run build`, validate every composed skill in both plugins:
+
 ```bash
-npx skills-ref validate dist/agent-brain-trust-cursor-plugin/skills/expert-opinion
-npx skills-ref validate dist/agent-brain-trust-cursor-plugin/skills/bt-software-systems-workshop
-npx skills-ref validate dist/agent-brain-trust-cursor-plugin/skills/bt-design-patterns-workshop
-npx skills-ref validate dist/agent-brain-trust-claude-plugin/skills/expert-opinion
-npx skills-ref validate dist/agent-brain-trust-claude-plugin/skills/bt-software-systems-workshop
-npx skills-ref validate dist/agent-brain-trust-claude-plugin/skills/bt-design-patterns-workshop
+npm run validate:skills-ref
 ```
 
-When you add a new `bt-*` skill, add matching `npx skills-ref validate` lines for both Cursor and Claude plugin paths in `.github/workflows/ci.yml`, and extend the examples above in this file if you want a single place to copy commands from.
+To check one skill manually:
+
+```bash
+npx skills-ref validate dist/agent-brain-trust-cursor-plugin/skills/bt-prompt-engineering-trust
+npx skills-ref validate dist/agent-brain-trust-claude-plugin/skills/bt-prompt-engineering-trust
+```
+
+CI runs `npm run validate:skills-ref` after the build so new `content/skills/*.md` entries are covered automatically. When you add a panel skill, you still need taxonomy, `expert-opinion.md` cross-links, and the README catalog (see [CONTRIBUTING.md](../CONTRIBUTING.md)).
 
 ## Local Claude Code without install script
 

@@ -45,9 +45,11 @@ Validate a built skill:
 npx skills-ref validate dist/agent-brain-trust-cursor-plugin/skills/expert-opinion
 npx skills-ref validate dist/agent-brain-trust-cursor-plugin/skills/bt-software-systems-workshop
 npx skills-ref validate dist/agent-brain-trust-cursor-plugin/skills/bt-design-patterns-workshop
+npx skills-ref validate dist/agent-brain-trust-cursor-plugin/skills/bt-prompt-engineering-trust
 npx skills-ref validate dist/agent-brain-trust-claude-plugin/skills/expert-opinion
 npx skills-ref validate dist/agent-brain-trust-claude-plugin/skills/bt-software-systems-workshop
 npx skills-ref validate dist/agent-brain-trust-claude-plugin/skills/bt-design-patterns-workshop
+npx skills-ref validate dist/agent-brain-trust-claude-plugin/skills/bt-prompt-engineering-trust
 ```
 
 Local Claude Code: `claude --plugin-dir ./dist/agent-brain-trust-claude-plugin`. Optional: `npm run install:claude-plugin` symlinks the built Claude plugin and registers it for Claude Code (see script output).

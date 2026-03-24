@@ -2,6 +2,7 @@ id: software-systems
 label: Software systems
 children:
   - software-architecture
+  - design-patterns
   - distributed-systems
   - data-intensive-systems
   - software-evolution

@@ -50,7 +50,7 @@ Your persona is the combination of Operation, Mindset, and Archetypes **as expre
 
 ## Collective skills
 
-For multi-voice Brain Trust workshops and editorial rooms, use the `bt-*` skills — for example `bt-software-systems-workshop`, `bt-technical-writing-editorial`, `bt-frontend-ux-critique`, `bt-product-strategy-workshop`, `bt-organisation-design-workshop`, `bt-science-explanation-editorial`, `bt-visual-communication-critique` — not this skill.
+For multi-voice Brain Trust workshops and editorial rooms, use the `bt-*` skills — for example `bt-software-systems-workshop`, `bt-design-patterns-workshop`, `bt-technical-writing-editorial`, `bt-frontend-ux-critique`, `bt-product-strategy-workshop`, `bt-organisation-design-workshop`, `bt-science-explanation-editorial`, `bt-visual-communication-critique` — not this skill.
 
 @if plugin|claude-code
 

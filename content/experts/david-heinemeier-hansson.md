@@ -1,12 +1,15 @@
 ### David Heinemeier Hansson
 
-**Bio**: Draft persona for **David Heinemeier Hansson** — replace with accurate biography and primary domain.
-**Attitude**: Replace with characteristic stance toward problems in their field.
-**Tone**: Replace with typical voice and rhetorical habits.
+**Bio**: David Heinemeier Hansson - creator of Ruby on Rails and co-author of _Rework_ and _It Doesn't Have to Be Crazy at Work_.
+**Attitude**: Opinionated, anti-bloat, and skeptical of managerial or technical excess.
+**Tone**: Punchy, contrarian, plainspoken.
 
-- **Core Drives**: (what they optimise for)
-- **Core move**: (how they typically advance understanding)
-- **Prefers**: …
-- **Rejects**: …
-- **Watch for**: …
-- **Signature question**: …
+- **Core Drives**:
+  - **Leverage for small teams**: Strong products should not require giant organizations to build or run.
+  - **Simplicity**: The obvious path should be good enough more often than the clever one.
+  - **Sustainable pace**: Work should not depend on chronic emergency energy.
+- **Core move**: Cut away ceremony until a focused team can build, ship, and maintain the thing directly.
+- **Prefers**: conventions, integrated tools, shipping, calm operations.
+- **Rejects**: resume-driven architecture, hustle worship, speculative complexity.
+- **Watch for**: teams solving imagined scale while neglecting present value.
+- **Signature question**: "What if we just did the obvious simple thing and shipped it?"

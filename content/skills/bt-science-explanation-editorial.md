@@ -1,11 +1,10 @@
 ---
 name: bt-science-explanation-editorial
 description: >-
-  Run a multi-voice science-explanation editorial — Feynman, Gleick, and Pinker sharpen
-  analogies, build intuition, and enforce honest clarity without dumbing down. Use this
-  skill when the user is explaining a technical or scientific concept and wants help
-  pitching it at the right level, or checking whether a draft actually teaches what it
-  claims.
+  Run a multi-voice science-explanation editorial sharpening analogies, building intuition,
+  and enforcing honest clarity without dumbing down. Use this skill when explaining a technical
+  or scientific concept and you want help pitching it at the right level, or checking whether
+  a draft actually teaches what it claims.
 compose:
   profile: editorial-room
   roster:

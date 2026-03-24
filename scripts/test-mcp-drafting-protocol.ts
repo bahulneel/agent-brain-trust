@@ -59,6 +59,7 @@ async function main(): Promise<void> {
   const { tools } = await client.listTools();
   const names = new Set(tools.map((t) => t.name));
   const required = [
+    "resolve_topics",
     "search_topics",
     "get_topic_taxonomy",
     "list_experts",
@@ -74,6 +75,26 @@ async function main(): Promise<void> {
   console.log("tools/list ok:", tools.length, "tools");
 
   // --- Simulate drafting workflow (MCP primitives; protocol is in SKILL text) ---
+
+  const resolved = await client.callTool({
+    name: "resolve_topics",
+    arguments: {
+      queries: ["distributed", "consistency"],
+      strategy: "merge",
+      limit: 6,
+    },
+  });
+  const resolvedText = firstText(resolved);
+  const resolvedJson = JSON.parse(resolvedText) as {
+    hits?: { item?: { id?: string } }[];
+    strategy?: string;
+  };
+  const resolveTop = resolvedJson.hits?.[0]?.item?.id;
+  if (!resolveTop) {
+    console.error("resolve_topics: expected hits[0].item.id, got:", resolvedText.slice(0, 500));
+    process.exit(1);
+  }
+  console.log("resolve_topics ok: first hit", resolveTop, "strategy", resolvedJson.strategy);
 
   const search = await client.callTool({
     name: "search_topics",

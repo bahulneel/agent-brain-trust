@@ -5,10 +5,18 @@ import type { TaxonomyDoc, TaxonomyNode } from "./taxonomy-types.js";
 import type { TopicSearchRecord } from "./topic-search.js";
 
 export type { TaxonomyDoc, TaxonomyNode } from "./taxonomy-types.js";
-export type { TopicSearchRecord, TopicSearchHit } from "./topic-search.js";
+export type {
+  TopicSearchRecord,
+  TopicSearchHit,
+  ResolveTopicHit,
+  ResolveTopicRecordsParams,
+  ResolveTopicRecordsResult,
+  ResolveTopicStrategy,
+} from "./topic-search.js";
 export {
   buildTopicSearchRecords,
   flattenTopicRecords,
+  resolveTopicRecords,
   searchTopicRecords,
 } from "./topic-search.js";
 

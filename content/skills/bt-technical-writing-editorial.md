@@ -1,10 +1,9 @@
 ---
 name: bt-technical-writing-editorial
 description: >-
-  Run a multi-voice technical-writing editorial — Knuth, Kernighan, Kidder, Gleick, Sierra,
-  Fowler, Feynman, and Adams give structured feedback on clarity, structure, and audience
-  fit. Use this skill when the user has technical prose to improve — docs, a blog post, a
-  README, an RFC — or is drafting technical content and wants it reviewed as they go.
+  Run a multi-voice technical-writing editorial giving structured feedback on clarity, structure,
+  and audience fit. Use this skill when you have technical prose to improve — docs, a blog post,
+  a README, an RFC — or are drafting technical content and want it reviewed as you go.
 compose:
   profile: editorial-room
   roster:

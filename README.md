@@ -64,11 +64,11 @@ You can **state your problem in ordinary language** (no skill id, no slash) and 
 
 #### expert-opinion
 
-One drafted expert answers in a single voice—computing, design, writing, product, organisation, and related domains—when a full panel is more than you need.
+Use when the **task** is to deliver **one domain expert’s opinion** from the roster.
 
 Natural language:
 
-> VP of Eng wants a one-page memo she can forward: should we split `billing-core` into its own deployable given coordination cost and blast radius—we’re not running another architecture forum this month, I need **one** strong read.
+> VP of Eng wants a one-page memo she can forward: should we split `billing-core` into its own deployable given coordination cost and blast radius—she wants **one** strong specialist read on the tradeoffs.
 
 or
 
@@ -76,7 +76,19 @@ or
 
 Direct (/expert-opinion):
 
-> /expert-opinion Give me one expert’s judgment on this caching strategy—not a debate.
+> /expert-opinion Give me one expert’s judgment on this caching strategy.
+
+#### draft-experts
+
+From **topics**, figure out **which experts apply**. Use this skill when you need to find experts for one or more topics.
+
+Natural language:
+
+> We’ve got three themes in this doc—CRDTs, OT, partition behaviour—which experts should we pull in first?
+
+Direct:
+
+> /draft-experts Topics: distributed consistency, operational transform, recovery—who matches?
 
 #### bt-software-systems-workshop
 

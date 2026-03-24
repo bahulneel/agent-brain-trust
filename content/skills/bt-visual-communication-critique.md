@@ -1,10 +1,10 @@
 ---
 name: bt-visual-communication-critique
 description: >-
-  Run a multi-voice visual-communication critique — Tufte, Escher, and Spiekermann argue
-  about data integrity, visual hierarchy, and typographic clarity. Use this skill when the
-  user has a chart, diagram, slide, or infographic to review, is choosing typography or
-  layout for information-heavy content, or asks whether a graphic is misleading.
+  Run a multi-voice visual-communication critique arguing about data integrity, visual hierarchy,
+  and typographic clarity. Use this skill when you have a chart, diagram, slide, or infographic
+  to review, are choosing typography or layout for information-heavy content, or want to know
+  whether a graphic is misleading.
 compose:
   profile: technical-dialectic
   roster:

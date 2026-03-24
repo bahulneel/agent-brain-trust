@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      id-token: write # OIDC for npm trusted publishing (no NPM_TOKEN on publish)
     steps:
       - uses: actions/checkout@v4
         if: github.event_name == 'release'
@@ -19,9 +20,16 @@ jobs:
         if: github.event_name != 'release'
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          # Trusted publishing needs Node 22.14+ and npm 11.5.1+ (see npm docs).
+          node-version: "22"
+          registry-url: https://registry.npmjs.org
           cache: npm
+      - name: npm version for trusted publishing
+        run: npm install -g npm@^11.5.1
       - run: npm ci
+      - run: npm run build:tooling
+      - name: Check dist-tooling matches scripts
+        run: git diff --exit-code dist-tooling
       - run: npm run build
       - name: Pack release archives
         run: |
@@ -29,7 +37,6 @@ jobs:
           cd dist
           zip -q -r ../release/plugins/agent-brain-trust-cursor-plugin.zip agent-brain-trust-cursor-plugin
           zip -q -r ../release/plugins/agent-brain-trust-claude-plugin.zip agent-brain-trust-claude-plugin
-          zip -q -r ../release/plugins/agent-brain-trust-mcp.zip agent-brain-trust-mcp
           cp skill-zips/*.zip ../release/skills/
       - name: Upload Cursor plugin artefact
         uses: actions/upload-artifact@v4
@@ -41,11 +48,6 @@ jobs:
         with:
           name: agent-brain-trust-claude-plugin
           path: release/plugins/agent-brain-trust-claude-plugin.zip
-      - name: Upload MCP artefact
-        uses: actions/upload-artifact@v4
-        with:
-          name: agent-brain-trust-mcp
-          path: release/plugins/agent-brain-trust-mcp.zip
       - name: Upload skill zip artefacts
         uses: actions/upload-artifact@v4
         with:
@@ -59,7 +61,9 @@ jobs:
           files: |
             release/plugins/agent-brain-trust-cursor-plugin.zip
             release/plugins/agent-brain-trust-claude-plugin.zip
-            release/plugins/agent-brain-trust-mcp.zip
             release/skills/*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish MCP to npm (OIDC trusted publisher)
+        if: github.event_name == 'release'
+        run: npm publish -w @bahulneel/brain-trust-mcp --access public

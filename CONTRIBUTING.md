@@ -281,11 +281,16 @@ Any new experts must be registered on at least one taxonomy leaf. See "Adding an
 
 ```bash
 npm run db:build    # taxonomy validation + expert materialization
+npm run build:tooling   # if you changed scripts/**/*.ts — compile to dist-tooling/ and commit
 npm run build       # full plugin + zip + MCP build
 
 # Validate all built skills (includes the new one)
 npm run validate:skills-ref
 ```
+
+If you edit **`scripts/**/*.ts`**, run **`npm run build:tooling`** and include the regenerated **`dist-tooling/`** files in your PR; CI fails if they are out of sync.
+
+When you bump the repo **`version`** in root **`package.json`**, set **`packages/brain-trust-mcp/package.json`** `version` to the same value — the build fails if they differ (npm publish and plugin **`npx`** spec stay aligned).
 
 Common validation failures:
 

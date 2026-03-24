@@ -13,12 +13,39 @@ import {
   searchTopicRecords,
   listSkillFrontmatter,
 } from "brain-trust-core";
-import { join, resolve } from "node:path";
+import { existsSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { z } from "zod";
 
+type GlobalWithMeta = typeof globalThis & { __BT_IMPORT_META_URL__?: string };
+
+/** Directory containing this bundle file (plugin `scripts/mcp-server.cjs` or flat `brain-trust-mcp.js`). */
+function bundleFileDir(): string {
+  const href = (globalThis as GlobalWithMeta).__BT_IMPORT_META_URL__;
+  if (typeof href === "string") return dirname(fileURLToPath(href));
+  return process.cwd();
+}
+
+function resourcesLooksPresent(root: string): boolean {
+  return existsSync(join(root, "experts")) || existsSync(join(root, "references"));
+}
+
+/**
+ * Prefer BRAIN_TRUST_RESOURCES; else resolve next to the bundled entry (zip / any cwd);
+ * else cwd/resources for ad-hoc runs.
+ */
 function getResourcesRoot(): string {
   const fromEnv = process.env.BRAIN_TRUST_RESOURCES;
   if (fromEnv) return fromEnv;
+
+  const dir = bundleFileDir();
+  const pluginLayout = join(dir, "..", "resources");
+  const flatLayout = join(dir, "resources");
+
+  if (resourcesLooksPresent(pluginLayout)) return pluginLayout;
+  if (resourcesLooksPresent(flatLayout)) return flatLayout;
+
   return join(process.cwd(), "resources");
 }
 

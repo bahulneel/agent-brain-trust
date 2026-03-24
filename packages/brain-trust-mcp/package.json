@@ -1,20 +1,41 @@
 {
-  "name": "brain-trust-mcp",
-  "version": "0.1.0",
-  "private": true,
-  "type": "module",
-  "bin": {
-    "brain-trust-mcp": "./dist/index.js"
+  "name": "@bahulneel/brain-trust-mcp",
+  "version": "0.2.1",
+  "description": "Brain Trust MCP server: taxonomy, experts, references",
+  "license": "MIT",
+  "private": false,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bahulneel/agent-brain-trust.git",
+    "directory": "packages/brain-trust-mcp"
   },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "cursor",
+    "agents",
+    "brain-trust"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "brain-trust-mcp": "./brain-trust-mcp.js"
+  },
+  "files": [
+    "brain-trust-mcp.js",
+    "resources",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": {
+  "dependencies": {},
+  "devDependencies": {
     "@modelcontextprotocol/sdk": "^1.12.0",
     "brain-trust-core": "*",
+    "typescript": "^5.7.2",
     "zod": "^3.24.0"
-  },
-  "devDependencies": {
-    "typescript": "^5.7.2"
   }
 }

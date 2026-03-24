@@ -16,6 +16,9 @@ jobs:
           node-version: "20"
           cache: npm
       - run: npm ci
+      - run: npm run build:tooling
+      - name: Check dist-tooling matches scripts
+        run: git diff --exit-code dist-tooling
       - run: npm run validate
       - run: npm run build
       - name: skills-ref (all built skills)

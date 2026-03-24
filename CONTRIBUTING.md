@@ -12,6 +12,8 @@ This document covers the three kinds of content contribution -- adding an **expe
 | `content/topics/knowledge-work/…` | Rooted YAML tree: branch directories contain `topic.yml` with **`label` only** (children are discovered from subdirs / leaf files); leaf `*.yml` files list **`expert_ids`** and **`keywords`** (no `id` in YAML — it is the filename stem) |
 | `content/references/` | General-purpose reference docs shipped alongside every built skill |
 
+For the full workspace layout (including packages and scripts) and for build outputs and validation commands, see [docs/repository-layout.md](docs/repository-layout.md) and [docs/build.md](docs/build.md).
+
 The build system (`scripts/compose.ts`) reads `content/skills/*.md`, resolves `@include` directives against `content/skill-fragments/`, injects expert personas via `@repeat roster`, and strips the `compose:` block from the output `SKILL.md`.
 
 ## Adding an expert
@@ -256,7 +258,7 @@ Body text: the room's identity, framing, and stakes.
 | `profile` | Yes | Which prefix/suffix pair to use (`technical-dialectic` or `editorial-room`) |
 | `roster` | Yes | YAML array of expert ids; order determines speaking order in `@repeat roster` |
 
-The `compose:` block is stripped from the built `SKILL.md`; only `name` and `description` ship to the agent.
+The `compose:` block is stripped from the built `SKILL.md`; only `name` and `description` ship to the agent. Clients use those fields first to decide when to load the full skill; for phrasing, trigger testing, and eval-style prompts, see [Optimizing skill descriptions](https://agentskills.io/skill-creation/optimizing-descriptions) on the Agent Skills site.
 
 **Body text guidelines:**
 
@@ -272,7 +274,7 @@ Any new experts must be registered on at least one taxonomy leaf. See "Adding an
 
 - **`content/skills/expert-opinion.md`** -- add the new `bt-*` skill name to the collective skills list so `expert-opinion` can point users toward it.
 - **`.github/workflows/ci.yml`** -- add `npx skills-ref validate` lines for both the Cursor and Claude plugin paths.
-- **`README.md`** -- optionally mirror the same validate commands in the "Validate a built skill" section.
+- **`docs/build.md`** -- optionally extend the `skills-ref validate` examples in the "Validating built skills" section when you add a new skill.
 
 ### 7. Build and validate
 

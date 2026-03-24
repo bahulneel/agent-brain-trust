@@ -5,9 +5,15 @@ Per [Agent Skills: file references](https://agentskills.io/specification#file-re
 - [references/INDEX.md](references/INDEX.md) — which file to open when
 - [references/discovery.md](references/discovery.md) — how to list and read bundled rules
 
-@if plugin
+@if plugin|claude-code
 
 - [references/mcp-tools.md](references/mcp-tools.md) — when Brain Trust **MCP** tools are available (`list_experts`, `get_expert`, `list_references`, `get_reference`, `list_topics`, …)
+
+@endif
+
+@if claude-code
+
+- **Claude Code**: plugin skills are namespaced — e.g. `/agent-brain-trust:expert-opinion`. Test locally with `claude --plugin-dir ./dist/agent-brain-trust-claude-plugin` ([plugins](https://code.claude.com/docs/en/plugins)).
 
 @endif
 

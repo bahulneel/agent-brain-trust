@@ -1,4 +1,4 @@
-export type ComposeTarget = "plugin" | "skill-zip" | "mcp";
+export type ComposeTarget = "plugin" | "claude-code" | "skill-zip" | "mcp";
 /**
  * `@include` forms:
  * - `@include path/to/file.md`
@@ -25,7 +25,7 @@ export declare function applyTemplateVars(text: string, vars: Record<string, str
 /**
  * `compose` in YAML frontmatter supplies the initial template env for the skill body (merged into nested `@include`s).
  * It is stripped from the built `SKILL.md` so only `name` / `description` / etc. ship to the agent.
- * Values must stringify to the same keys used in fragments (`profile`, `roster`, `fidelity`, …).
+ * Values must stringify to the same keys used in fragments (`profile`, `roster`, …).
  * `roster` may be a comma-separated string or a YAML array of expert ids.
  */
 export declare function extractComposeEnv(frontmatterBlock: string): {

@@ -1,7 +1,0 @@
-id: frontend-engineering
-label: Frontend engineering
-children:
-  - frontend-architecture-patterns
-  - rendering-performance
-  - accessibility-implementation
-

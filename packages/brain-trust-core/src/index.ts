@@ -42,7 +42,7 @@ export async function readTopicIndex(assetsRoot: string): Promise<TopicIndex | n
 }
 
 /**
- * Hierarchical expert index: rooted `topics/root/topic.yml` tree, legacy flat `topics/*.yaml` clades,
+ * Hierarchical expert index: rooted `topics/knowledge-work/topic.yml` tree, legacy flat `topics/*.yaml` clades,
  * or monolithic `topics/taxonomy.yaml`.
  */
 export async function readTaxonomy(assetsRoot: string): Promise<TaxonomyDoc | null> {

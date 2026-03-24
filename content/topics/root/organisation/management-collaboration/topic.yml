@@ -1,8 +1,0 @@
-id: management-collaboration
-label: Management, collaboration
-children:
-  - planning-cadences
-  - feedback-cycles
-  - conflict-resolution
-  - leadership-communication
-

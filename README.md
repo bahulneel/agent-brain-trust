@@ -1,14 +1,14 @@
 # Agent Brain Trust
 
-Composable [Agent Skills](https://agentskills.io/specification) (`expert-opinion`, `bt-*` workshops/editorial skills), a **Cursor plugin** bundle, and a **Brain Trust MCP** server. Authoring lives under `content/`; TypeScript tooling under `packages/` and `scripts/build.ts`.
+Composable [Agent Skills](https://agentskills.io/specification) (`expert-opinion`, `bt-*` workshops/editorial skills), **Cursor** and **[Claude Code](https://code.claude.com/docs/en/plugins)** plugin bundles, and a **Brain Trust MCP** server. Authoring lives under `content/`; TypeScript tooling under `packages/` and `scripts/build.ts`.
 
 ## Layout
 
 | Path | Purpose |
 | ---- | ------- |
-| `content/skills/*.md` | Skill entries: YAML `compose:` (profile, roster, fidelity, …) becomes the initial include env; stripped from built `SKILL.md`. Body uses `@include` + `scripts/compose.ts` (merged env, `{{name}}`, `@repeat roster` … `@endrepeat`, `guest=` → roster) |
-| `content/skill-fragments/` | **`profiles/`** (prefix/suffix per variation), **`common/`** (`skill-protocol-body`, persona fidelity, guest/debate/footer), **`fidelity/`** (one room-specific anti-caricature block per profile); roster is CSV in query params |
-| `content/topics/` | **Flat folder**: one **`<clade>.yaml` per broad topic space** (top-level `id`/`label`/`children`; leaves list `expert_ids`). Loader merges files (sorted by name) under a synthetic root. Optional legacy **`taxonomy.yaml`**. **`index.yaml`** is not authored here — the plugin build **writes** it under `resources/topics/` from `content/skills/*.md`. Copied into skill `assets/` and plugin `resources/` |
+| `content/skills/*.md` | Skill entries: YAML `compose:` (profile, roster, …) becomes the initial include env; stripped from built `SKILL.md`. Body uses `@include` + `scripts/compose.ts` (merged env, `{{name}}`, `@repeat roster` … `@endrepeat`, `guest=` → roster) |
+| `content/skill-fragments/` | **`profiles/`** (prefix/suffix per variation), **`common/`** (`skill-protocol-body`, persona fidelity, guest/debate/footer); roster is CSV in query params |
+| `content/topics/` | **Rooted tree** under **`knowledge-work/`**: each branch is a directory with `topic.yml` (`label` only; child topics are subdirs with `topic.yml` or sibling leaf `*.yml`). Node **ids** are directory names and leaf file stems — not duplicated in YAML. Legacy: flat **`<clade>.yaml`** files merged under a synthetic root, or **`taxonomy.yaml`**. **`index.yaml`** is not authored here — the plugin build **writes** it under `resources/topics/` from `content/skills/*.md`. Copied into skill `assets/` and plugin `resources/` |
 | `content/experts/` | One `.md` per expert (kebab-case from full name); build emits **`rost.json`** (`id` → markdown) for MCP/CLI. Composed via `@include experts/<file>.md` |
 | `content/references/` | General rules (discovery, MCP/CLI usage, dialogue); copied to `references/` next to each built `SKILL.md` and to `resources/references/` for MCP ([file references](https://agentskills.io/specification#file-references)) |
 | `packages/brain-trust-core` | Discovery helpers + CLI bundled into every skill |
@@ -35,6 +35,7 @@ npm run db:cli        # build packages + run brain-trust-cli from test-skill cwd
 Outputs:
 
 - `dist/agent-brain-trust-cursor-plugin/` — Cursor plugin (`.cursor-plugin/plugin.json`, `skills/`, `resources/`, `.mcp.json`, `scripts/mcp-server.js`)
+- `dist/agent-brain-trust-claude-plugin/` — Claude Code plugin (`.claude-plugin/plugin.json`, same `skills/`, `resources/`, `.mcp.json`, `scripts/mcp-server.js`; see [Create plugins](https://code.claude.com/docs/en/plugins))
 - `dist/skill-zips/<name>.zip` — one zip per skill (includes `SKILL.md`, `scripts/brain-trust-cli.js`, `assets/`)
 - `dist/agent-brain-trust-mcp/` — standalone MCP package (`brain-trust-mcp.js`, `package.json`, `resources/`)
 
@@ -43,7 +44,13 @@ Validate a built skill:
 ```bash
 npx skills-ref validate dist/agent-brain-trust-cursor-plugin/skills/expert-opinion
 npx skills-ref validate dist/agent-brain-trust-cursor-plugin/skills/bt-software-systems-workshop
+npx skills-ref validate dist/agent-brain-trust-cursor-plugin/skills/bt-design-patterns-workshop
+npx skills-ref validate dist/agent-brain-trust-claude-plugin/skills/expert-opinion
+npx skills-ref validate dist/agent-brain-trust-claude-plugin/skills/bt-software-systems-workshop
+npx skills-ref validate dist/agent-brain-trust-claude-plugin/skills/bt-design-patterns-workshop
 ```
+
+Local Claude Code: `claude --plugin-dir ./dist/agent-brain-trust-claude-plugin`. Optional: `npm run install:claude-plugin` symlinks the built Claude plugin and registers it for Claude Code (see script output).
 
 ## Requirements
 

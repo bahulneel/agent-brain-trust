@@ -1,8 +1,15 @@
 import { readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
-import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
+import {
+  isMap,
+  isScalar,
+  parse as parseYaml,
+  parseDocument,
+  Scalar,
+  stringify as stringifyYaml,
+} from "yaml";
 
-export type ComposeTarget = "plugin" | "skill-zip" | "mcp";
+export type ComposeTarget = "plugin" | "claude-code" | "skill-zip" | "mcp";
 
 const MAX_INCLUDE_DEPTH = 12;
 
@@ -162,23 +169,22 @@ function resolveIncludePath(rel: string, fragmentsRoot: string): string {
   return join(fragmentsRoot, rel.trim());
 }
 
+/** `@if target` or `@if a|b|c` (pipe-separated); keep inner block when `target` is listed. */
 function expandConditionals(text: string, target: ComposeTarget): string {
-  const blocks: Array<{ name: ComposeTarget; re: RegExp }> = [
-    { name: "plugin", re: /@if plugin\n([\s\S]*?)@endif/g },
-    { name: "skill-zip", re: /@if skill-zip\n([\s\S]*?)@endif/g },
-    { name: "mcp", re: /@if mcp\n([\s\S]*?)@endif/g },
-  ];
-  let out = text;
-  for (const { name, re } of blocks) {
-    out = out.replace(re, (_, inner: string) => (target === name ? inner : ""));
-  }
-  return out;
+  const re = /@if ([^\n]+)\n([\s\S]*?)@endif/g;
+  return text.replace(re, (_, spec: string, inner: string) => {
+    const targets = spec
+      .split("|")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    return targets.includes(target) ? inner : "";
+  });
 }
 
 /**
  * `compose` in YAML frontmatter supplies the initial template env for the skill body (merged into nested `@include`s).
  * It is stripped from the built `SKILL.md` so only `name` / `description` / etc. ship to the agent.
- * Values must stringify to the same keys used in fragments (`profile`, `roster`, `fidelity`, …).
+ * Values must stringify to the same keys used in fragments (`profile`, `roster`, …).
  * `roster` may be a comma-separated string or a YAML array of expert ids.
  */
 export function extractComposeEnv(frontmatterBlock: string): {
@@ -190,22 +196,43 @@ export function extractComposeEnv(frontmatterBlock: string): {
     return { frontmatterOut: frontmatterBlock, composeEnv: {} };
   }
   const inner = frontmatterBlock.slice(3, end).trim();
-  let doc: Record<string, unknown>;
+  let docJs: Record<string, unknown>;
   try {
-    doc = parseYaml(inner) as Record<string, unknown>;
+    docJs = parseYaml(inner) as Record<string, unknown>;
   } catch {
     return { frontmatterOut: frontmatterBlock, composeEnv: {} };
   }
-  const rawCompose = doc.compose;
-  delete doc.compose;
+  const rawCompose = docJs.compose;
+  const composeEnv = flattenComposeParams(rawCompose);
+
+  const yamlDoc = parseDocument(inner);
+  if (yamlDoc.errors.length > 0) {
+    return { frontmatterOut: frontmatterBlock, composeEnv };
+  }
+  const root = yamlDoc.contents;
+  if (!isMap(root)) {
+    return { frontmatterOut: frontmatterBlock, composeEnv };
+  }
+
+  root.items = root.items.filter((pair) => {
+    const keyStr = isScalar(pair.key) ? String(pair.key.value) : "";
+    return keyStr !== "compose";
+  });
+
+  for (const pair of root.items) {
+    if (isScalar(pair.value) && typeof pair.value.value === "string") {
+      const v = pair.value.value;
+      if (v.includes("\n") || v.includes(":") || v.length > 72) {
+        pair.value.type = Scalar.BLOCK_FOLDED;
+      }
+    }
+  }
+
   const frontmatterOut =
-    Object.keys(doc).length === 0
+    root.items.length === 0
       ? "---\n---\n"
-      : `---\n${stringifyYaml(doc, { lineWidth: 0 }).trimEnd()}\n---\n`;
-  return {
-    frontmatterOut,
-    composeEnv: flattenComposeParams(rawCompose),
-  };
+      : `---\n${stringifyYaml(yamlDoc, { lineWidth: 0 }).trimEnd()}\n---\n`;
+  return { frontmatterOut, composeEnv };
 }
 
 function flattenComposeParams(raw: unknown): Record<string, string> {

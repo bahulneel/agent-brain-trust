@@ -30,7 +30,7 @@ node scripts/brain-trust-cli.js get-experts-rost --json
 ```
 
 - **Experts**: `assets/experts/rost.json` maps **id →** markdown. Prefer `get-expert <id>`; use `get-experts-rost --json` when a tool needs the full object.
-- **Taxonomy**: rooted **`assets/topics/root/topic.yml`** tree when present; otherwise flat `assets/topics/<clade>.yaml` (excluding `index.yaml`), merged at load. `get-topic-taxonomy` prints a **tree** (default) or `--json` for the merged document. **`search-topics`** uses **`assets/topics/topics-search.json`** when the build emitted it.
+- **Taxonomy**: rooted **`assets/topics/knowledge-work/topic.yml`** tree when present; otherwise flat `assets/topics/<clade>.yaml` (excluding `index.yaml`), merged at load. `get-topic-taxonomy` prints a **tree** (default) or `--json` for the merged document. **`search-topics`** uses **`assets/topics/topics-search.json`** when the build emitted it.
 - **References**: `references/*.md` — `list-references` then `get-reference <path>`.
 
 Use the same discovery protocol as [discovery.md](discovery.md): narrow iteratively; load one file at a time when possible.

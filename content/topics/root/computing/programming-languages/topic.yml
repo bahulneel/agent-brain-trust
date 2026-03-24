@@ -1,8 +1,0 @@
-id: programming-languages
-label: Programming languages
-children:
-  - type-systems-and-formal-methods
-  - language-design
-  - logic-relational-programming
-  - compilers-runtimes
-

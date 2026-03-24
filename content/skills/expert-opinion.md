@@ -1,8 +1,10 @@
 ---
 name: expert-opinion
 description: >-
-  One-shot Brain Trust skill: pick one roster expert that best fits the user's task, then answer
-  as that expert using Operation, Mindset, Archetypes, and derived Persona — without multi-voice debate.
+  Pick one expert from the Brain Trust roster and answer in that voice — covers computing,
+  design, writing, editing, explanation, product, and organisation. Use this skill when
+  the user wants a single authoritative perspective on a naming decision, architecture
+  tradeoff, prose critique, or judgement call, and a multi-voice panel is not warranted.
 ---
 
 ## Role
@@ -48,13 +50,21 @@ Your persona is the combination of Operation, Mindset, and Archetypes **as expre
 
 ## Collective skills
 
-For multi-voice Brain Trust workshops and editorial rooms, use the `bt-*` skills — for example `bt-software-systems-workshop`, `bt-technical-writing-editorial`, `bt-frontend-ux-critique`, `bt-product-strategy-workshop`, `bt-organisation-design-workshop`, `bt-science-explanation-editorial`, `bt-visual-communication-critique` — not this skill.
+For multi-voice Brain Trust workshops and editorial rooms, use the `bt-*` skills — for example `bt-software-systems-workshop`, `bt-design-patterns-workshop`, `bt-technical-writing-editorial`, `bt-frontend-ux-critique`, `bt-product-strategy-workshop`, `bt-organisation-design-workshop`, `bt-science-explanation-editorial`, `bt-visual-communication-critique` — not this skill.
 
-@if plugin
+@if plugin|claude-code
 
 ### MCP
 
 `get_topic_taxonomy`, `list_experts`, `get_expert`, `get_experts_rost`, `search_topics` (when available), `list_references`, `get_reference`, `list_skills` — see [references/mcp-tools.md](references/mcp-tools.md).
+
+@endif
+
+@if claude-code
+
+### Claude Code usage
+
+Invoke this skill as **`/agent-brain-trust:expert-opinion`** (or with arguments after the command per [Skills](https://code.claude.com/en/skills)). After changing the built plugin, run `/reload-plugins` in Claude Code.
 
 @endif
 

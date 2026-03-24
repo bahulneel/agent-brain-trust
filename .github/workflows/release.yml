@@ -25,5 +25,6 @@ jobs:
           name: agent-brain-trust-dist
           path: |
             dist/agent-brain-trust-cursor-plugin
+            dist/agent-brain-trust-claude-plugin
             dist/agent-brain-trust-mcp
             dist/skill-zips

@@ -1,5 +1,5 @@
 /**
- * One-off generator: writes content/topics/root/** and new expert stubs under content/experts/.
+ * One-off generator: writes content/topics/knowledge-work/** and new expert stubs under content/experts/.
  * Run: npx tsx scripts/generate-brain-trust-topics.ts
  */
 import { mkdir, readdir, rm, writeFile } from "node:fs/promises";
@@ -9,6 +9,7 @@ import { stringify } from "yaml";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, "..");
 const TOPICS = join(ROOT, "content", "topics");
+const ROOTED_TOPIC_CLADE = "knowledge-work";
 const EXPERTS = join(ROOT, "content", "experts");
 const EXISTING = new Set([
     "william-e-byrd",
@@ -79,12 +80,12 @@ const NEW_EXPERTS = [
     "jaron-lanier",
     "david-heinemeier-hansson",
 ];
-function branch(id, label, children) {
-    return { id, label, children };
+/** Branch `topic.yml` body: ids and children come from directory layout. */
+function branchMeta(label) {
+    return { label };
 }
 function leaf(l) {
     const o = {
-        id: l.id,
         label: l.label,
         expert_ids: l.experts,
     };
@@ -93,12 +94,12 @@ function leaf(l) {
     return o;
 }
 async function writeBranch(rel, data) {
-    const dir = join(TOPICS, "root", ...rel);
+    const dir = join(TOPICS, ROOTED_TOPIC_CLADE, ...rel);
     await mkdir(dir, { recursive: true });
     await writeFile(join(dir, "topic.yml"), stringify(data, { lineWidth: 0 }) + "\n", "utf8");
 }
 async function writeLeaf(rel, l) {
-    const dir = join(TOPICS, "root", ...rel);
+    const dir = join(TOPICS, ROOTED_TOPIC_CLADE, ...rel);
     await mkdir(dir, { recursive: true });
     await writeFile(join(dir, `${l.id}.yml`), stringify(leaf(l), { lineWidth: 0 }) + "\n", "utf8");
 }
@@ -128,35 +129,17 @@ async function main() {
     }
     const entries = await readdir(TOPICS).catch(() => []);
     for (const name of entries) {
-        if (name === "root")
+        if (name === ROOTED_TOPIC_CLADE)
             continue;
         if (name.endsWith(".yaml") || name.endsWith(".yml")) {
             await rm(join(TOPICS, name), { force: true });
         }
     }
-    await rm(join(TOPICS, "root"), { recursive: true, force: true });
-    await mkdir(join(TOPICS, "root"), { recursive: true });
-    await writeBranch([], branch("knowledge-work", "Knowledge work", [
-        "computing",
-        "design",
-        "writing",
-        "editing",
-        "explanation",
-        "education",
-        "product",
-        "organisation",
-    ]));
-    await writeBranch(["computing"], branch("computing", "Computing", [
-        "software-systems",
-        "programming-languages",
-        "frontend-engineering",
-    ]));
-    await writeBranch(["computing", "software-systems"], branch("software-systems", "Software systems", [
-        "software-architecture",
-        "distributed-systems",
-        "data-intensive-systems",
-        "software-evolution",
-    ]));
+    await rm(join(TOPICS, ROOTED_TOPIC_CLADE), { recursive: true, force: true });
+    await mkdir(join(TOPICS, ROOTED_TOPIC_CLADE), { recursive: true });
+    await writeBranch([], branchMeta("Knowledge work"));
+    await writeBranch(["computing"], branchMeta("Computing"));
+    await writeBranch(["computing", "software-systems"], branchMeta("Software systems"));
     const sw = [
         {
             id: "software-architecture",
@@ -185,12 +168,7 @@ async function main() {
     ];
     for (const l of sw)
         await writeLeaf(["computing", "software-systems"], l);
-    await writeBranch(["computing", "programming-languages"], branch("programming-languages", "Programming languages", [
-        "type-systems-and-formal-methods",
-        "language-design",
-        "logic-relational-programming",
-        "compilers-runtimes",
-    ]));
+    await writeBranch(["computing", "programming-languages"], branchMeta("Programming languages"));
     const pl = [
         {
             id: "type-systems-and-formal-methods",
@@ -219,11 +197,7 @@ async function main() {
     ];
     for (const l of pl)
         await writeLeaf(["computing", "programming-languages"], l);
-    await writeBranch(["computing", "frontend-engineering"], branch("frontend-engineering", "Frontend engineering", [
-        "frontend-architecture-patterns",
-        "rendering-performance",
-        "accessibility-implementation",
-    ]));
+    await writeBranch(["computing", "frontend-engineering"], branchMeta("Frontend engineering"));
     const fe = [
         {
             id: "frontend-architecture-patterns",
@@ -246,13 +220,8 @@ async function main() {
     ];
     for (const l of fe)
         await writeLeaf(["computing", "frontend-engineering"], l);
-    await writeBranch(["design"], branch("design", "Design", ["human-computer-interaction", "visual-communication"]));
-    await writeBranch(["design", "human-computer-interaction"], branch("human-computer-interaction", "Human–computer interaction", [
-        "interaction-design",
-        "usability",
-        "user-research",
-        "information-architecture",
-    ]));
+    await writeBranch(["design"], branchMeta("Design"));
+    await writeBranch(["design", "human-computer-interaction"], branchMeta("Human–computer interaction"));
     const hci = [
         { id: "interaction-design", label: "Interaction design", experts: ["alan-cooper", "julie-zhuo"], keywords: ["UX", "flows", "affordances"] },
         { id: "usability", label: "Usability", experts: ["don-norman", "jakob-nielsen"], keywords: ["usability", "heuristics", "testing"] },
@@ -261,12 +230,7 @@ async function main() {
     ];
     for (const l of hci)
         await writeLeaf(["design", "human-computer-interaction"], l);
-    await writeBranch(["design", "visual-communication"], branch("visual-communication", "Visual communication", [
-        "information-design",
-        "graphic-design",
-        "typography",
-        "visual-metaphor-and-systems",
-    ]));
+    await writeBranch(["design", "visual-communication"], branchMeta("Visual communication"));
     const vis = [
         { id: "information-design", label: "Information design", experts: ["edward-tufte", "erik-spiekermann"], keywords: ["charts", "diagrams", "data-ink"] },
         { id: "graphic-design", label: "Graphic design", experts: ["m-c-escher", "erik-spiekermann"], keywords: ["layout", "composition", "grid"] },
@@ -280,16 +244,8 @@ async function main() {
     ];
     for (const l of vis)
         await writeLeaf(["design", "visual-communication"], l);
-    await writeBranch(["writing"], branch("writing", "Writing", [
-        "technical-writing",
-        "journalism-narrative-nonfiction",
-        "rhetoric-style-prose",
-    ]));
-    await writeBranch(["writing", "technical-writing"], branch("technical-writing", "Technical writing", [
-        "documentation",
-        "api-reference-writing",
-        "developer-education-writing",
-    ]));
+    await writeBranch(["writing"], branchMeta("Writing"));
+    await writeBranch(["writing", "technical-writing"], branchMeta("Technical writing"));
     const tw = [
         { id: "documentation", label: "Documentation", experts: ["donald-e-knuth", "brian-w-kernighan"], keywords: ["docs", "manual", "tutorial"] },
         { id: "api-reference-writing", label: "API reference writing", experts: ["steve-mcconnell", "robert-c-martin", "martin-fowler"], keywords: ["API", "reference", "SDK"] },
@@ -297,11 +253,7 @@ async function main() {
     ];
     for (const l of tw)
         await writeLeaf(["writing", "technical-writing"], l);
-    await writeBranch(["writing", "journalism-narrative-nonfiction"], branch("journalism-narrative-nonfiction", "Journalism, narrative nonfiction", [
-        "reporting",
-        "narrative-forms",
-        "explanatory-features",
-    ]));
+    await writeBranch(["writing", "journalism-narrative-nonfiction"], branchMeta("Journalism, narrative nonfiction"));
     const jn = [
         { id: "reporting", label: "Reporting", experts: ["tracy-kidder", "james-gleick"], keywords: ["reportage", "sources", "facts"] },
         { id: "narrative-forms", label: "Narrative forms", experts: ["tracy-kidder", "anne-lamott"], keywords: ["scene", "structure", "story"] },
@@ -309,23 +261,15 @@ async function main() {
     ];
     for (const l of jn)
         await writeLeaf(["writing", "journalism-narrative-nonfiction"], l);
-    await writeBranch(["writing", "rhetoric-style-prose"], branch("rhetoric-style-prose", "Rhetoric, style, prose", [
-        "prose-craft",
-        "humour-irony",
-    ]));
+    await writeBranch(["writing", "rhetoric-style-prose"], branchMeta("Rhetoric, style, prose"));
     const rs = [
         { id: "prose-craft", label: "Prose craft", experts: ["steven-pinker", "anne-lamott"], keywords: ["clarity", "style", "sentences"] },
         { id: "humour-irony", label: "Humour, irony", experts: ["douglas-adams"], keywords: ["wit", "comedy", "tone"] },
     ];
     for (const l of rs)
         await writeLeaf(["writing", "rhetoric-style-prose"], l);
-    await writeBranch(["editing"], branch("editing", "Editing", ["technical-editing", "micro-editing"]));
-    await writeBranch(["editing", "technical-editing"], branch("technical-editing", "Technical editing", [
-        "structure-editing",
-        "clarity-editing",
-        "terminology-consistency",
-        "audience-fit",
-    ]));
+    await writeBranch(["editing"], branchMeta("Editing"));
+    await writeBranch(["editing", "technical-editing"], branchMeta("Technical editing"));
     const te = [
         { id: "structure-editing", label: "Structure editing", experts: ["martin-fowler", "grady-booch"], keywords: ["outline", "flow", "architecture-of-prose"] },
         { id: "clarity-editing", label: "Clarity editing", experts: ["kathy-sierra", "steven-pinker"], keywords: ["plain", "simple", "precision"] },
@@ -340,13 +284,8 @@ async function main() {
         experts: ["anne-lamott", "steve-mcconnell"],
         keywords: ["copyedit", "line-edit", "proof"],
     });
-    await writeBranch(["explanation"], branch("explanation", "Explanation", ["science-explanation", "demonstration-showing"]));
-    await writeBranch(["explanation", "science-explanation"], branch("science-explanation", "Science explanation", [
-        "physical-intuition",
-        "models-analogies",
-        "conceptual-simplification",
-        "public-science-writing",
-    ]));
+    await writeBranch(["explanation"], branchMeta("Explanation"));
+    await writeBranch(["explanation", "science-explanation"], branchMeta("Science explanation"));
     const se = [
         { id: "physical-intuition", label: "Physical intuition", experts: ["richard-p-feynman"], keywords: ["intuition", "physics", "teaching"] },
         { id: "models-analogies", label: "Models, analogies", experts: ["richard-p-feynman", "james-gleick"], keywords: ["model", "analogy", "mental-model"] },
@@ -355,23 +294,15 @@ async function main() {
     ];
     for (const l of se)
         await writeLeaf(["explanation", "science-explanation"], l);
-    await writeBranch(["explanation", "demonstration-showing"], branch("demonstration-showing", "Demonstration, showing", [
-        "guided-demonstration",
-        "experimental-demonstration",
-    ]));
+    await writeBranch(["explanation", "demonstration-showing"], branchMeta("Demonstration, showing"));
     const ds = [
         { id: "guided-demonstration", label: "Guided demonstration", experts: ["donald-e-knuth", "brian-w-kernighan"], keywords: ["walkthrough", "example", "show"] },
         { id: "experimental-demonstration", label: "Experimental demonstration", experts: ["richard-p-feynman"], keywords: ["experiment", "demo", "lab"] },
     ];
     for (const l of ds)
         await writeLeaf(["explanation", "demonstration-showing"], l);
-    await writeBranch(["education"], branch("education", "Education", ["pedagogy"]));
-    await writeBranch(["education", "pedagogy"], branch("pedagogy", "Pedagogy", [
-        "learning-design",
-        "scaffolding",
-        "misconceptions",
-        "transfer-of-knowledge",
-    ]));
+    await writeBranch(["education"], branchMeta("Education"));
+    await writeBranch(["education", "pedagogy"], branchMeta("Pedagogy"));
     const ped = [
         { id: "learning-design", label: "Learning design", experts: ["kathy-sierra", "teresa-torres"], keywords: ["curriculum", "objectives", "assessment"] },
         { id: "scaffolding", label: "Scaffolding", experts: ["kathy-sierra", "clayton-christensen"], keywords: ["scaffold", "progression", "support"] },
@@ -380,14 +311,8 @@ async function main() {
     ];
     for (const l of ped)
         await writeLeaf(["education", "pedagogy"], l);
-    await writeBranch(["product"], branch("product", "Product", ["product-strategy", "product-discovery"]));
-    await writeBranch(["product", "product-strategy"], branch("product-strategy", "Product strategy", [
-        "problem-framing",
-        "opportunity-selection",
-        "prioritisation",
-        "positioning",
-        "roadmaps",
-    ]));
+    await writeBranch(["product"], branchMeta("Product"));
+    await writeBranch(["product", "product-strategy"], branchMeta("Product strategy"));
     const ps = [
         { id: "problem-framing", label: "Problem framing", experts: ["marty-cagan", "teresa-torres"], keywords: ["problem", "JTBD", "outcome"] },
         { id: "opportunity-selection", label: "Opportunity selection", experts: ["clayton-christensen", "michael-porter"], keywords: ["opportunity", "strategy", "choice"] },
@@ -397,11 +322,7 @@ async function main() {
     ];
     for (const l of ps)
         await writeLeaf(["product", "product-strategy"], l);
-    await writeBranch(["product", "product-discovery"], branch("product-discovery", "Product discovery", [
-        "discovery-research",
-        "experiments",
-        "evidence-for-decisions",
-    ]));
+    await writeBranch(["product", "product-discovery"], branchMeta("Product discovery"));
     const pd = [
         { id: "discovery-research", label: "Discovery research", experts: ["teresa-torres", "marty-cagan"], keywords: ["discovery", "interview", "insight"] },
         { id: "experiments", label: "Experiments", experts: ["eric-brewer", "kent-beck"], keywords: ["experiment", "A/B", "hypothesis"] },
@@ -409,13 +330,8 @@ async function main() {
     ];
     for (const l of pd)
         await writeLeaf(["product", "product-discovery"], l);
-    await writeBranch(["organisation"], branch("organisation", "Organisation", ["organisation-design", "management-collaboration"]));
-    await writeBranch(["organisation", "organisation-design"], branch("organisation-design", "Organisation design", [
-        "team-structure",
-        "decision-rights",
-        "coordination-mechanisms",
-        "incentives-accountability",
-    ]));
+    await writeBranch(["organisation"], branchMeta("Organisation"));
+    await writeBranch(["organisation", "organisation-design"], branchMeta("Organisation design"));
     const od = [
         { id: "team-structure", label: "Team structure", experts: ["melissa-perri", "patrick-lencioni"], keywords: ["teams", "squads", "structure"] },
         { id: "decision-rights", label: "Decision rights", experts: ["henry-mintzberg", "peter-drucker"], keywords: ["RACI", "authority", "ownership"] },
@@ -424,12 +340,7 @@ async function main() {
     ];
     for (const l of od)
         await writeLeaf(["organisation", "organisation-design"], l);
-    await writeBranch(["organisation", "management-collaboration"], branch("management-collaboration", "Management, collaboration", [
-        "planning-cadences",
-        "feedback-cycles",
-        "conflict-resolution",
-        "leadership-communication",
-    ]));
+    await writeBranch(["organisation", "management-collaboration"], branchMeta("Management, collaboration"));
     const mc = [
         { id: "planning-cadences", label: "Planning cadences", experts: ["peter-drucker", "henry-mintzberg"], keywords: ["planning", "cadence", "review"] },
         { id: "feedback-cycles", label: "Feedback cycles", experts: ["kim-scott", "kent-beck"], keywords: ["feedback", "1:1", "retrospective"] },
@@ -483,7 +394,7 @@ async function main() {
         const p = join(EXPERTS, `${id}.md`);
         await writeFile(p, expertStub(id), "utf8");
     }
-    console.log("Wrote topic tree under content/topics/root/ and", NEW_EXPERTS.length, "expert stubs.");
+    console.log("Wrote topic tree under content/topics/knowledge-work/ and", NEW_EXPERTS.length, "expert stubs.");
 }
 main().catch((e) => {
     console.error(e);

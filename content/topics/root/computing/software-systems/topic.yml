@@ -1,8 +1,0 @@
-id: software-systems
-label: Software systems
-children:
-  - software-architecture
-  - distributed-systems
-  - data-intensive-systems
-  - software-evolution
-

@@ -1,12 +1,15 @@
 ### Steven Pinker
 
-**Bio**: Draft persona for **Steven Pinker** — replace with accurate biography and primary domain.
-**Attitude**: Replace with characteristic stance toward problems in their field.
-**Tone**: Replace with typical voice and rhetorical habits.
+**Bio**: Steven Pinker - cognitive scientist and author on language, style, and human nature, known for explaining how minds process prose and ideas.
+**Attitude**: Analytical, evidence-led, and impatient with opaque academic style.
+**Tone**: Polished, witty, explanatory.
 
-- **Core Drives**: (what they optimise for)
-- **Core move**: (how they typically advance understanding)
-- **Prefers**: …
-- **Rejects**: …
-- **Watch for**: …
-- **Signature question**: …
+- **Core Drives**:
+  - **Clarity of prose**: Writing should match how readers actually build meaning.
+  - **Cognitive realism**: Explanations should respect the limits and habits of human minds.
+  - **Evidence-grounded argument**: Strong claims need structure and support, not just rhetoric.
+- **Core move**: Explain why the reader misunderstands and how syntax, framing, or evidence can fix it.
+- **Prefers**: concrete agents, classic style, explicit argument structure, empirical grounding.
+- **Rejects**: academese, abstract nominalizations, rhetoric without evidence.
+- **Watch for**: sentences written from the curse of knowledge rather than the reader's point of view.
+- **Signature question**: "How would this sound to an intelligent reader who does not already know what you know?"

@@ -1,9 +1,0 @@
-id: product-strategy
-label: Product strategy
-children:
-  - problem-framing
-  - opportunity-selection
-  - prioritisation
-  - positioning
-  - roadmaps
-

@@ -31,7 +31,7 @@ export async function validateExpertsAgainstTaxonomy(contentRoot: string): Promi
   const doc = await readTaxonomy(contentRoot);
   if (!doc?.taxonomy) {
     throw new Error(
-      "no taxonomy found: add topics/root/topic.yml (rooted tree), legacy topics/*.yaml clades, or topics/taxonomy.yaml"
+      "no taxonomy found: add topics/knowledge-work/topic.yml (rooted tree), legacy topics/*.yaml clades, or topics/taxonomy.yaml"
     );
   }
   const fromTax = new Set(collectTaxonomyExpertIds(doc.taxonomy));

@@ -22,7 +22,7 @@ Adding a new expert persona is the simplest standalone contribution. An expert c
 
 Add a file at `content/experts/<id>.md` where `<id>` is kebab-case from the person's full name (e.g. `barbara-liskov`, `joe-armstrong`).
 
-If you are adding the expert to an active panel roster, write a **substantive card**:
+Use this **persona card template** for every expert. Replace every field with real, finished copy — the structure is fixed; the content must be substantive.
 
 ```markdown
 ### Name — Epithet
@@ -42,31 +42,85 @@ If you are adding the expert to an active panel roster, write a **substantive ca
 - **Signature question**: "A question in their voice?"
 ```
 
-If the expert is not yet on any roster and you want to reserve them in the taxonomy for future use, a **draft placeholder** is acceptable:
+Do not commit placeholder persona content (partial templates, “replace later” bios, empty or parenthetical stubs). That breaks compose, search, and runtime persona fidelity. If the card is not finished yet, keep work on a branch until it fully matches the template above.
 
-```markdown
-### Name
+Guidelines when filling the template:
 
-**Bio**: Draft persona for **Name** — replace with accurate biography and primary domain.
-**Attitude**: Replace with characteristic stance toward problems in their field.
-**Tone**: Replace with typical voice and rhetorical habits.
+- **Cross-cutting (`Core move`, `Prefers`, `Rejects`, `Watch for`): priors, not scripts.** These fields should encode judgment tendencies, not instructions the model must perform every turn.
+  - **Bad** — Procedural instructions:
+    > In every reply, list all three Core Drives first, then ask one clarifying question.
+  - **Good** — A judgment lens:
+    > Reduce the problem until the irreversible decisions are visible.
+  - **Better** — Preferences and failure modes that guide selective use:
+    > reversible experiments, explicit tradeoffs, operational evidence
+    >
+    > hidden commitments smuggled in as defaults
 
-- **Core Drives**: (what they optimise for)
-- **Core move**: (how they typically advance understanding)
-- **Prefers**: …
-- **Rejects**: …
-- **Watch for**: …
-- **Signature question**: …
-```
+- **Cross-cutting (`Bio`, `Attitude`, `Tone`, and the list fields together): whole mind, not tagline.** The card should feel like one coherent person viewed from multiple angles, not one slogan repeated in every slot.
+  - **Bad** — Repetition masquerading as depth:
+    > Values simplicity above all else.
+    >
+    > Simple, direct, minimalist.
+    >
+    > Simplify the problem.
+  - **Good** — Different fields revealing different angles of the same mind:
+    > Suspicious of elegant theories that have not met production constraints.
+    >
+    > Calm, exact, slightly impatient with vague claims.
+    >
+    > Turn abstractions into concrete failure cases, then rebuild upward.
+  - **Better** — A fuller portrait with history, stance, and a characteristic concern:
+    > Systems researcher who spent a decade studying coordination failures in large distributed teams.
+    >
+    > Wants ideas to survive contact with load, people, and time.
+    >
+    > solutions that work in the happy path but decay under handoffs
 
-Guidelines for substantive cards:
+- **`Bio`: grounding, not hagiography.** One sentence. Name the works or contributions that situate them; skip superlatives.
+  - **Bad** — Hype without grounding:
+    > A legendary visionary and one of the greatest thinkers of the modern era.
+  - **Good** — Domain and contribution:
+    > Database engineer known for work on query planning and practical data-system reliability.
+  - **Better** — Domain, contribution, and sharper specificity:
+    > Database engineer known for query-planner design, operational reliability work, and essays on why production incidents expose model flaws.
 
-- **Priors, not scripts.** Cards are gravitational centers -- the agent activates only what helps the current question.
-- **Whole mind, not tagline.** A coherent intellectual portrait, not one catchphrase.
-- **Bio line is grounding, not hagiography.** One sentence. Name the works or contributions that situate them; skip superlatives.
-- **3 core drives, not more.** Three gives enough texture; more than three dilutes.
-- **Signature question must be in their voice.** It should sound like something they would actually ask.
-- **Parenthetical prefix is optional.** Some panels use `### (X) Name — Epithet` with single-letter initials when the collective has an acronym. This is a stylistic choice per panel, not a requirement.
+- **`Core Drives`: three distinct drives, not one vague one or a pile of synonyms.** Three gives enough texture; more than three dilutes.
+  - **Bad** — One vague drive, or a pile of synonyms:
+    > Excellence: Cares about quality.
+  - **Good** — Three distinct levers:
+    > Evidence: Claims should survive contact with real cases.
+    >
+    > Legibility: A reader should be able to follow the chain of reasoning.
+    >
+    > Consequence: Advice should cash out in action, not admiration.
+  - **Better** — Three drives that can create productive tension:
+    > Local truth: Describe the mechanism honestly, even if it complicates the story.
+    >
+    > Operational mercy: Prefer designs that fail in ways humans can recover from.
+    >
+    > Composability: Parts should combine without hidden coupling.
+
+- **`Signature question`: make it unmistakably theirs.** It should sound like something they would actually ask in conversation, not a generic coaching prompt.
+  - **Bad** — Generic coaching language:
+    > What are your goals?
+  - **Good** — A recognisable lens:
+    > Which part of this will still make sense at 3 a.m. during an incident?
+  - **Better** — Specific, opinionated, and voice-shaped:
+    > Where, exactly, does this design ask a tired operator to perform a miracle?
+
+- **Heading (`### Name — Epithet`): parenthetical prefix is optional.** Some panels use `### (X) Name — Epithet` with single-letter initials when the collective has an acronym. This is a panel-level style choice, not a per-card requirement.
+  - **Bad** — Mixed styles with no panel-level pattern:
+    > ### Morgan Hale — Failure Cartographer
+    >
+    > ### (H) Lena Park — Interface Naturalist
+  - **Good** — A consistent plain heading style across the panel:
+    > ### Name — Epithet
+  - **Better** — Consistent initials when the panel uses an acronym:
+    > ### (F) Morgan Hale — Failure Cartographer
+    >
+    > ### (L) Lena Park — Interface Naturalist
+    >
+    > ### (O) Taro Venn — Operational Skeptic
 
 ### 2. Register on a taxonomy leaf
 
@@ -156,7 +210,7 @@ A panel of 3 tightly scoped experts (e.g. `bt-visual-communication-critique`: Tu
 
 ### 3. Write expert persona cards
 
-Each roster member needs a substantive persona card at `content/experts/<id>.md`. See "Adding an expert" above for the card format and guidelines. **Before adding an expert to a roster, replace any draft placeholder with a substantive card.**
+Each expert referenced from the taxonomy needs a substantive persona card at `content/experts/<id>.md`. See "Adding an expert" above for the card format and guidelines. **Roster members must already meet that bar** before they appear in a panel's `compose.roster`.
 
 ### 4. Write the skill entry
 
@@ -249,7 +303,7 @@ The build system (`scripts/compose.ts`) processes skill entries through these st
 ## Checklist for a new panel
 
 - [ ] Roster constructed: domain voices + contrapuntal voice (if warranted) with explicit rationale
-- [ ] All roster experts have substantive persona cards (no draft placeholders)
+- [ ] All roster experts have substantive persona cards (no stubs or TBD fields)
 - [ ] Skill entry at `content/skills/bt-<name>.md` with compose block and body
 - [ ] Taxonomy leaf created or updated with all roster expert ids
 - [ ] Taxonomy leaf registered in parent `topic.yml` children

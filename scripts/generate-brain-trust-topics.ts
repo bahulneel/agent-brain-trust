@@ -28,6 +28,12 @@ const EXISTING = new Set([
   "martin-fowler",
   "richard-p-feynman",
   "douglas-adams",
+  "lilian-weng",
+  "andrew-ng",
+  "denny-zhou",
+  "jason-wei",
+  "ethan-mollick",
+  "andrej-karpathy",
 ]);
 
 const NEW_EXPERTS: string[] = [
@@ -231,6 +237,59 @@ async function main(): Promise<void> {
   ];
   for (const l of fe) await writeLeaf(["computing", "frontend-engineering"], l);
 
+  await writeBranch(["computing", "agent-interfaces-prompting"], branchMeta("Agent interfaces and prompting"));
+  const aip: Leaf[] = [
+    {
+      id: "agent-skill-package-design",
+      label: "Agent skill package design",
+      experts: ["lilian-weng", "ward-cunningham", "martin-fowler"],
+      keywords: [
+        "agent skills",
+        "SKILL.md",
+        "composable instructions",
+        "tool contracts",
+        "discovery",
+        "progressive disclosure",
+        "MCP",
+        "plugin manifests",
+      ],
+    },
+    {
+      id: "instruction-design-scaffolding",
+      label: "Instruction design and scaffolding",
+      experts: ["andrew-ng", "kathy-sierra", "steve-mcconnell"],
+      keywords: ["prompt engineering", "system message", "few-shot", "objectives", "constraints", "examples", "cognitive load", "clarity"],
+    },
+    {
+      id: "reasoning-decomposition-prompts",
+      label: "Reasoning decomposition in prompts",
+      experts: ["denny-zhou", "jason-wei", "richard-p-feynman"],
+      keywords: ["chain of thought", "step by step", "decomposition", "scratchpad", "verification", "self-consistency", "show your work"],
+    },
+    {
+      id: "human-machine-collaboration-trust",
+      label: "Human–machine collaboration and trust",
+      experts: ["ethan-mollick", "don-norman", "patrick-lencioni"],
+      keywords: [
+        "trust",
+        "calibration",
+        "oversight",
+        "feedback loops",
+        "human in the loop",
+        "team norms",
+        "psychological safety",
+        "appropriate reliance",
+      ],
+    },
+    {
+      id: "llm-systems-architecture",
+      label: "LLM systems architecture",
+      experts: ["andrej-karpathy", "peter-alvaro", "werner-vogels"],
+      keywords: ["software 2.0", "context window", "latency", "reliability", "distributed systems", "failure modes", "operational constraints"],
+    },
+  ];
+  for (const l of aip) await writeLeaf(["computing", "agent-interfaces-prompting"], l);
+
   await writeBranch(["design"], branchMeta("Design"));
   await writeBranch(["design", "human-computer-interaction"], branchMeta("Human–computer interaction"));
   const hci: Leaf[] = [
@@ -370,6 +429,7 @@ async function main(): Promise<void> {
     ...sw,
     ...pl,
     ...fe,
+    ...aip,
     ...hci,
     ...vis,
     ...tw,

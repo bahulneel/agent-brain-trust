@@ -1,0 +1,14 @@
+label: Agent skill package design
+expert_ids:
+  - lilian-weng
+  - ward-cunningham
+  - martin-fowler
+keywords:
+  - agent skills
+  - SKILL.md
+  - composable instructions
+  - tool contracts
+  - discovery
+  - progressive disclosure
+  - MCP
+  - plugin manifests

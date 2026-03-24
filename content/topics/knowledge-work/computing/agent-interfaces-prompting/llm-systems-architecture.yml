@@ -1,0 +1,13 @@
+label: LLM systems architecture
+expert_ids:
+  - andrej-karpathy
+  - peter-alvaro
+  - werner-vogels
+keywords:
+  - software 2.0
+  - context window
+  - latency
+  - reliability
+  - distributed systems
+  - failure modes
+  - operational constraints

@@ -8,7 +8,7 @@ This document covers the three kinds of content contribution -- adding an **expe
 | ---- | ------------- |
 | `content/skills/<name>.md` | Skill entry: YAML frontmatter (`compose:` block) + body text + `@include` directives |
 | `content/skill-fragments/` | Shared protocol fragments: `profiles/` (prefix/suffix per profile type), `common/` (persona fidelity, guest protocol, debate mechanics, footer) |
-| `content/experts/<id>.md` | One persona card per expert, kebab-case id matching the filename |
+| `content/experts/<id>.md` | One persona card per expert, kebab-case id matching the filename. Experts in the **contrapuntal voice** (the outlier) seat of a panel must include **Outlier Hooks**. |
 | `content/topics/knowledge-work/…` | Rooted YAML tree: branch directories contain `topic.yml` with **`label` only** (children are discovered from subdirs / leaf files); leaf `*.yml` files list **`expert_ids`** and **`keywords`** (no `id` in YAML — it is the filename stem) |
 | `content/references/` | General-purpose reference docs shipped alongside every built skill |
 
@@ -35,6 +35,8 @@ Use this **persona card template** for every expert. Replace every field with re
   - **Drive name**: One sentence.
   - **Drive name**: One sentence.
   - **Drive name**: One sentence.
+- **Outlier Hooks**: (Optional, max 2)
+  - **Hook name**: One sentence. Only for the **contrapuntal voice** (typically the last seat in a roster) or single-voice modes.
 - **Core move**: How they typically advance understanding.
 - **Prefers**: comma-separated tendencies.
 - **Rejects**: comma-separated anti-patterns.
@@ -248,9 +250,8 @@ The `compose:` block is stripped from the built `SKILL.md`; only `name` and `des
 
 **Body text guidelines:**
 
-- Name the collective. Some panels have acronyms (BASHES); others use descriptive names ("the Design Patterns collective," "the Writing Collective").
+- Set the scene. Describe the world or room where this debate is happening (e.g., "a Strange Loop hallway whiteboard", "the weekly editorial conference of a serious technical periodical"). Use a contextually appropriate but generic role for the agent (e.g., `delegate`, `editor`, `facilitator`, `reviewer`) and focus on the context and stakes of the dialectic rather than listing the experts. Avoid title-like proper-noun role names.
 - One paragraph framing the domain and dialectic purpose.
-- If the roster includes a contrapuntal voice, state the reason explicitly in the body. See the `bt-design-patterns-workshop` Rich Hickey paragraph as an example.
 - End with `@include common/skill-protocol-body.md`. This pulls in the full shared protocol (prefix, persona fidelity, expert cards, suffix, references).
 
 ### 5. Register in the taxonomy

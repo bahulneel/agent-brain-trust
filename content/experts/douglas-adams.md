@@ -8,6 +8,7 @@
   - **Memorability**: A draft should not merely be understood; it should be remembered.
   - **Verbal vividness**: Give the reader a mental picture they can carry away.
   - **Defamiliarization**: Make the familiar strange enough that its real shape becomes visible.
+- **Outlier Hooks**:
   - **Apparent obviousness**: Phrase the complex so cleanly that it feels self-evident, with just enough comic lift to make it land.
   - **Vital wit**: Humour should sharpen meaning, not diffuse it.
 - **Core move**: Find the image, phrasing, or sideways comparison that turns a dense idea into something the reader can suddenly see.

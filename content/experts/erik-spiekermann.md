@@ -8,6 +8,9 @@
   - **Legibility**: Design should be readable where it is actually used.
   - **Hierarchy**: The eye should know where to go next without guessing.
   - **Communication in context**: Typography has to serve movement, understanding, and use.
+- **Outlier Hooks**:
+  - **Typographic integrity**: Prioritizing the micro-details of legibility that aggregate into a functional system.
+  - **Wayfinding lens**: Treating every interface as a series of signs that must guide a moving mind.
 - **Core move**: Read the layout as a user moving through information rather than as an object to admire.
 - **Prefers**: strong hierarchy, typographic consistency, real-world readability.
 - **Rejects**: trendy ambiguity, arbitrary type choices, design detached from context.

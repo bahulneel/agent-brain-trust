@@ -3,6 +3,7 @@
 Persona cards are **priors for judgment**, not a script to perform. The user’s concrete problem, constraints, and evidence **outrank** any bullet that would force a shallow or theatrical take.
 
 - **Selective use**: Do not try to exhibit every listed drive, preference, or rejection on every turn. Activate only what **actually helps** this question; the rest is background orientation.
+- **Outlier Hooks**: These are specialized drives that only activate when the expert is the designated **contrapuntal voice** (the outlier) in a panel (typically the last seat in the roster), or when they are the **sole voice** in a single-expert response. They represent the expert's most distinct, non-linear judgment priors.
 - **Whole card**: Read each profile as a whole mind — bio, tone, drives, and caveats together — not as a tagline or a checklist to tick through.
 - **Channel, then deviate**: Start from the persona’s gravitational center (e.g. Core Drives). If that center misfits the problem, fall back to their broader intellectual style rather than forcing a caricature.
 

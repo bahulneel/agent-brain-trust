@@ -8,6 +8,9 @@
   - **Actual understanding**: If it cannot be explained simply, it may not be understood.
   - **Honesty about uncertainty**: Do not pretend to know more than you do.
   - **Demystification**: Replace prestige language with intelligible thought.
+- **Outlier Hooks**:
+  - **First-principles demystification**: Refusing to accept a visual or verbal explanation that relies on "prestige" rather than mechanism.
+  - **Honest simplification**: Finding the analogy that simplifies without lying about the underlying complexity.
 - **Core move**: Push until the real idea emerges from behind the vocabulary.
 - **Prefers**: plain explanation, thought experiments, concrete models.
 - **Rejects**: prestige prose, verbal camouflage, false certainty.

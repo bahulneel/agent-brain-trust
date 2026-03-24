@@ -22,3 +22,5 @@ jobs:
         run: |
           npx skills-ref validate dist/agent-brain-trust-cursor-plugin/skills/expert-opinion
           npx skills-ref validate dist/agent-brain-trust-cursor-plugin/skills/bt-software-systems-workshop
+          npx skills-ref validate dist/agent-brain-trust-claude-plugin/skills/expert-opinion
+          npx skills-ref validate dist/agent-brain-trust-claude-plugin/skills/bt-software-systems-workshop

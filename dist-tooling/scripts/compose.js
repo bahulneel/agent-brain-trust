@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
-import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
+import { isMap, isScalar, parse as parseYaml, parseDocument, Scalar, stringify as stringifyYaml, } from "yaml";
 const MAX_INCLUDE_DEPTH = 12;
 const REPEAT_ROSTER = /@repeat\s+roster\s*\n([\s\S]*?)@endrepeat/g;
 /**
@@ -138,17 +138,16 @@ function resolveIncludePath(rel, fragmentsRoot) {
     }
     return join(fragmentsRoot, rel.trim());
 }
+/** `@if target` or `@if a|b|c` (pipe-separated); keep inner block when `target` is listed. */
 function expandConditionals(text, target) {
-    const blocks = [
-        { name: "plugin", re: /@if plugin\n([\s\S]*?)@endif/g },
-        { name: "skill-zip", re: /@if skill-zip\n([\s\S]*?)@endif/g },
-        { name: "mcp", re: /@if mcp\n([\s\S]*?)@endif/g },
-    ];
-    let out = text;
-    for (const { name, re } of blocks) {
-        out = out.replace(re, (_, inner) => (target === name ? inner : ""));
-    }
-    return out;
+    const re = /@if ([^\n]+)\n([\s\S]*?)@endif/g;
+    return text.replace(re, (_, spec, inner) => {
+        const targets = spec
+            .split("|")
+            .map((s) => s.trim())
+            .filter(Boolean);
+        return targets.includes(target) ? inner : "";
+    });
 }
 /**
  * `compose` in YAML frontmatter supplies the initial template env for the skill body (merged into nested `@include`s).
@@ -162,22 +161,39 @@ export function extractComposeEnv(frontmatterBlock) {
         return { frontmatterOut: frontmatterBlock, composeEnv: {} };
     }
     const inner = frontmatterBlock.slice(3, end).trim();
-    let doc;
+    let docJs;
     try {
-        doc = parseYaml(inner);
+        docJs = parseYaml(inner);
     }
     catch {
         return { frontmatterOut: frontmatterBlock, composeEnv: {} };
     }
-    const rawCompose = doc.compose;
-    delete doc.compose;
-    const frontmatterOut = Object.keys(doc).length === 0
+    const rawCompose = docJs.compose;
+    const composeEnv = flattenComposeParams(rawCompose);
+    const yamlDoc = parseDocument(inner);
+    if (yamlDoc.errors.length > 0) {
+        return { frontmatterOut: frontmatterBlock, composeEnv };
+    }
+    const root = yamlDoc.contents;
+    if (!isMap(root)) {
+        return { frontmatterOut: frontmatterBlock, composeEnv };
+    }
+    root.items = root.items.filter((pair) => {
+        const keyStr = isScalar(pair.key) ? String(pair.key.value) : "";
+        return keyStr !== "compose";
+    });
+    for (const pair of root.items) {
+        if (isScalar(pair.value) && typeof pair.value.value === "string") {
+            const v = pair.value.value;
+            if (v.includes("\n") || v.includes(":") || v.length > 72) {
+                pair.value.type = Scalar.BLOCK_FOLDED;
+            }
+        }
+    }
+    const frontmatterOut = root.items.length === 0
         ? "---\n---\n"
-        : `---\n${stringifyYaml(doc, { lineWidth: 0 }).trimEnd()}\n---\n`;
-    return {
-        frontmatterOut,
-        composeEnv: flattenComposeParams(rawCompose),
-    };
+        : `---\n${stringifyYaml(yamlDoc, { lineWidth: 0 }).trimEnd()}\n---\n`;
+    return { frontmatterOut, composeEnv };
 }
 function flattenComposeParams(raw) {
     if (raw === null || raw === undefined) {

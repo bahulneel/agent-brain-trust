@@ -1,6 +1,6 @@
 # Agent Brain Trust
 
-Composable [Agent Skills](https://agentskills.io/specification) (`expert-opinion`, `bt-*` workshops/editorial skills), a **Cursor plugin** bundle, and a **Brain Trust MCP** server. Authoring lives under `content/`; TypeScript tooling under `packages/` and `scripts/build.ts`.
+Composable [Agent Skills](https://agentskills.io/specification) (`expert-opinion`, `bt-*` workshops/editorial skills), **Cursor** and **[Claude Code](https://code.claude.com/docs/en/plugins)** plugin bundles, and a **Brain Trust MCP** server. Authoring lives under `content/`; TypeScript tooling under `packages/` and `scripts/build.ts`.
 
 ## Layout
 
@@ -35,6 +35,7 @@ npm run db:cli        # build packages + run brain-trust-cli from test-skill cwd
 Outputs:
 
 - `dist/agent-brain-trust-cursor-plugin/` — Cursor plugin (`.cursor-plugin/plugin.json`, `skills/`, `resources/`, `.mcp.json`, `scripts/mcp-server.js`)
+- `dist/agent-brain-trust-claude-plugin/` — Claude Code plugin (`.claude-plugin/plugin.json`, same `skills/`, `resources/`, `.mcp.json`, `scripts/mcp-server.js`; see [Create plugins](https://code.claude.com/docs/en/plugins))
 - `dist/skill-zips/<name>.zip` — one zip per skill (includes `SKILL.md`, `scripts/brain-trust-cli.js`, `assets/`)
 - `dist/agent-brain-trust-mcp/` — standalone MCP package (`brain-trust-mcp.js`, `package.json`, `resources/`)
 
@@ -43,7 +44,11 @@ Validate a built skill:
 ```bash
 npx skills-ref validate dist/agent-brain-trust-cursor-plugin/skills/expert-opinion
 npx skills-ref validate dist/agent-brain-trust-cursor-plugin/skills/bt-software-systems-workshop
+npx skills-ref validate dist/agent-brain-trust-claude-plugin/skills/expert-opinion
+npx skills-ref validate dist/agent-brain-trust-claude-plugin/skills/bt-software-systems-workshop
 ```
+
+Local Claude Code: `claude --plugin-dir ./dist/agent-brain-trust-claude-plugin`. Optional: `npm run install:claude-plugin` symlinks the built Claude plugin and registers it for Claude Code (see script output).
 
 ## Requirements
 

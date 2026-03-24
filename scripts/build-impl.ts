@@ -17,6 +17,7 @@ const CONTENT = join(ROOT, "content");
 const FRAGMENTS = join(CONTENT, "skill-fragments");
 const DIST = join(ROOT, "dist");
 const PLUGIN_OUT = join(DIST, "agent-brain-trust-cursor-plugin");
+const CLAUDE_PLUGIN_OUT = join(DIST, "agent-brain-trust-claude-plugin");
 const MCP_OUT = join(DIST, "agent-brain-trust-mcp");
 const SKILL_ZIPS = join(DIST, "skill-zips");
 
@@ -113,6 +114,18 @@ async function buildPluginSkills(stems: string[]): Promise<void> {
   }
 }
 
+async function buildClaudePluginSkills(stems: string[]): Promise<void> {
+  const skillsRoot = join(CLAUDE_PLUGIN_OUT, "skills");
+  await mkdir(skillsRoot, { recursive: true });
+  for (const stem of stems) {
+    const skillDir = join(skillsRoot, stem);
+    await mkdir(skillDir, { recursive: true });
+    await materialiseSkill(stem, skillsRoot, "claude-code");
+    await bundleCliWithYaml(skillDir);
+    await copyAssetsToSkill(skillDir);
+  }
+}
+
 async function buildZipSkills(stems: string[]): Promise<void> {
   const stage = join(DIST, "_zip_stage");
   await rm(stage, { recursive: true, force: true });
@@ -135,8 +148,11 @@ async function buildZipSkills(stems: string[]): Promise<void> {
   await rm(stage, { recursive: true, force: true });
 }
 
-async function copyResourcesToPlugin(stems: string[]): Promise<void> {
-  const res = join(PLUGIN_OUT, "resources");
+async function copyResourcesToPluginRoot(
+  pluginRoot: string,
+  stems: string[]
+): Promise<void> {
+  const res = join(pluginRoot, "resources");
   await mkdir(res, { recursive: true });
   try {
     await materializeExpertAssets(CONTENT, res);
@@ -170,7 +186,19 @@ async function writePluginManifest(version: string): Promise<void> {
   await writeFile(join(dir, "plugin.json"), JSON.stringify(manifest, null, 2), "utf8");
 }
 
-async function writeMcpConfig(): Promise<void> {
+async function writeClaudePluginManifest(version: string): Promise<void> {
+  const dir = join(CLAUDE_PLUGIN_OUT, ".claude-plugin");
+  await mkdir(dir, { recursive: true });
+  const manifest = {
+    name: "agent-brain-trust",
+    version,
+    description: "Agent Brain Trust: BT workshop/editorial skills, expert-opinion, MCP",
+    author: { name: "agent-brain-trust" },
+  };
+  await writeFile(join(dir, "plugin.json"), JSON.stringify(manifest, null, 2), "utf8");
+}
+
+async function writeMcpConfigAt(pluginRoot: string): Promise<void> {
   const mcpEntry = join("scripts", "mcp-server.js");
   const cfg = {
     mcpServers: {
@@ -183,7 +211,7 @@ async function writeMcpConfig(): Promise<void> {
       },
     },
   };
-  await writeFile(join(PLUGIN_OUT, ".mcp.json"), JSON.stringify(cfg, null, 2), "utf8");
+  await writeFile(join(pluginRoot, ".mcp.json"), JSON.stringify(cfg, null, 2), "utf8");
 }
 
 async function bundleMcpServer(): Promise<void> {
@@ -227,6 +255,12 @@ async function bundleMcpServer(): Promise<void> {
   }
 }
 
+async function copyMcpBundleToClaudePlugin(): Promise<void> {
+  await mkdir(join(CLAUDE_PLUGIN_OUT, "scripts"), { recursive: true });
+  await copyTree(join(PLUGIN_OUT, "scripts"), join(CLAUDE_PLUGIN_OUT, "scripts"));
+  await writeMcpConfigAt(CLAUDE_PLUGIN_OUT);
+}
+
 async function runSkillsRef(skillDir: string): Promise<void> {
   const bin = join(ROOT, "node_modules", ".bin", "skills-ref");
   const r = spawnSync(process.execPath, [bin, "validate", skillDir], {
@@ -248,20 +282,27 @@ export async function cmdBuild(): Promise<void> {
   }
 
   await mkdir(PLUGIN_OUT, { recursive: true });
+  await mkdir(CLAUDE_PLUGIN_OUT, { recursive: true });
   await buildPluginSkills(stems);
-  await copyResourcesToPlugin(stems);
+  await buildClaudePluginSkills(stems);
+  await copyResourcesToPluginRoot(PLUGIN_OUT, stems);
+  await copyResourcesToPluginRoot(CLAUDE_PLUGIN_OUT, stems);
   await writePluginManifest(version);
-  await writeMcpConfig();
+  await writeClaudePluginManifest(version);
+  await writeMcpConfigAt(PLUGIN_OUT);
   await bundleMcpServer();
+  await copyMcpBundleToClaudePlugin();
 
   await buildZipSkills(stems);
 
   const readme = `# agent-brain-trust plugin (built)\n\nVersion ${version}\n`;
   await writeFile(join(PLUGIN_OUT, "README.md"), readme, "utf8");
+  await writeFile(join(CLAUDE_PLUGIN_OUT, "README.md"), readme, "utf8");
 
   for (const stem of stems) {
     await runSkillsRef(join(PLUGIN_OUT, "skills", stem));
+    await runSkillsRef(join(CLAUDE_PLUGIN_OUT, "skills", stem));
   }
 
-  console.log("Build complete:", PLUGIN_OUT, MCP_OUT, SKILL_ZIPS);
+  console.log("Build complete:", PLUGIN_OUT, CLAUDE_PLUGIN_OUT, MCP_OUT, SKILL_ZIPS);
 }

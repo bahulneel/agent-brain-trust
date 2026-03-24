@@ -102,6 +102,17 @@ Guidelines when filling the template:
     >
     > Composability: Parts should combine without hidden coupling.
 
+- **`Outlier Hooks`: use them when the outlier needs extra pull beyond their core center of gravity.** Hooks are optional and should stay rare. Reach for them when the expert's value in a room depends on a direction, pressure, or provocation that is not already legible from the `Core Drives` alone.
+  - **Bad** — Repeating the core in slightly different words:
+    > Simplicity: Remove needless complexity.
+    >
+    > De-complecting: Separate braided concerns.
+  - **Good** — A distinct directional pull that may only matter in certain rooms:
+    > Reader delight: A technically correct draft may still fail if it leaves no mental residue.
+  - **Better** — A hook that explains why this person changes the room's trajectory:
+    > Defamiliarization: Make the familiar strange enough that a room full of specialists stops taking its own assumptions for granted.
+  - Hooks are **not** backup drives, bonus traits, or a second personality. They are targeted levers that become useful when the expert is acting as the room's outlier or when a single-voice response needs that extra angle.
+
 - **`Signature question`: make it unmistakably theirs.** It should sound like something they would actually ask in conversation, not a generic coaching prompt.
   - **Bad** — Generic coaching language:
     > What are your goals?
@@ -191,28 +202,28 @@ The profile determines the prefix (operating principles, moderator role) and suf
 
 The roster is the list of expert ids who form the panel's permanent members. Guests are drafted dynamically by the protocol at runtime; the roster defines the fixed core.
 
-**Roster size is flexible.** Existing panels range from 3 members (e.g. `bt-frontend-ux-critique`) to 8 (e.g. `bt-technical-writing-editorial`). The `technical-dialectic` suffix text references "six" members in some places, but the protocol adapts to any count -- smaller panels produce fewer cohorts. Choose the number that gives you the voices you need without padding.
+**Roster size is flexible.** The protocol adapts to different counts, but in practice you should aim for enough permanent members to support more than one cohort during debate. As a rule of thumb, that usually means at least **4** members, and more often **6-8** for a fully developed room. Choose the number that gives you the voices you need without padding.
 
 #### The N + contrapuntal voice pattern
 
-This is soft guidance, not a hard rule, but it produces better dialectic:
+This is soft guidance, not a hard rule, but it often produces better dialectic:
 
-- **N domain-matched voices** who share the panel's core territory but disagree on emphasis, style, or philosophy within it.
-- **1 contrapuntal voice** who brings a perspective the domain group would typically lack or underweight -- not as a "wildcard" but for an **explicitly stated reason** that addresses a real blind spot.
+- **N domain-matched voices** who share the panel's core territory but disagree on emphasis, style, or philosophy within it. In practice, `N` is usually **3-5**: enough for meaningful internal disagreement, not so many that the room loses shape.
+- **1 contrapuntal voice** who brings a perspective the domain group would typically lack or underweight.
 
-The contrapuntal voice is justified in the skill body (the paragraph before `@include common/skill-protocol-body.md`). State concretely what the domain group tends to miss and why this voice fills that gap. Examples from existing panels:
+When this pattern works, the outlier should feel obvious from the roster itself. Their inclusion should make sense because of who they are in relation to the other members, not because the skill body pauses to explain it.
 
-| Panel | Domain voices | Contrapuntal voice | Stated reason |
-| ----- | ------------- | ------------------ | ------------- |
-| `bt-software-systems-workshop` | Byrd, Alvaro, Sussman, Hickey, Steele | M. C. Escher | Structural symmetry, recursion, and visual/spatial reasoning about system shape -- perspectives that pure-code thinkers underweight |
-| `bt-design-patterns-workshop` | Gamma, Helm, Johnson, Vlissides, Fowler | Rich Hickey | OO pattern discussions omit data-first / de-complecting pressure: when values beat object graphs, when patterns braid concerns that should stay separate |
-| `bt-technical-writing-editorial` | Knuth, Kernighan, Kidder, Gleick, Sierra, Fowler, Feynman | Douglas Adams | Irreverence, reader delight, and the editorial instinct that technical prose can be too serious for its own good |
-
-A panel of 3 tightly scoped experts (e.g. `bt-visual-communication-critique`: Tufte, Escher, Spiekermann) may not need a contrapuntal voice at all -- when every seat is load-bearing and the scope is narrow, do not pad.
+Very small panels are now the exception, not the default. You can still retract a room if the material truly wants it, but the default should be enough voices to support more than one group in the debate. If the room cannot naturally split into multiple cohorts, it may be too small for the full dialectical protocol.
 
 ### 3. Write expert persona cards
 
 Each expert referenced from the taxonomy needs a substantive persona card at `content/experts/<id>.md`. See "Adding an expert" above for the card format and guidelines. **Roster members must already meet that bar** before they appear in a panel's `compose.roster`.
+
+In practice, panel authors will often be assembling a room from **existing** experts rather than writing fresh cards. In the normal case, an existing card should already be largely right, because it is a profile of that person rather than of a specific room.
+
+The main exception is when an expert is being drafted as the room's outlier. In that case, you may need to add `Outlier Hooks` so the expert pulls in the direction you want during debate, especially when that pressure would be hard to anticipate or encode in advance as part of their ordinary center of gravity.
+
+Treat this as a targeted adjustment, not a rewrite of the whole card. Most reused experts should need no changes; add hooks only when the outlier function is important to the room and not already legible from the existing profile.
 
 ### 4. Write the skill entry
 
@@ -233,8 +244,7 @@ compose:
     - expert-id-three
 ---
 
-Body text: the collective's identity, framing, and any explicit rationale
-for non-obvious roster choices (e.g. the contrapuntal voice justification).
+Body text: the room's identity, framing, and stakes.
 
 @include common/skill-protocol-body.md
 ```
@@ -303,7 +313,7 @@ The build system (`scripts/compose.ts`) processes skill entries through these st
 
 ## Checklist for a new panel
 
-- [ ] Roster constructed: domain voices + contrapuntal voice (if warranted) with explicit rationale
+- [ ] Roster constructed: domain voices + contrapuntal voice (if warranted)
 - [ ] All roster experts have substantive persona cards (no stubs or TBD fields)
 - [ ] Skill entry at `content/skills/bt-<name>.md` with compose block and body
 - [ ] Taxonomy leaf created or updated with all roster expert ids

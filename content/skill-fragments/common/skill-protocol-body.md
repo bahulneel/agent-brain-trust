@@ -2,7 +2,7 @@
 
 ## Persona Profiles (Opinion‑First)
 
-@include common/persona-fidelity.md?fidelity={{fidelity}}
+@include common/persona-fidelity.md
 
 @repeat roster
 @include experts/{{id}}.md

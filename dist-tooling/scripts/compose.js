@@ -152,7 +152,7 @@ function expandConditionals(text, target) {
 /**
  * `compose` in YAML frontmatter supplies the initial template env for the skill body (merged into nested `@include`s).
  * It is stripped from the built `SKILL.md` so only `name` / `description` / etc. ship to the agent.
- * Values must stringify to the same keys used in fragments (`profile`, `roster`, `fidelity`, …).
+ * Values must stringify to the same keys used in fragments (`profile`, `roster`, …).
  * `roster` may be a comma-separated string or a YAML array of expert ids.
  */
 export function extractComposeEnv(frontmatterBlock) {

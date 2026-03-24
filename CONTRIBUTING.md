@@ -258,7 +258,7 @@ Body text: the room's identity, framing, and stakes.
 | `profile` | Yes | Which prefix/suffix pair to use (`technical-dialectic` or `editorial-room`) |
 | `roster` | Yes | YAML array of expert ids; order determines speaking order in `@repeat roster` |
 
-The `compose:` block is stripped from the built `SKILL.md`; only `name` and `description` ship to the agent.
+The `compose:` block is stripped from the built `SKILL.md`; only `name` and `description` ship to the agent. Clients use those fields first to decide when to load the full skill; for phrasing, trigger testing, and eval-style prompts, see [Optimizing skill descriptions](https://agentskills.io/skill-creation/optimizing-descriptions) on the Agent Skills site.
 
 **Body text guidelines:**
 

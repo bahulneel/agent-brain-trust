@@ -52,13 +52,15 @@ Then enable the plugin (and MCP if you use it) in your client.
 
 ## Using the skills
 
-[Agent Skills](https://agentskills.io/specification) clients use each skill’s **name** and **description** in the manifest to decide when to attach it. You can **state your problem in ordinary language**—no skill id, no slash—and a good match on task and domain is often enough for the right skill to be selected. When you want a **specific** skill regardless of matching, use a **slash command** (where your client supports it): start the message with `/` plus the skill id.
+With [Agent Skills](https://agentskills.io/specification), the client usually loads only each skill’s **name** and **description** at first ([progressive disclosure](https://agentskills.io/what-are-skills#how-skills-work)); it pulls in the full `SKILL.md` when that pair looks relevant to your task. So natural-language prompts work best when they **read like the situation the description is written for**—messy tradeoffs, competing frames, specialist editorial judgement—not thin one-liners the base agent could handle without a skill protocol. Skill authors can tune triggering with the ideas in [Optimizing skill descriptions](https://agentskills.io/skill-creation/optimizing-descriptions).
+
+You can **state your problem in ordinary language** (no skill id, no slash) and rely on description matching, or use a **slash command** where your client supports it: `/` plus the skill id when you want to **force** a specific skill.
 
 ### Skills catalog
 
-**Natural language** — examples written as real tasks. They deliberately **do not** name a skill or ask for a “workshop” or “panel”; they describe the situation so description-based selection can attach the right skill.
+**Natural language** — realistic, context-rich prompts (paths, stakes, disagreement). They **do not** name a skill or ask for a “workshop”; they are the sort of task where the manifest **description** should argue for attachment.
 
-**Direct** — explicit direction: you name the skill with `/skill-id` so the client does not have to infer it.
+**Direct** — you name the skill with `/skill-id` so the client does not infer it.
 
 #### expert-opinion
 
@@ -66,11 +68,11 @@ One drafted expert answers in a single voice—computing, design, writing, produ
 
 Natural language:
 
-> The team can’t agree whether to carve this bounded context into its own service—I want one sharp read on the tradeoff, not a roundtable.
+> VP of Eng wants a one-page memo she can forward: should we split `billing-core` into its own deployable given coordination cost and blast radius—we’re not running another architecture forum this month, I need **one** strong read.
 
 or
 
-> I’ve rewritten the install section three times; it still doesn’t read right for someone who’s never touched our stack.
+> Third rewrite of our public SDK README (`docs/quickstart.md`); beta integrators still DM “where does auth go?” I need a serious editorial lens on whether the structure matches how a newcomer actually reads, not another pass of bullet tweaks.
 
 Direct (/expert-opinion):
 
@@ -82,11 +84,11 @@ Multi-voice workshop on architecture, paradigms, abstractions, DSLs, correctness
 
 Natural language:
 
-> We’re deadlocked on CRDTs versus last-write-wins for this collaborative doc feature—assumptions about correctness and ops keep talking past each other.
+> Real-time whiteboard (~50 concurrent editors): half the team is designing around CRDT merges, half wants OT + Postgres row locks—we keep recycling the same deck and nobody will pin down partition behavior or who repairs conflicts after a split brain.
 
 or
 
-> I need to sketch a small DSL for policy rules; I’m worried we’ll bake in a paradigm we’ll regret once the edge cases show up.
+> Compliance wants entitlements as data; I’m about to ship a YAML predicate mini-language for policy. SOC2 auditor will ask how we prove termination and auditability—I’m scared we’re embedding a little language we can’t reason about once legal adds “except when…” clauses.
 
 Direct (/bt-software-systems-workshop):
 
@@ -98,11 +100,11 @@ Multi-voice debate on patterns, GoF-style forces, naming, and when simpler data-
 
 Natural language:
 
-> Every new feature gets another repository interface and a factory; I’m not sure that layering is still buying us clarity.
+> `orders/` service: every story adds `IOrderRepositoryFactory`; juniors call it “clean architecture” but I can’t trace a checkout without a dozen indirections—is this still justified DDD or layered cargo-cult?
 
 or
 
-> This domain is turning into a forest of small objects and visitors—maybe that’s right, maybe we’re pattern-chasing.
+> Pricing engine greenfield started as plain functions; now there’s a Visitor per discount type and our domain expert can’t read the graph—I need a hard conversation on whether the shape matches the problem or we’re pattern-stacking.
 
 Direct (/bt-design-patterns-workshop):
 
@@ -114,9 +116,11 @@ Multi-voice pressure-test on what to build next, backlog priorities, problem fra
 
 Natural language:
 
-> Leadership wants growth work and reliability work in the same quarter; the roadmap slide doesn’t show what we’re *not* doing.
->
-> We’ve already sketched three solutions—I’m not convinced we’ve nailed the problem we’re actually solving for customers.
+> Board wants “Q3: growth **and** stability” on one slide with the same fourteen epics; nobody’s written what we’re explicitly **not** funding and on-call is already at two pages a week.
+
+or
+
+> CS keeps filing “workflow too rigid”; product has three PRDs titled “flexible workflows” with different actors—I don’t think we’ve agreed whether the pain is ops, end users, or integrations, and we’re sizing solutions anyway.
 
 Direct (/bt-product-strategy-workshop):
 
@@ -128,11 +132,11 @@ Multi-voice session on teams, authority, coordination, incentives, and whether t
 
 Natural language:
 
-> PM and engineering lead both think they own prioritisation; commitments slip and nobody will write the rule down.
+> Org chart says PM “owns” roadmap; eng manager’s goals say “engineering-led discovery”—sprint planning turns into quiet turf wars, dates slip, and there’s still no written rule for who breaks ties on scope.
 
 or
 
-> We’re merging two squads next month; staffing, roadmap, and escalations still have two competing stories.
+> Merging Team B into our platform squad Jan 1; HR drew one manager box but we still run two backlogs, two standups, and zero doc on who owns staffing tradeoffs vs. roadmap commitments vs. customer escalations.
 
 Direct (/bt-organisation-design-workshop):
 
@@ -144,11 +148,11 @@ Multi-voice UX critique: flows, wireframes, prototypes, layout, navigation, usab
 
 Natural language:
 
-> Signup completes but half of new users never reach the first “aha” screen—the screens look polished, so I’m not sure what’s wrong.
+> Analytics: signup completes but <40% reach “create first project”; screens look polished and heatmaps aren’t obviously broken—I need a disciplined read on whether the **sequence** and affordances match a first-time job, not “try shorter copy.”
 
 or
 
-> Here’s our settings IA with eight sections; I’m worried we’re hiding the two tasks people actually came for.
+> Settings redesign (Figma link in ticket): eight top-level tabs; support data says 80% of tickets are API keys + billing only—I’m worried we designed for nav parity instead of the two jobs people actually hired this screen for.
 
 Direct (/bt-frontend-ux-critique):
 
@@ -160,11 +164,11 @@ Multi-voice critique of charts, diagrams, slides, typography, and information de
 
 Natural language:
 
-> This funnel is what we show the board; the steps aren’t causal but the visual implies a pipeline story.
+> Board pack: funnel graphic trial→paid with no time axis; CFO narrates it as causal “levers” but marketing says awareness isn’t represented—I need a blunt take on whether the **graphic** implies a story the data doesn’t support.
 
 or
 
-> We have twelve metrics on one slide—legibility is suffering and I’m not sure the comparison is honest.
+> Quarterly review slide: twelve KPI sparklines, 8pt type, rainbow palette—leadership loves “one screen” density but I can’t tell if cross-quarter comparisons are even legible or statistically fair.
 
 Direct (/bt-visual-communication-critique):
 
@@ -176,11 +180,11 @@ Multi-voice editorial on technical prose—docs, posts, READMEs, RFCs—clarity,
 
 Natural language:
 
-> This RFC buries the actual decision under three pages of background; reviewers are asking questions the doc was supposed to answer upfront.
+> RFC-042 (internal): three pages of history before the decision; security review opened five threads the “Background” section was supposed to preempt—I need an editorial pass on **structure** (decision and asks up front), not wording polish, before rev 6.
 
 or
 
-> Our public API reference lists every field but reads like compliance copy—developers still Slack us for “how do I actually…?”
+> Public OpenAPI-derived reference: every field is “string, optional”; OAuth2+PKCE flow has no single worked example—support volume is all variants of “what’s the first POST?” and I suspect the doc is “complete” but unusable.
 
 Direct (/bt-technical-writing-editorial):
 
@@ -192,11 +196,11 @@ Multi-voice editorial on explaining science or technical concepts: analogies, in
 
 Natural language:
 
-> I’m explaining eventual consistency to PMs who keep picturing a single database that “eventually catches up.”
+> All-hands Monday: explain why “read your writes” isn’t guaranteed across our multi-region Postgres topology to a mostly non-DB audience who keep asking when the “single copy” finishes syncing.
 
 or
 
-> This tutorial promises “async Rust in twenty minutes”; I’m worried we’re skipping the mental model readers actually need.
+> Draft chapter “Async Rust for experienced Go devs”; beta readers lost at `Pin` and cancellation—title promises one sitting but I think we skipped the mental model rungs; need a cold read on whether the draft **teaches** what it claims.
 
 Direct (/bt-science-explanation-editorial):
 

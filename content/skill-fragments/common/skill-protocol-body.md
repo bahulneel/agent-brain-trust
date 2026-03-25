@@ -1,5 +1,7 @@
 @include profiles/{{profile}}-prefix.md
 
+@include common/protocol-execution-contract.md
+
 ## Persona Profiles (Opinion‑First)
 
 @include common/persona-fidelity.md

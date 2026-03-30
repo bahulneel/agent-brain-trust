@@ -1,0 +1,13 @@
+label: Subsystem extraction
+expert_ids:
+  - david-parnas
+  - sam-newman
+  - gregor-hohpe
+  - joe-armstrong
+  - neal-ford
+keywords:
+  - subsystem extraction
+  - boundary
+  - decomposition
+  - service split
+  - module boundary

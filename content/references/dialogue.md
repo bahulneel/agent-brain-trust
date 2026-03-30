@@ -10,7 +10,7 @@ Use during **Grounding** (readings, inquiry, value constraints, grounding statem
 
 ## Confirmations
 
-- Do not advance past **Readings**, **Value constraints**, **Grounding statement**, or **Trajectory** without explicit **user/writer confirmation** when the suite says so.
+- Do not advance past **Pre-readings guest drafting** (when the suite opens EW/DC slots), **Readings**, **Value constraints**, **Grounding statement**, or **Trajectory** without explicit **user/writer confirmation** when the suite says so.
 - If confirmation is missing, summarise state and ask for it briefly.
 
 ## Tools

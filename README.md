@@ -106,6 +106,24 @@ Direct (/bt-software-systems-workshop):
 
 > /bt-software-systems-workshop We’re choosing between event sourcing and a simple Postgres model—surface the real tradeoffs.
 
+#### bt-codebase-tactical-planning
+
+Multi-voice workshop on planning tactical change in an existing codebase: understanding the current system, finding the safest change surface, and sequencing practical next steps for refactors, migrations, and subsystem updates (Fowler, Beck, Parnas, Henney, Armstrong, Hickey).
+
+The core six stay polyglot and tactical; language-specific and migration-specialist depth comes in through the broader expert roster and guest drafting.
+
+Natural language:
+
+> Billing is moving to evented status updates and now `invoices/` has to react without breaking the existing reconciliation job; I need a room that can read the current code shape, identify the risky boundaries, and plan the smallest safe sequence of changes.
+
+or
+
+> We want to peel `search-indexer/` away from the monolith over the next two releases, but the codebase still shares models, cron timing, and retry logic in awkward places; help me map the migration path from the code we have to the subsystem we want.
+
+Direct (/bt-codebase-tactical-planning):
+
+> /bt-codebase-tactical-planning We have a target architecture in mind—use the current codebase to plan the safest tactical path from here to there.
+
 #### bt-prompt-engineering-trust
 
 Multi-voice workshop on prompt design, agent skills, tool boundaries, and trustworthy human–machine collaboration in production (Weng, Zhou, Karpathy, Ng, Mollick).

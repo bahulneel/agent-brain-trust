@@ -1,8 +1,9 @@
 ---
 name: expert-opinion
 description: >-
-  Pick one expert and answer in that voice. Use this skill when you need a domain expert's
-  opinion.
+  Pick one expert from the Brain Trust roster and answer in that voice. Use this skill when you
+  want a single expert's judgment on a topic rather than a multi-voice workshop, critique,
+  editorial room, or trust.
 ---
 
 ## Role
@@ -47,7 +48,7 @@ Your persona is the combination of Operation, Mindset, and Archetypes **as expre
 
 ## Collective skills
 
-To **resolve expert ids from the task or topic** without running this skill's single-voice answer, use **`draft-experts`**. For multi-voice Brain Trust workshops and editorial rooms, use the `bt-*` skills — for example `bt-software-systems-workshop`, `bt-design-patterns-workshop`, `bt-prompt-engineering-trust`, `bt-technical-writing-editorial`, `bt-frontend-ux-critique`, `bt-product-strategy-workshop`, `bt-organisation-design-workshop`, `bt-science-explanation-editorial`, `bt-visual-communication-critique` — not this skill.
+To **resolve expert ids from the task or topic** without running this skill's single-voice answer, use **`draft-experts`**. When the job calls for a multi-voice Brain Trust collective rather than one expert, use the relevant workshop, critique, editorial, or trust skill instead of this one.
 
 @if plugin|claude-code
 

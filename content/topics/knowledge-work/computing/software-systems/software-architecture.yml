@@ -3,9 +3,16 @@ expert_ids:
   - rich-hickey
   - frederick-brooks
   - david-parnas
+  - sam-newman
+  - rebecca-parsons
+  - joe-armstrong
 keywords:
   - architecture
   - structure
   - modularity
   - boundaries
+  - decomposition
+  - seams
+  - subsystem extraction
+  - evolution
 

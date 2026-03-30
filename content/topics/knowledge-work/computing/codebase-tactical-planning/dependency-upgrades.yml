@@ -1,0 +1,12 @@
+label: Dependency upgrades
+expert_ids:
+  - jez-humble
+  - rebecca-parsons
+  - kevlin-henney
+  - anders-hejlsberg
+keywords:
+  - dependency upgrade
+  - package ecosystem
+  - upgrade path
+  - compatibility risk
+  - rollout

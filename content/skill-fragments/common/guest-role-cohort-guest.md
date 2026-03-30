@@ -1,6 +1,6 @@
 #### 1. Cohort Guest
 
-**Trigger**: **Cohort Construction** — each cohort has exactly **one** cohort-guest slot. **Always fill every slot:** with **2 cohorts** you draft **2** cohort guests; with **3 cohorts**, **3**.
+**Trigger**: **Cohort Construction** — each cohort has exactly **one** cohort-guest slot. **Always fill every slot:** with **2 cohorts** you draft **2** cohort guests; with **3 cohorts**, **3**. Skipping this slot to save tokens or reach debate faster is **not** allowed.
 
 **Timing**: Draft and publish the full persona in the cohort justification **before** any intra-cohort debate rounds. No cohort proceeds without its guest named.
 

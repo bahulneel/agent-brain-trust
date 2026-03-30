@@ -2,9 +2,16 @@ label: Software evolution
 expert_ids:
   - martin-fowler
   - kent-beck
+  - michael-feathers
+  - kevlin-henney
+  - rebecca-parsons
 keywords:
   - refactoring
   - legacy
   - maintenance
   - design
+  - modernization
+  - migration
+  - codebase change
+  - tactical planning
 

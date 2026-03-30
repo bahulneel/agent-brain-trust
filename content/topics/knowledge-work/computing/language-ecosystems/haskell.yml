@@ -1,0 +1,9 @@
+label: Haskell
+expert_ids:
+  - simon-peyton-jones
+keywords:
+  - haskell
+  - GHC
+  - purity
+  - algebraic data types
+  - compiler

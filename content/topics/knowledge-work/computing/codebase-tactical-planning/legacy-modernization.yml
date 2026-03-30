@@ -1,0 +1,12 @@
+label: Legacy modernization
+expert_ids:
+  - michael-feathers
+  - kevlin-henney
+  - rebecca-parsons
+  - kent-beck
+keywords:
+  - legacy code
+  - modernization
+  - codebase evolution
+  - characterization
+  - technical debt

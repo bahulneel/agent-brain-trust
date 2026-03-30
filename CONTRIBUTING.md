@@ -264,7 +264,7 @@ The `compose:` block is stripped from the built `SKILL.md`; only `name` and `des
 
 - Set the scene. Describe the world or room where this debate is happening (e.g., "a Strange Loop hallway whiteboard", "the weekly editorial conference of a serious technical periodical"). Use a contextually appropriate but generic role for the agent (e.g., `delegate`, `editor`, `facilitator`, `reviewer`) and focus on the context and stakes of the dialectic rather than listing the experts. Avoid title-like proper-noun role names.
 - One paragraph framing the domain and dialectic purpose.
-- End with `@include common/skill-protocol-body.md`. This pulls in the full shared protocol (prefix, persona fidelity, expert cards, suffix, references).
+- End with `@include common/skill-protocol-body.md`. This pulls in the full shared protocol (execution contract, prefix, persona fidelity, expert cards, suffix, references).
 
 ### 5. Register in the taxonomy
 
@@ -318,6 +318,12 @@ The build system (`scripts/compose.ts`) processes skill entries through these st
 3. **`@repeat roster` / `@endrepeat`** -- expands the inner block once per roster id, setting `{{id}}` each iteration.
 4. **`@include path/to/file.md`** -- resolves against `content/skill-fragments/` (or `content/experts/` for paths starting with `experts/`). Supports query params (`?k=v`) and comma-separated params after `.md`.
 5. **`@if target` / `@endif`** -- conditional blocks for `plugin`, `claude-code`, or `skill-zip` targets.
+
+## Protocol checkpoints and eval-driven adherence
+
+`content/skill-fragments/common/protocol-execution-contract.md` is included from `common/skill-protocol-body.md` for every panel. It tells the agent to treat the Brain Trust flow as **one human-gated milestone per turn** by default, to end turns with a visible **Protocol checkpoint** block when input is required, and to allow **fast-track** bundling only when the human explicitly opts in. That addresses the common failure mode where a model collapses Grounding, Trajectory, cohort construction, and debate into a single reply despite prose elsewhere that says “wait for confirmation.”
+
+The Agent Skills evaluation workflow ([Evaluating skill output quality](https://agentskills.io/skill-creation/evaluating-skills)) is the right feedback loop for that behavior: design prompts that **invite** rushing (long briefs, “give me the whole workshop in one answer”), run **with-skill** vs baseline in **clean sessions** per case, then add **assertions** such as “first message contains only Readings plus a checkpoint,” “no Value Constraints in the same message as Trajectory,” or “no fabricated user confirmation.” Failed assertions and transcripts point back to tightening `protocol-execution-contract.md` or phase wording in the profile suffix — the spec does not provide a separate runtime “pause primitive”; explicit checkpoints plus eval pressure are the practical enforcement layer.
 
 ## Checklist for a new panel
 

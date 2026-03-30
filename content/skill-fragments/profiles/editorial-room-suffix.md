@@ -21,8 +21,8 @@ Possible guests include, but are not limited to:
 
 ### Constraints
 
-- **Expert Witness** and **Designated Challenger**: mandatory **when their triggers apply**; assess and draft **before Readings**; absent triggers, those slots stay closed.
-- **Cohort guests**: not optional — one per cohort, fully drafted before debate (see Drafting discipline).
+- **Expert Witness** and **Designated Challenger**: mandatory when triggers or **strong presumptions** apply; assess and draft **before Readings**; close a slot only with a **Valid narrow exception** from Guest Roles (not convenience waivers).
+- **Cohort guests**: **not optional** — **one distinct named guest per cohort**, **`draft-experts`** per cohort gap, before debate (see Drafting discipline and **Cohort guest waivers**).
 - Each guest's profile must appear before they speak so the writer can challenge the choice; if rejected, replace with another full persona before continuing.
 - Guests do not participate in Synthesis. The core eight own the editorial truth of the session.
 
@@ -34,10 +34,10 @@ The Moderator drives this phase. Before trajectory setting, cohort construction,
 
 Before **Readings**, the Moderator assesses the writer’s brief and any draft (if supplied) for:
 
-- **Expert Witness** — a **collective** domain gap on a load-bearing aspect (no cohort arrangement can compensate); see Guest Roles.
-- **Designated Challenger** — likely **opposing stakes**, **deadlock-prone** tension, or need for a **named critic** in the opening round; see Guest Roles.
+- **Expert Witness** — genre, subject-matter, audience, or evidentiary context the roster does not own; see Guest Roles (operational **truth** about a technical subject in prose counts — not waived because the draft is “only” explanatory).
+- **Designated Challenger** — competing readings of thesis, evidence burden, structure, or reader promise — **stakes need not be political**; see Guest Roles (**presumption** when the piece argues, instructs under uncertainty, or risks misleading a reader).
 
-For **each** role whose trigger applies, run **`draft-experts`** and publish the **full Guest Persona Format** before anyone performs Readings. If **no** role triggers, skip this sub-step and proceed directly to **Readings** (§1).
+For **each** role whose trigger applies (after Guest Roles **presumptions** and **narrow exceptions**), run **`draft-experts`** and publish the **full Guest Persona Format** before anyone performs Readings. If **no** role triggers under that bar, skip this sub-step and proceed directly to **Readings** (§1).
 
 ### 1. Readings (Mandatory)
 
@@ -135,7 +135,7 @@ The Moderator states: **Trajectory** + **Output Bias** before the debate, and th
 
 ## Cohort Construction Protocol
 
-Cohort guest drafting is **not** an optional sub-phase: the milestone is **incomplete** until every cohort has a full guest persona (see **Drafting discipline**). Do not open **Position** or intra-cohort debate without it.
+Cohort guest drafting is **not** an optional sub-phase: the milestone is **incomplete** until **every** cohort has a **full, distinct** guest persona (**Guest Persona Format**, **`draft-experts`** per cohort gap) — see **Drafting discipline** and **Cohort guest waivers**. Do not open **Position** or intra-cohort debate without **all** slots filled; **roster members are not cohort guests**.
 
 ### 1. Tension Axis Analysis
 
@@ -162,7 +162,7 @@ If the collective lacks depth on a load-bearing aspect of the draft **and** no E
 - Every member belongs to exactly one cohort.
 - Each cohort must **straddle at least one tension axis**: it must contain members who would naturally disagree on that axis. Internal friction is the goal.
 
-Each cohort **must** draft **one Cohort Guest** (see Guest Protocol and Drafting discipline) — one slot per cohort, filled before debate.
+Each cohort **must** draft **one Cohort Guest** (see Guest Protocol and Drafting discipline) — **one slot per cohort**, **one distinct figure per cohort**, filled before debate; **no** shared guest across cohorts, **no** “skip this cohort’s guest.”
 
 ### 3. Justify
 

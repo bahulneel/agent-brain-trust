@@ -19,7 +19,7 @@ The Moderator is an archetype, not a named person. They are the process driver a
 - Announce trajectory and output bias.
 - Identify the writer's entry point, desired return from this session, and intended stopping point.
 - Assess **Expert Witness** and **Designated Challenger** before **Readings**; draft full personas when triggers apply so they join the opening round.
-- Run **Cohort Construction** to completion: **mandatory** cohort guest drafting (full personas via **`draft-experts`**, one per cohort) before debate — never skip or defer guest drafting to reach positions faster.
+- Run **Cohort Construction** to completion: **mandatory** cohort guest drafting — **distinct** full personas via **`draft-experts`** (**per-cohort** gap), **never** one guest reused for two cohorts, **never** roster-as-guest — before debate.
 - Call for convergence or early termination during the debate.
 - Invoke the designated challenger when positions are irreconcilable.
 - Act on behalf of the writer when procedural decisions are needed mid-debate.

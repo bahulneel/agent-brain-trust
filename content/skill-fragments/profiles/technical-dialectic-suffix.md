@@ -6,8 +6,8 @@ The core six are chosen for their philosophies and approaches to software design
 
 ### Constraints
 
-- **Expert Witness** and **Designated Challenger**: mandatory **when their triggers apply**; assess and draft **before Readings**; absent triggers, those slots stay closed.
-- **Cohort guests**: not optional — one per cohort, fully drafted before debate (see Drafting discipline).
+- **Expert Witness** and **Designated Challenger**: mandatory when triggers or **strong presumptions** apply; assess and draft **before Readings**; close a slot only with a **Valid narrow exception** from Guest Roles (not convenience waivers).
+- **Cohort guests**: **not optional** — **one distinct named guest per cohort**, **`draft-experts`** per cohort gap, before debate (see Drafting discipline and **Cohort guest waivers**).
 - Each guest's profile must appear before they speak so the user can challenge the choice; if rejected, replace with another full persona before continuing.
 - Guests do not participate in Synthesis. The core six own the Substrate Truth.
 
@@ -19,10 +19,10 @@ The Moderator drives this phase. Before trajectory setting, cohort construction,
 
 Before **Readings**, the Moderator assesses the user’s request (and any code, system, or document the user supplied) for:
 
-- **Expert Witness** — a **collective** domain gap on a load‑bearing aspect (no cohort arrangement can compensate); see Guest Roles.
-- **Designated Challenger** — likely **opposing stakes**, **deadlock‑prone** tension, or need for a **named critic** in the opening round; see Guest Roles.
+- **Expert Witness** — load‑bearing authority outside roster consensus on **concrete system behaviour**, interoperability, failure modes, or operational truth; see Guest Roles (**strong presumption** when RPC/peers/strata/layers or cross‑boundary correctness is load‑bearing — **not** waived by “we can reason in‑repo”).
+- **Designated Challenger** — **operational and methodological** opposition counts; verification, sequencing, and “what must hold first” are **primary** challenger stakes, not reasons to skip; see Guest Roles (**strong presumption** when there is any engineering tradeoff surface).
 
-For **each** role whose trigger applies, run **`draft-experts`** and publish the **full Guest Persona Format** before anyone performs Readings. If **no** role triggers, skip this sub‑step and proceed directly to **Readings** (§1).
+For **each** role whose trigger applies (after applying presumptions — default **on** for non‑trivial systems work unless a **Valid narrow exception** is stated), run **`draft-experts`** and publish the **full Guest Persona Format** before anyone performs Readings. If **no** role triggers under that bar, skip this sub‑step and proceed directly to **Readings** (§1).
 
 ### 1. Readings (Mandatory)
 
@@ -109,7 +109,7 @@ The Moderator states: **Trajectory** + **Output Bias** before the debate, and th
 
 ## Cohort Construction Protocol
 
-Cohort guest drafting is **not** an optional sub-phase: the milestone is **incomplete** until every cohort has a full guest persona (see **Drafting discipline**). Do not open **Position** or intra-cohort debate without it.
+Cohort guest drafting is **not** an optional sub-phase: the milestone is **incomplete** until **every** cohort has a **full, distinct** guest persona (**Guest Persona Format**, **`draft-experts`** per cohort gap) — see **Drafting discipline** and **Cohort guest waivers**. Do not open **Position** or intra-cohort debate without **all** slots filled; **roster members are not cohort guests**.
 
 ### 1. Tension Axis Analysis
 
@@ -133,7 +133,7 @@ If the collective lacks depth on a load‑bearing aspect of the topic **and** no
 - Every member belongs to exactly one cohort.
 - Each cohort must **straddle at least one tension axis**: it must contain members who would naturally disagree on that axis. Internal friction is the goal — cohorts are not affinity groups.
 
-Each cohort **must** draft **one Cohort Guest** (see Guest Protocol and Drafting discipline) — one slot per cohort, filled before debate.
+Each cohort **must** draft **one Cohort Guest** (see Guest Protocol and Drafting discipline) — **one slot per cohort**, **one distinct historical figure per cohort**, filled before debate; **no** shared guest across cohorts, **no** “skip this cohort’s guest.”
 
 ### 3. Justify
 

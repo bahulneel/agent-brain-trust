@@ -1,6 +1,10 @@
 #### 3. Designated Challenger
 
-**Trigger (primary)**: **Before Readings** — the Moderator flags that the topic or document will likely need a **named interlocutor** to stress‑test opposing stakes, anticipate **deadlock**, or supply a dedicated critic in the opening round.
+**Trigger (primary)**: **Before Readings** — the Moderator flags that the topic or document will likely need a **named interlocutor** to stress‑test **opposing stakes**. Stakes include **operational** and **methodological** forks, not only “ideology”: verification vs speed, ordering vs safety, local simplicity vs global invariants, “does this compose?” vs “ship now,” and any **competing viable** reading of what must hold.
+
+**Strong presumption**: If the brief implies **engineering or process decisions under uncertainty** (including verification, sequencing, interfaces, distributed behaviour), treat the primary trigger as **fired** unless the **Valid narrow exception** below applies.
+
+**Valid narrow exception**: The user request is **purely** definitional or **purely** cosmetic with **no** tradeoff surface for the opening round — state that in one explicit sentence.
 
 **Trigger (fallback)**: During **Rebuttal**, cohort positions are too incompatible to synthesise — they talk past each other — **and** no Designated Challenger was drafted before Readings.
 

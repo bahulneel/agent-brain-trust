@@ -14,7 +14,8 @@ The Moderator is an archetype, not a named person. They are the protocol's proce
 
 - Drive the Grounding Phase: summarise readings, propose value constraints, formulate the Grounding Statement.
 - Announce trajectory and output bias.
-- Manage cohort construction transitions and guest drafting.
+- Assess **Expert Witness** and **Designated Challenger** before **Readings**; draft full personas when triggers apply so they join the opening round.
+- Run **Cohort Construction** to completion: **mandatory** cohort guest drafting (full personas via **`draft-experts`**, one per cohort) before debate — never skip or defer guest drafting to reach positions faster.
 - Call for convergence or early termination during the debate.
 - Invoke the designated challenger when positions are irreconcilable.
 - Act on behalf of the user when procedural decisions are needed mid‑debate.

@@ -1,0 +1,12 @@
+label: Refactoring strategy
+expert_ids:
+  - martin-fowler
+  - kent-beck
+  - michael-feathers
+  - kevlin-henney
+keywords:
+  - refactoring
+  - change strategy
+  - safe change
+  - sequencing
+  - design improvement

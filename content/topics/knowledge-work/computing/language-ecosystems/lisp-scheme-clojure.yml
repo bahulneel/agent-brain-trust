@@ -1,0 +1,11 @@
+label: Lisp, Scheme, Clojure
+expert_ids:
+  - guy-l-steele-jr
+  - gerald-jay-sussman
+  - rich-hickey
+keywords:
+  - lisp
+  - scheme
+  - clojure
+  - macros
+  - homoiconicity

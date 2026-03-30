@@ -1,0 +1,9 @@
+label: Erlang, BEAM
+expert_ids:
+  - joe-armstrong
+keywords:
+  - erlang
+  - beam
+  - supervision
+  - fault tolerance
+  - message passing

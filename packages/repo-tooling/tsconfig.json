@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "skipLibCheck": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "../../dist-tooling/scripts",
+    "rootDir": "../../scripts",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "composite": true
+  },
+  "include": ["../../scripts/**/*.ts"],
+  "exclude": ["../../node_modules", "../../dist", "../../packages", "../../dist-tooling"]
+}

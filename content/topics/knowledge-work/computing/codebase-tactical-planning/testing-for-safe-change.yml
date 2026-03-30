@@ -1,0 +1,12 @@
+label: Testing for safe change
+expert_ids:
+  - kent-beck
+  - michael-feathers
+  - jez-humble
+  - ward-cunningham
+keywords:
+  - testing
+  - safe change
+  - regression
+  - characterization test
+  - feedback loop

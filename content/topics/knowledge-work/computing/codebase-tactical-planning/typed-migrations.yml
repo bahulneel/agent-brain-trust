@@ -1,0 +1,12 @@
+label: Typed migrations
+expert_ids:
+  - anders-hejlsberg
+  - graydon-hoare
+  - simon-peyton-jones
+  - martin-odersky
+keywords:
+  - typed migration
+  - static typing
+  - gradual typing
+  - type safety
+  - language migration

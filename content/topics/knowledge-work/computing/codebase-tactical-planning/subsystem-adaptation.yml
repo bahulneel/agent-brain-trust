@@ -1,0 +1,12 @@
+label: Subsystem adaptation
+expert_ids:
+  - martin-fowler
+  - david-parnas
+  - joe-armstrong
+  - rebecca-parsons
+keywords:
+  - subsystem adaptation
+  - compatibility
+  - downstream change
+  - integration
+  - coordination

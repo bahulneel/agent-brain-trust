@@ -1,0 +1,12 @@
+label: Technical debt paydown
+expert_ids:
+  - ward-cunningham
+  - kevlin-henney
+  - rich-hickey
+  - michael-feathers
+keywords:
+  - technical debt
+  - complexity reduction
+  - cleanup
+  - simplification
+  - maintainability

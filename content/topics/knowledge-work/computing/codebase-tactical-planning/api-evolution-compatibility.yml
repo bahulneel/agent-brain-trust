@@ -1,0 +1,13 @@
+label: API evolution, compatibility
+expert_ids:
+  - martin-fowler
+  - barbara-liskov
+  - sam-newman
+  - gregor-hohpe
+  - anders-hejlsberg
+keywords:
+  - API evolution
+  - compatibility
+  - contracts
+  - versioning
+  - substitution

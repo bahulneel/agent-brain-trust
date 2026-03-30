@@ -1,0 +1,9 @@
+label: Python
+expert_ids:
+  - guido-van-rossum
+keywords:
+  - python
+  - pip
+  - packaging
+  - readability
+  - dynamic typing

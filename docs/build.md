@@ -8,8 +8,8 @@
 
 ```bash
 npm install
-npm run build:packages   # brain-trust-core + brain-trust-db dist/ (required before tooling tsc resolves those imports)
-npm run build:tooling # compile scripts/**/*.ts → dist-tooling/ (must match repo; CI checks git diff)
+npm run build:packages   # turbo: all workspace `build` tasks (packages + repo-tooling → dist-tooling/)
+npm run build:tooling    # turbo: repo-tooling only (brain-trust-core + brain-trust-db first, then scripts/**/*.ts → dist-tooling/)
 npm run validate      # quick checks
 npm run build         # turbo (brain-trust-db + brain-trust-core) then Cursor plugin / zips / MCP
 npm run db:build      # taxonomy validation + materialize `packages/brain-trust-db/dist/assets` + `rost.json`
@@ -41,9 +41,9 @@ Install steps: [install-prebuilt.md](install-prebuilt.md).
 
 ## Tooling (`dist-tooling/`)
 
-TypeScript under [`scripts/`](../scripts) compiles to committed **[`dist-tooling/`](../dist-tooling)** (`tsconfig.json`, `outDir: dist-tooling`). Unlike **`dist/`**, **`dist-tooling/` is tracked in git** so tooling can run without a local `tsc`.
+TypeScript under [`scripts/`](../scripts) compiles to committed **[`dist-tooling/`](../dist-tooling)** via the **[`packages/repo-tooling`](../packages/repo-tooling)** workspace: its `build` runs `tsc` after **`brain-trust-core`** and **`brain-trust-db`** (Turbo `^build` graph and caching; outputs declared in `packages/repo-tooling/turbo.json`). The root **`tsconfig.json`** is a solution that references `repo-tooling` for `tsc --build`.
 
-After editing any `scripts/**/*.ts`, run **`npm run build:tooling`** and commit the updated **`dist-tooling/**/*.js`**. CI runs the same compile and **`git diff --exit-code dist-tooling`** so drift fails the build.
+Unlike **`dist/`**, **`dist-tooling/` is tracked in git** so tooling can run without a local `tsc`. After editing any `scripts/**/*.ts`, run **`npm run build:tooling`** (or **`npm run build:packages`** / **`npm run build`**) and commit the updated **`dist-tooling/**/*`**. CI runs the same compile and **`git diff --exit-code dist-tooling`** so drift fails the build.
 
 ## MCP npm package (maintainers)
 

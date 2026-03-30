@@ -27,9 +27,8 @@ jobs:
       - name: npm version for trusted publishing
         run: npm install -g npm@^11.5.1
       - run: npm ci
-      # Scripts import brain-trust-core / brain-trust-db; exports target dist/ — compile packages before tsc on scripts/.
+      # Workspace builds (includes repo-tooling → dist-tooling/; Turbo orders deps + caches).
       - run: npm run build:packages
-      - run: npm run build:tooling
       - name: Check dist-tooling matches scripts
         run: git diff --exit-code dist-tooling
       - run: npm run build

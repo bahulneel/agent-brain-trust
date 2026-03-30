@@ -16,9 +16,8 @@ jobs:
           node-version: "20"
           cache: npm
       - run: npm ci
-      # Scripts import brain-trust-core / brain-trust-db; their package.json exports point at dist/ — build those first.
+      # Workspace builds (includes repo-tooling → dist-tooling/; Turbo orders deps + caches).
       - run: npm run build:packages
-      - run: npm run build:tooling
       - name: Check dist-tooling matches scripts
         run: git diff --exit-code dist-tooling
       - run: npm run validate

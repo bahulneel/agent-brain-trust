@@ -1,0 +1,19 @@
+{
+  "name": "repo-tooling",
+  "version": "0.5.0",
+  "private": true,
+  "type": "module",
+  "description": "Compiled repo scripts (scripts/**/*.ts → ../../dist-tooling/). Wired into Turbo so ^build runs after workspace packages.",
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "@types/node": "^22.10.0",
+    "brain-trust-core": "workspace:*",
+    "brain-trust-db": "workspace:*",
+    "esbuild": "^0.24.2",
+    "typescript": "^5.7.2",
+    "yaml": "^2.7.0"
+  }
+}

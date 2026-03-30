@@ -1,7 +1,7 @@
 {
   "name": "agent-brain-trust",
   "private": true,
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "Agent Brain Trust: composable skills, Cursor plugin, MCP",
   "license": "MIT",
   "repository": {
@@ -17,8 +17,8 @@
     "packages/*"
   ],
   "scripts": {
-    "typecheck": "npm run build --workspace=brain-trust-core && tsc --build",
-    "build:tooling": "tsc -p tsconfig.json",
+    "typecheck": "npm run build:tooling",
+    "build:tooling": "turbo run build --filter=repo-tooling...",
     "build": "turbo run build && tsx scripts/build.ts build",
     "build:packages": "turbo run build",
     "build:plugin": "tsx scripts/build.ts build",

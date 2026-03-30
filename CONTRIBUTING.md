@@ -281,17 +281,17 @@ Any new experts must be registered on at least one taxonomy leaf. See "Adding an
 
 ```bash
 npm run db:build    # taxonomy validation + expert materialization
-npm run build:packages  # if packages/*/dist is missing — needed so tooling tsc can resolve brain-trust-core / brain-trust-db
-npm run build:tooling   # if you changed scripts/**/*.ts — compile to dist-tooling/ and commit
+npm run build:packages  # turbo: all workspace builds, including repo-tooling → dist-tooling/
+npm run build:tooling   # turbo: only repo-tooling (deps first) — if you changed scripts/**/*.ts; then commit dist-tooling/
 npm run build       # turbo (includes `packages/brain-trust-mcp` → `dist/brain-trust-mcp.js`) then plugin + zips + MCP `resources/`/`LICENSE`
 
 # Validate all built skills (includes the new one)
 npm run validate:skills-ref
 ```
 
-If you edit **`scripts/**/*.ts`**, ensure **`npm run build:packages`** has been run (so workspace **`dist/`** exists), then **`npm run build:tooling`**, and include the regenerated **`dist-tooling/`** files in your PR; CI fails if they are out of sync.
+If you edit **`scripts/**/*.ts`**, run **`npm run build:tooling`** (or **`npm run build:packages`**) and include the regenerated **`dist-tooling/`** files in your PR; CI fails if they are out of sync.
 
-When you bump the repo **`version`** in root **`package.json`**, set **`packages/brain-trust-mcp/package.json`** `version` to the same value — the build fails if they differ (npm publish and plugin **`npx`** spec stay aligned).
+When you bump the repo **`version`** in root **`package.json`**, set **`packages/brain-trust-mcp/package.json`** `version` to the same value — the build fails if they differ (npm publish and plugin **`npx`** spec stay aligned). Keep **`packages/repo-tooling/package.json`** `version` in step for consistency.
 
 Common validation failures:
 

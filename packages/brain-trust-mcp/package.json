@@ -1,6 +1,6 @@
 {
   "name": "@bahulneel/brain-trust-mcp",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Brain Trust MCP server: taxonomy, experts, references",
   "license": "MIT",
   "private": false,

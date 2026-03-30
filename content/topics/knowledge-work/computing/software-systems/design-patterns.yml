@@ -6,6 +6,7 @@ expert_ids:
   - john-vlissides
   - martin-fowler
   - rich-hickey
+  - kevlin-henney
 keywords:
   - design patterns
   - GoF
@@ -15,4 +16,6 @@ keywords:
   - refactoring
   - catalogs
   - object-oriented design
+  - code smells
+  - simplification
 

@@ -35,7 +35,7 @@ The [Release](https://github.com/bahulneel/agent-brain-trust/actions/workflows/r
 - **`agent-brain-trust-cursor-plugin.zip`**, **`agent-brain-trust-claude-plugin.zip`** — one zip each, uploaded as matching **workflow artifacts** on every run, and attached to the [GitHub Release](https://github.com/bahulneel/agent-brain-trust/releases) when the **`release: published`** event runs (not when you only push a tag). **MCP** is published to npm on that event via **OIDC trusted publishing** — not as a release zip.
 - **Per-skill zips** — each `dist/skill-zips/<name>.zip` is attached to that same published release; the **`brain-trust-skill-zips`** artifact contains all of them for a given CI run.
 
-**Maintainers:** create the tag, open **Releases → Draft a new release**, choose that tag, then **Publish release**. The workflow builds from that tag and uploads the zips onto the release you just published. **Run workflow** (manual dispatch) only produces Actions artifacts—it does not add files to a Release.
+**Maintainers:** from a clean `develop` branch you can run the project-level Cursor command **`/relase`**, which tells the agent to inspect commits since the last version tag, choose the semver bump, run the `git flow` release steps, bump workspace versions, push branches and tags, and publish the GitHub release for the workflow to populate. You can still create the tag manually and open **Releases → Draft a new release** if you prefer; the workflow builds from that tag and uploads the zips onto the release you publish. **Run workflow** (manual dispatch) only produces Actions artifacts—it does not add files to a Release.
 
 Install steps: [install-prebuilt.md](install-prebuilt.md).
 

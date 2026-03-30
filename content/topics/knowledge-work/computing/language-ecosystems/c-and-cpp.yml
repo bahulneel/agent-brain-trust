@@ -1,0 +1,10 @@
+label: C, C++
+expert_ids:
+  - ken-thompson
+  - bjarne-stroustrup
+keywords:
+  - c
+  - c++
+  - native code
+  - pointers
+  - zero-overhead abstraction

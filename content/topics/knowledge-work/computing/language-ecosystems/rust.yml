@@ -1,0 +1,9 @@
+label: Rust
+expert_ids:
+  - graydon-hoare
+keywords:
+  - rust
+  - ownership
+  - borrowing
+  - memory safety
+  - systems programming

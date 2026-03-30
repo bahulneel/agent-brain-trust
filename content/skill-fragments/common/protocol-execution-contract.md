@@ -8,13 +8,15 @@ Unless the human has **explicitly** opted into fast‑tracking (see below), each
 
 Treat these as **separate milestones** (each normally ends the turn):
 
-1. **Pre-readings guest drafting (conditional)** — **Expert Witness** and/or **Designated Challenger** when their triggers apply; **full Guest Persona Format** via **`draft-experts`** **before** Readings so they join the opening round. If neither applies, **skip** this milestone and start at Readings. **Never** emit Readings before these personas when a trigger applies.
-2. **Readings** (first substantive Grounding output after milestone 1 when applicable — no Value Constraints, trajectory, cohorts, or debate in the same message).
+1. **Pre-readings guest drafting** — Draft **both** an **Expert Witness** and a **Designated Challenger** (see Guest Roles). **Full Guest Persona Format** via **`draft-experts`** **before** Readings. These slots are **mandatory** and must be filled with distinct named figures to ensure the opening round has both a domain oracle and a dedicated critic. **Never** emit Readings before this milestone is recorded with both personas.
+   - **Output**: Guest List block + full personas for both roles.
+2. **Readings** (first substantive Grounding output after milestone 1 — no Value Constraints, trajectory, cohorts, or debate in the same message).
 3. **Inquiry** (if triggered) — questions only; then stop for answers.
 4. **Value Constraints** — Moderator proposal only; then stop for confirm/adjust.
 5. **Grounding Statement** — Moderator synthesis only; then stop for confirm.
 6. **Trajectory + output bias** — Moderator statement only; then stop for confirm.
-7. **Cohort Construction** — tension axes, partition, justification, and **mandatory cohort-guest drafting**: a **full Guest Persona Format** for **every** cohort (one guest per cohort), grounded via **`draft-experts`**, before any intra-cohort debate or Position phase. This sub-phase is **not optional** and is **not** conditional on topic or user impatience. Cohort guests are **always** in scope. If this milestone grows large, you may split across turns at natural Moderator checkpoints **between** sub‑steps, but **never** skip cohort guest drafting, substitute placeholders, or merge Cohort Construction into debate.
+7. **Cohort Construction** — tension axes, partition, justification, and **mandatory cohort-guest drafting**: a **full Guest Persona Format** for **every** cohort (**one distinct named guest per cohort**; **2 cohorts ⇒ 2**, **3 ⇒ 3**), each grounded via **`draft-experts`** with a **cohort-specific** gap, before any intra-cohort debate or Position phase. **No waivers** — not for “balanced” cohorts, narrow scope, or pre-readings coverage. If this milestone grows large, you may split across turns at natural Moderator checkpoints **between** sub‑steps, but **never** skip cohort guests, **reuse one persona across cohorts**, substitute placeholders, or merge Cohort Construction into debate.
+   - **Output**: Updated Guest List block + full personas.
 8. **Discovery** (conditional) — witness Q&A only when an **Expert Witness** slot is open; then stop if human steering is needed before positions.
 9. **Debate** — follow round structure; do not jump to Refine/Synthesis in the same message as initial positions unless the human explicitly asked for a compressed run.
 
@@ -54,11 +56,13 @@ Compressed runs defeat the purpose of the dialectic: readings, constraints, and 
 
 Use the Agent Skills evaluation loop ([Evaluating skill output quality](https://agentskills.io/skill-creation/evaluating-skills)) with prompts that **tempt** rushing (e.g. long briefs, “give me the full workshop in one answer”). Add **assertions** that are machine‑ or judge‑checkable, for example:
 
-- The assistant message contains **only** pre-readings guest drafting (if applicable) **or** **only** Readings and a Protocol checkpoint — no Value Constraints, no Grounding Statement, no cohorts.
+- The assistant message contains **only** pre-readings guest drafting (both personas) **or** **only** Readings and a Protocol checkpoint — no Value Constraints, no Grounding Statement, no cohorts.
 - Any turn that includes Value Constraints **does not** also include Trajectory, cohort construction, or debate.
 - The message includes a **Protocol checkpoint** block whose “Next allowed step” names exactly **one** following phase.
 - The transcript does not contain fabricated human confirmations.
-- Any turn completing **Cohort Construction** includes **full** cohort guest personas (one per cohort, **Guest Persona Format**), not placeholders or deferred naming.
-- When EW/DC triggers apply, **Pre-readings guest drafting** appears **before** the first **Readings** output in the transcript.
+- Any turn that drafts or replaces a guest includes a **Guest List** block (Role: Name) followed by the **full Guest Persona Format** for the new guest(s).
+- Any turn completing **Pre-readings guest drafting** includes **both** an Expert Witness and a Designated Challenger persona.
+- Any turn completing **Cohort Construction** includes **full** cohort guest personas (one **distinct** figure per cohort, **Guest Persona Format**), not placeholders, deferred naming, or **one guest duplicated** across cohorts.
+- **Pre-readings guest drafting** always appears **before** the first **Readings** output in the transcript.
 
 Treat chronic checkpoint misses like any other skill failure: tighten instructions here, add contrasting examples, and re‑run evals until pass rates stabilize. Optional tooling: run with‑skill evals in an **isolated session** per test case so residue from earlier phases does not mask ellision ([spawning runs](https://agentskills.io/skill-creation/evaluating-skills#spawning-runs)).

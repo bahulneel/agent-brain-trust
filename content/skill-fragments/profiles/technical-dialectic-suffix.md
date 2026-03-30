@@ -1,36 +1,33 @@
 ## Guest Protocol (Pre‑flight: Expert Witness & Designated Challenger)
 
-The core six are chosen for their philosophies and approaches to software design, not just as domain specialists. **Expert Witness** and **Designated Challenger** are drafted **before Readings** (see Grounding §0) so they participate in the opening round. **Cohort guests** are drafted later from the broader Strange Loop conference during **Cohort Construction**. Guests are named, real figures chosen for their intellectual approach and known positions — not generic role‑fillers. Follow **Drafting discipline** in Guest Roles: fill **every** cohort-guest slot (one per cohort) at cohort construction, and **every** other slot that opens for Expert Witness or Designated Challenger, each at the correct time with a complete persona.
+The core six are chosen for their philosophies and approaches to software design, not just as domain specialists. **Expert Witness** and **Designated Challenger** are drafted **before Readings** (see Grounding §1) so they participate in the opening round. **Cohort guests** are drafted later from the broader Strange Loop conference during **Cohort Construction**. Guests are named, real figures chosen for their intellectual approach and known positions — not generic role‑fillers. Follow **Drafting discipline** in Guest Roles: fill **every** cohort-guest slot (one per cohort) at cohort construction, and **every** other slot that opens for Expert Witness or Designated Challenger, each at the correct time with a complete persona.
 
 @include common/guest-protocol.md
 
 ### Constraints
 
-- **Expert Witness** and **Designated Challenger**: mandatory **when their triggers apply**; assess and draft **before Readings**; absent triggers, those slots stay closed.
-- **Cohort guests**: not optional — one per cohort, fully drafted before debate (see Drafting discipline).
+- **Expert Witness** and **Designated Challenger**: mandatory for every session; assess and draft **before Readings**.
+- **Cohort guests**: **not optional** — **one distinct named guest per cohort**, **`draft-experts`** per cohort gap, before debate (see Drafting discipline and **Cohort guest waivers**).
 - Each guest's profile must appear before they speak so the user can challenge the choice; if rejected, replace with another full persona before continuing.
 - Guests do not participate in Synthesis. The core six own the Substrate Truth.
 
 ## Grounding Phase (Required First Step)
 
-The Moderator drives this phase. Before trajectory setting, cohort construction, or any debate, the collective must establish a shared understanding of the topic with the user. The protocol does not advance past this phase until the user confirms **except** that **Expert Witness** and **Designated Challenger** are assessed and drafted **before** the first **Readings** output when their triggers apply (see §0).
+The Moderator drives this phase. Before trajectory setting, cohort construction, or any debate, the collective must establish a shared understanding of the topic with the user. The protocol does not advance past this phase until the user confirms. **Expert Witness** and **Designated Challenger** are drafted in the **first** step of the protocol, **before** the first **Readings** output. **Both roles are mandatory.**
 
-### 0. Pre‑readings guest drafting (Expert Witness & Designated Challenger, conditional)
+### 1. Pre‑readings guest drafting (Expert Witness & Designated Challenger)
 
-Before **Readings**, the Moderator assesses the user’s request (and any code, system, or document the user supplied) for:
+Before **Readings**, the Moderator **must** draft **both** an Expert Witness and a Designated Challenger. These slots are not conditional; they are required to ground the opening round in both domain authority and critical pressure.
 
-- **Expert Witness** — a **collective** domain gap on a load‑bearing aspect (no cohort arrangement can compensate); see Guest Roles.
-- **Designated Challenger** — likely **opposing stakes**, **deadlock‑prone** tension, or need for a **named critic** in the opening round; see Guest Roles.
+For **each** role, run **`draft-experts`** and publish the **full Guest Persona Format** before anyone performs Readings. **Do not** skip this step or proceed directly to **Readings**.
 
-For **each** role whose trigger applies, run **`draft-experts`** and publish the **full Guest Persona Format** before anyone performs Readings. If **no** role triggers, skip this sub‑step and proceed directly to **Readings** (§1).
+### 2. Readings (Mandatory)
 
-### 1. Readings (Mandatory)
-
-**The first substantive output after §0 (if any).** Even if the request is ambiguous, **each** roster member MUST first state in **one sentence** what they understand the goal or question to be (their best guess), written in their own voice. **If** an Expert Witness or Designated Challenger was drafted in §0, they each add **one sentence** in the same round — same rule, their own voice. This is not a discussion — it is parallel interpretations of the topic (six roster voices **plus** any guests drafted in §0), presented together.
+**The first substantive output after guest drafting.** Even if the request is ambiguous, **each** roster member MUST first state in **one sentence** what they understand the goal or question to be (their best guess), written in their own voice. **Both** the Expert Witness **and** the Designated Challenger add **one sentence** in the same round — same rule, their own voice. This is not a discussion — it is parallel interpretations of the topic (six roster voices **plus** two guests), presented together.
 
 The user then responds: confirming, correcting, or clarifying. If the user confirms and readings are aligned, the Moderator proceeds to Value Constraints.
 
-### 2. Inquiry (Triggered)
+### 3. Inquiry (Triggered)
 
 **Presented AFTER Readings.** Inquiry is **mandatory** when:
 
@@ -46,7 +43,7 @@ Each member may ask the user up to **2 questions** to resolve ambiguities or con
 
 After the user responds, return to **Readings**: each member whose understanding was affected emits a **revised one‑sentence reading** incorporating what they learned; **Expert Witness** and **Designated Challenger** (if drafted) revise in the same round. The user then confirms or disputes the revised readings as before. If gaps still remain, a second inquiry round is permitted, followed again by revised readings. If a **new** collective domain gap appears that requires an Expert Witness **not** yet drafted, draft the witness **before** the next Grounding sub‑step that depends on domain depth (and before Discovery).
 
-### 3. Value Constraints
+### 4. Value Constraints
 
 The Moderator proposes the **value constraints** for this session based on what emerged from readings and inquiry. Value constraints define the disposition and depth of the investigation — not what the output looks like (that's trajectory), but how far to dig and what counts as a good outcome.
 
@@ -65,7 +62,7 @@ These are illustrative, not exhaustive. The Moderator may coin a value constrain
 
 The Moderator states the proposed value constraint(s) with a one‑sentence rationale, and the user confirms or adjusts. This determines how aggressively the debate explores deeper abstractions versus closing on a pragmatic answer.
 
-### 4. Grounding Statement
+### 5. Grounding Statement
 
 The Moderator synthesises the confirmed readings and value constraints into a compact **Grounding Statement**: a shared reference point (2–4 sentences) that the rest of the protocol can cite. It includes:
 
@@ -109,23 +106,15 @@ The Moderator states: **Trajectory** + **Output Bias** before the debate, and th
 
 ## Cohort Construction Protocol
 
-Cohort guest drafting is **not** an optional sub-phase: the milestone is **incomplete** until every cohort has a full guest persona (see **Drafting discipline**). Do not open **Position** or intra-cohort debate without it.
+Cohort guest drafting is **not** an optional sub-phase: the milestone is **incomplete** until **every** cohort has a **full, distinct** guest persona (**Guest Persona Format**, **`draft-experts`** per cohort gap) — see **Drafting discipline** and **Cohort guest waivers**. Do not open **Position** or intra-cohort debate without **all** slots filled; **roster members are not cohort guests**.
 
 ### 1. Tension Axis Analysis
 
 Before partitioning, analyse the current topic and identify **2–4 tension axes** — genuine trade‑offs where the members would naturally diverge. These axes are derived fresh each time from the topic, not from a fixed list.
 
-Examples of what a tension axis looks like (illustrative, not prescriptive):
-
-- expressiveness vs. simplicity
-- reversibility vs. performance
-- formal rigor vs. pragmatic constraint
-- local reasoning vs. global coherence
-- monotonic safety vs. expressive power
-
 Name each axis explicitly so the user can challenge the framing.
 
-If the collective lacks depth on a load‑bearing aspect of the topic **and** no Expert Witness was drafted in Grounding §0, flag it here — you **must** draft an **Expert Witness** (full persona) before Discovery if this applies (see Guest Protocol).
+If the collective lacks depth on a load‑bearing aspect of the topic **and** no Expert Witness was drafted in Grounding step 1, flag it here — you **must** draft an **Expert Witness** (full persona) before Discovery if this applies (see Guest Protocol).
 
 ### 2. Partition
 
@@ -133,33 +122,34 @@ If the collective lacks depth on a load‑bearing aspect of the topic **and** no
 - Every member belongs to exactly one cohort.
 - Each cohort must **straddle at least one tension axis**: it must contain members who would naturally disagree on that axis. Internal friction is the goal — cohorts are not affinity groups.
 
-Each cohort **must** draft **one Cohort Guest** (see Guest Protocol and Drafting discipline) — one slot per cohort, filled before debate.
+Each cohort **must** draft **one Cohort Guest** (see Guest Protocol and Drafting discipline) — **one slot per cohort**, **one distinct historical figure per cohort**, filled before debate; **no** shared guest across cohorts, **no** “skip this cohort’s guest.”
 
 ### 3. Justify
 
-State which tension axes each cohort straddles and why the partition produces productive internal conflict. Include **every** cohort guest profile and gap; if an Expert Witness applies **and** was not already drafted in Grounding §0, include that profile here or immediately before Discovery.
+State which tension axes each cohort straddles and why the partition produces productive internal conflict. Include **every** cohort guest profile and gap; if an Expert Witness applies **and** was not already drafted in Grounding step 1, include that profile here or immediately before Discovery.
 
 ## Debate Protocol (Flexible Rounds)
 
-The full protocol arc is: **Pre-readings guest drafting (EW/DC if applicable) → Grounding (Readings onward) → Trajectory → Cohort Construction → Discovery (if Expert Witness slot open) → Position → Rebuttal → Refine/Synthesis**. The Moderator manages transitions between phases. Within the debate itself, the number of rounds is not fixed; it is driven by whether new substantive ground is being broken.
+The full protocol arc is: **Pre-readings guest drafting (EW/DC) → Grounding (Readings onward) → Trajectory → Cohort Construction → Discovery (if Expert Witness slot open) → Position → Rebuttal → Refine/Synthesis**. The Moderator manages transitions between phases. Within the debate itself, the number of rounds is not fixed; it is driven by whether new substantive ground is being broken.
 
 ### Discovery Phase (Conditional)
 
-Runs only when an **Expert Witness** has been fully drafted (typically in Grounding §0, or before Discovery if the gap emerged late) — **required** in that case before Position. If no Expert Witness slot is open, skip this phase entirely. Each cohort may pose questions to the witness to establish shared facts, constraints, or domain realities before taking positions. The witness responds in their own voice. This phase produces no positions — only grounding.
+Runs only when an **Expert Witness** has been fully drafted (typically in Grounding step 1, or before Discovery if the gap emerged late) — **required** in that case before Position. If no Expert Witness slot is open, skip this phase entirely. Each cohort may pose questions to the witness to establish shared facts, constraints, or domain realities before taking positions. The witness responds in their own voice. This phase produces no positions — only grounding.
 
 @include common/debate-round-types.md
 
 ### Phase Structure
 
 1. **Position**: Each cohort deliberates internally (intra‑cohort rounds as needed), then presents its joint position.
-2. **Rebuttal**: Cohorts critique each other's positions (inter‑cohort rounds as needed). Cohorts may call intra‑cohort rounds between rebuttals to adapt their stance. If positions are irreconcilably talking past each other **and** no Designated Challenger was drafted in Grounding §0, the Moderator **must** draft a **Designated Challenger** (full persona, or formal re-use of the Expert Witness) before synthesis (see Guest Protocol).
+2. **Rebuttal**: Cohorts critique each other's positions (inter‑cohort rounds as needed). Cohorts may call intra‑cohort rounds between rebuttals to adapt their stance. If positions are irreconcilably talking past each other **and** no Designated Challenger was drafted in Grounding step 1, the Moderator **must** draft a **Designated Challenger** (full persona, or formal re-use of the Expert Witness) before synthesis (see Guest Protocol).
 3. **Refine / Synthesis**: Unify into the "Substrate Truth." The synthesis must name what was **traded away** — which valid concerns were sacrificed and why. If a designated challenger was active, the synthesis must respond to their critique.
 
 @include common/debate-close.md
 
 ## Output Contract
 
-- The Grounding Statement (including value constraints) appears first, confirmed by the user before anything else proceeds.
+- The Grounding Phase (starting with guest drafting) appears first.
+- The Grounding Statement (including value constraints) must be confirmed by the user before anything else proceeds.
 - Trajectory and output bias are stated by the Moderator before the debate.
 - Tension axes and cohort justification appear before the debate.
 - Guest profiles appear before the phase in which the guest first speaks (Expert Witness and Designated Challenger **before Readings**; cohort guests before intra-cohort debate).

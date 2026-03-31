@@ -26,7 +26,7 @@ npm run db:cli        # build packages + run brain-trust-cli from test-skill cwd
 - `dist/agent-brain-trust-cursor-plugin/` — Cursor plugin (`.cursor-plugin/plugin.json`, `skills/`, `resources/`, `.mcp.json`, `scripts/mcp-server.cjs` — a copy of `packages/brain-trust-mcp/dist/brain-trust-mcp.js`)
 - `dist/agent-brain-trust-claude-plugin/` — Claude Code plugin (`.claude-plugin/plugin.json`, same `skills/`, `resources/`, `.mcp.json`, same MCP script copy; see [Create plugins](https://code.claude.com/docs/en/plugins))
 - `dist/skill-zips/<name>.zip` — one zip per skill (includes `SKILL.md`, `scripts/brain-trust-cli.js`, `assets/`)
-- `packages/brain-trust-mcp/` — npm workspace: **`npm run build`** in that package (also run via Turbo) writes **`dist/brain-trust-mcp.js`**; the repo root **`npm run build`** step then writes **`resources/`** and **`LICENSE`** beside **`package.json`** for **`npm pack` / `npm publish`**. Not shipped as a GitHub Release zip (consumers use npm).
+- `packages/brain-trust-mcp/` — npm  **`npm run build`** in that package (also run via Turbo) writes **`dist/brain-trust-mcp.js`**; the repo root **`npm run build`** step then writes **`resources/`** and **`LICENSE`** beside **`package.json`** for **`npm pack` / `npm publish`**. Not shipped as a GitHub Release zip (consumers use npm).
 
 ## Prebuilt distribution
 
@@ -41,7 +41,7 @@ Install steps: [install-prebuilt.md](install-prebuilt.md).
 
 ## Tooling (`dist-tooling/`)
 
-TypeScript under [`scripts/`](../scripts) compiles to committed **[`dist-tooling/`](../dist-tooling)** via the **[`packages/repo-tooling`](../packages/repo-tooling)** workspace: its `build` runs `tsc` after **`brain-trust-core`** and **`brain-trust-db`** (Turbo `^build` graph and caching; outputs declared in `packages/repo-tooling/turbo.json`). The root **`tsconfig.json`** is a solution that references `repo-tooling` for `tsc --build`.
+TypeScript under [`scripts/`](../scripts) compiles to committed **[`dist-tooling/`](../dist-tooling)** via the **[`packages/repo-tooling`](../packages/repo-tooling)**  its `build` runs `tsc` after **`brain-trust-core`** and **`brain-trust-db`** (Turbo `^build` graph and caching; outputs declared in `packages/repo-tooling/turbo.json`). The root **`tsconfig.json`** is a solution that references `repo-tooling` for `tsc --build`.
 
 Unlike **`dist/`**, **`dist-tooling/` is tracked in git** so tooling can run without a local `tsc`. After editing any `scripts/**/*.ts`, run **`npm run build:tooling`** (or **`npm run build:packages`** / **`npm run build`**) and commit the updated **`dist-tooling/**/*`**. CI runs the same compile and **`git diff --exit-code dist-tooling`** so drift fails the build.
 

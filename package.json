@@ -1,7 +1,7 @@
 {
   "name": "agent-brain-trust",
   "private": true,
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Agent Brain Trust: composable skills, Cursor plugin, MCP",
   "license": "MIT",
   "repository": {
@@ -35,8 +35,8 @@
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
-    "brain-trust-core": "workspace:*",
-    "brain-trust-db": "workspace:*",
+    "brain-trust-core": "*",
+    "brain-trust-db": "*",
     "esbuild": "^0.24.2",
     "skills-ref": "^0.1.5",
     "tsx": "^4.19.2",

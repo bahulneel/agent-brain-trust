@@ -1,318 +1,323 @@
 # Relational Prompt Language (RPL)
 
-RPL is a Markdown-embedded language for describing multi-step LLM-driven
-protocols as composable, declarative relations. Instead of writing imperative
-instructions that tell an agent *how* to do something step by step, you write
-relations that declare *what* must be true, and the agent derives a path through
-them.
+RPL is a Markdown-embedded language for describing multi-step LLM protocols as
+composable, declarative relations. Instead of imperative instructions that tell
+an agent *how* to proceed step by step, you declare *what* must be true and the
+agent derives a path.
 
-This document motivates the language, introduces its key ideas, and shows how
-RPL protocols slot into three common deployment shapes: a **single prompt**, a
-**project system prompt**, and an **agent skill**. The companion
-[spec.md](spec.md) provides the full formal specification and grammar.
-
----
-
-## Why RPL?
-
-Natural-language system prompts work well for simple tasks, but they hit limits
-as protocols grow:
-
-- **Ordering is fragile.** Rearranging paragraphs can silently change behaviour.
-- **Composition is manual.** Combining two prompts means copy-pasting and
-  hoping nothing conflicts.
-- **Branching is verbose.** "If X then do A, otherwise if Y then do B, unless
-  Z..." becomes unreadable quickly.
-- **Traceability is absent.** There is no structural record of which steps ran,
-  what values were collected, or why a branch was taken.
-- **Reuse is copy-paste.** The same intake pattern gets rewritten in every
-  prompt that needs it.
-
-RPL addresses these by giving protocols a small, precise structure while keeping
-everything inside ordinary Markdown. Prose remains prose — instructions, tone
-guidance, presentation hints — but the skeleton of the protocol is machine-
-readable, composable, and traceable.
+This overview introduces RPL by example. We start with a plain Markdown prompt
+and progressively add language features — one at a time — until we have a
+composable protocol. The companion [spec.md](spec.md) provides the full formal
+specification and grammar.
 
 ---
 
-## Core Ideas
+## A Plain Markdown Prompt
 
-### Three Namespaces
-
-RPL partitions everything into three syntactically distinct namespaces:
-
-```
-rel(?a, ?b)      relation — a fact to establish or query
-%goal(?a)        goal — something to solve for
-$tool(?a, ?b)    tool — an external capability
-```
-
-**Relations** are the building blocks. They name facts: `name(?first, ?last)`,
-`severity(?s)`, `triage(?patient, ?severity)`. A relation says *what* is true,
-not *how* to make it true.
-
-**Goals** drive execution. A goal like `%critical(?patient, ?tel)` asks the
-agent to find bindings that satisfy it. Multiple goals compose with disjunction
-(`|`) or mutual exclusion, letting the same protocol serve several outcomes.
-
-**Tools** connect to external capabilities — user input (`$ask`, `$choose`),
-database queries, API calls. They use the same structural rules as relations
-and goals, so a tool result feeds into the rest of the protocol without special
-plumbing.
-
-### Variables and Binding
-
-Logical variables (`?x`) unify within a single reasoning step. Async variables
-(`$x`) mark values that arrive later — user answers, tool results, external
-events. This distinction lets the agent know exactly where it needs to pause
-and wait for input versus where it can derive forward.
-
-### Markdown Is the Source Format
-
-RPL lives inside Markdown. A heading that carries a signature is an RPL
-definition; a heading without one is plain documentation:
+Here is a system prompt for bug report intake, written the way most people
+write one today:
 
 ```markdown
-# Patient History - history(?patient-id, $symptoms)
+# Bug Report
 
-Confirm the patient's __patient-id__ and record their __symptoms__.
+When a user reports a bug, walk them through these steps.
+
+## Describe the Problem
+
+Ask the user to describe what went wrong, including what they
+expected and what actually happened.
+
+## Identify the Component
+
+Ask which part of the system is affected. Valid components are:
+frontend, backend, database, and infrastructure.
+
+## Assess Severity
+
+Ask how severe the issue is. Valid levels: critical, high,
+medium, and low.
 ```
 
-The heading declares the relation and its arguments. The prose body is both
-human-readable documentation and agent instruction. Fenced ` ```rpl ` blocks
-add formal expressions. This means an RPL protocol is always a readable
-document first, with machine structure layered in.
+This works. An agent reads it top to bottom, asks the questions, and wraps up.
+But the structure is entirely implicit. The agent has to *infer* that the
+sections are steps, that severity is a closed list, and that the protocol is
+done when all three are collected. As the prompt grows — more steps, branching
+outcomes, reuse across prompts — those inferences become fragile.
 
-### Rules and Composition
-
-Relations compose through implication:
-
-```rpl
-triage(?p, ?s) <= history(?p, ?symptoms), severity(?s)
-```
-
-This reads: "triage is established when history and severity are both known."
-The agent derives a dependency graph from these rules and walks it, collecting
-values as needed. No explicit ordering is required — the structure implies
-the order.
-
-### Goals as Entry Points
-
-Goals are the top-level "what do you want?" of a protocol:
-
-```rpl
-% <= %critical(?p, _) | %warning(?p, _) | %low(?p)
-```
-
-The root goal (`%`) says: satisfy any of the three triage levels. Each named
-goal has its own body that chains through the relations it needs. The agent
-picks the first eligible goal and works toward it.
-
-### Constraints and Traces
-
-Constraints (`=>`) express invariants. While variables remain unbound, a
-constraint is a live check. Once every variable is bound, it becomes a
-**trace** — a grounded record of what happened:
-
-```
-severity(?s) ^^ {s "critical", p "patient-0"} => true
-```
-
-Traces are the protocol's memory. They are queryable as ordinary relations, so
-later steps (or even later sessions) can reason over what was established
-earlier.
+RPL makes the structure explicit, one piece at a time.
 
 ---
 
-## Usage Patterns
+## Naming Facts
 
-The examples below assume the agent already understands RPL — either because
-the spec has been provided previously, or because RPL is part of the agent's
-base capabilities. All three patterns use the same language; what differs is
-*where* the protocol text lives and *how much* protocol you need.
+The first addition: give each heading a **relation signature**. A relation
+names a fact that the section establishes.
 
-### 1. Single Prompt
+```markdown
+## Describe the Problem - description($text)
 
-Drop RPL directly into a conversation when you need structured multi-step
-reasoning for a one-off task. No project setup required.
+## Identify the Component - component($name)
 
-**Example — quick intake form:**
-
-````markdown
-You understand RPL (Relational Prompt Language).
-
-Run the following protocol:
-
-# Intake - %intake <= name(?first, ?last), email($email), role($role)
-
-Greet the user, then collect their details.
-
-## Name - name(?first, ?last)
-
-Ask for the user's full name. Parse into __first__ and __last__.
-
-## Email - email($email)
-
-Ask for a work email address.
-
-## Role - role($role)
-
-```rpl
-valid-role("engineer")
-valid-role("designer")
-valid-role("manager")
+## Assess Severity - severity($level)
 ```
 
-Ask the user to choose a __role__ from the valid roles.
-````
+The prose under each heading is unchanged. What changes is the dash and the
+signature after the human-readable title.
 
-The agent reads the protocol, identifies `%intake` as the goal, and walks the
-dependency graph: it needs `name`, `email`, and `role`, each of which involves
-collecting a value from the user. The prose under each heading tells it *how*
-to ask. When all three are satisfied, the goal resolves.
+`description($text)` says: "this section establishes a fact called
+`description`, and its value is `$text`." The **`$`** sigil marks an **async
+variable** — a value that comes from outside the protocol. The user types it,
+a tool returns it, an event provides it. The agent knows it must pause and
+collect this value before moving on.
 
-This is useful when you want to hand a structured interaction to an agent
-mid-conversation without writing procedural instructions.
+> **`$`** means "goes out to get it." **`?`** means "already have it or can
+> derive it."
 
-### 2. Project System Prompt
+We will see `?` variables shortly. For now, the point is that each section has
+a name and declares what it produces.
 
-Place an RPL document in your project's system prompt (or rules/instructions
-file) to define a protocol that applies across all conversations in that
-project. This suits recurring workflows — code review checklists, onboarding
-flows, bug triage, etc.
-
-**Example — code review protocol as a project instruction:**
-
-````markdown
-You understand RPL (Relational Prompt Language).
-
-When the user asks for a code review, run this protocol:
-
-# Code Review - %review(?file, ?verdict) <= diff(?file, $changes), analysis(?file, ?issues), verdict(?file, ?issues, ?verdict)
-
-## Diff - diff(?file, $changes)
-
-Identify the __file__ under review and read its __changes__ (diff or content).
-
-## Analysis - analysis(?file, ?issues)
-
-```rpl
-analysis(?file, ?issues) <= diff(?file, ?changes), check(?file, ?changes, ?issues)
-```
-
-### Correctness - check(?file, ?changes, $issues)
-
-Review __changes__ for correctness bugs, logic errors, and edge cases.
-Report __issues__ found.
-
-### Style - check(?file, ?changes, $issues)
-
-Review __changes__ against project conventions and flag __issues__.
-
-## Verdict - verdict(?file, ?issues, $verdict)
-
-```rpl
-verdict(?file, ?issues, "approve") <= |?issues| = 0
-verdict(?file, ?issues, "request-changes") <= |?issues| > 0
-```
-
-If no issues were found, approve. Otherwise, present the issues and
-request changes.
-````
-
-Because this lives in the project system prompt, every conversation inherits
-it. The agent activates the protocol when the context matches (a review
-request) and follows the same structured steps each time. The relational
-structure means you can add new `check` sub-relations (security, performance,
-accessibility) without rewriting the existing ones — they compose
-automatically through `analysis`.
-
-### 3. Agent Skill
-
-Package an RPL protocol as an agent skill — a self-contained document that a
-skill-aware client loads on demand. The protocol becomes a reusable capability
-that any project can invoke.
-
-**Example — RFC review skill (sketch of a `SKILL.md`):**
-
-````markdown
----
-name: rfc-review
-description: >
-  Structured review of an RFC or design document: completeness, risks,
-  alternatives, and a clear verdict. Use when someone asks for a
-  design review or RFC feedback.
 ---
 
-You understand RPL (Relational Prompt Language).
+## Stating the Goal
 
-# RFC Review - %review <= document($doc), sections(?doc, ?sections), completeness(?doc, ?sections, ?gaps), risks(?doc, ?risks), verdict(?doc, ?gaps, ?risks, $verdict)
+The agent knows what facts each section produces, but not what it is working
+*toward*. Add a **goal** to the top-level heading:
 
-## Document - document($doc)
+```markdown
+# Bug Report - % <= description($text), component($name), severity($level)
 
-Ask the user to provide or reference the RFC __doc__ to review.
-
-## Sections - sections(?doc, ?sections)
-
-Parse the __doc__ and identify its __sections__: problem statement,
-proposed solution, alternatives, rollback plan, success metrics.
-
-## Completeness - completeness(?doc, ?sections, ?gaps)
-
-```rpl
-expected-section("problem-statement")
-expected-section("proposed-solution")
-expected-section("alternatives")
-expected-section("rollback-plan")
-expected-section("success-metrics")
-
-completeness(?doc, ?sections, #{& ?gap}) <=
-  expected-section(?gap), ?gap not in ?sections
+Summarize the report and confirm with the user before filing.
 ```
 
-Report any __gaps__ — expected sections that are missing or
-substantively empty.
+**`%`** marks a **goal** — the thing the agent is trying to satisfy. **`<=`**
+reads as "is satisfied when." So this says: *the bug report goal is satisfied
+when description, component, and severity are all established.*
 
-## Risks - risks(?doc, $risks)
+Now the agent works backward from the goal. It sees that `%` needs three
+facts, checks which are missing, and goes to establish them — reading the prose
+under each relation's heading to learn how. The order of sections in the
+document no longer matters; the dependency structure drives execution.
 
-Identify __risks__: unaddressed failure modes, scaling concerns,
-dependencies on uncommitted work, irreversible decisions without
-escape hatches.
+The prose on the goal heading ("Summarize the report…") tells the agent what
+to do once the goal is satisfied. Prose is always instruction; the signature
+is the structure.
 
-## Verdict - verdict(?doc, ?gaps, ?risks, $verdict)
+---
 
-Synthesize gaps and risks into a __verdict__: approve, revise, or
-reject. Explain the reasoning.
+## Declaring Valid Options
+
+"Valid components are: frontend, backend, database, and infrastructure" is
+buried in a sentence. If someone adds a fifth component, they have to find and
+update prose. RPL lets you state these as formal facts in a fenced block:
+
+````markdown
+## Identify the Component - component($name)
+
+Ask which part of the system is affected.
+
+```rpl
+valid-component("frontend")
+valid-component("backend")
+valid-component("database")
+valid-component("infrastructure")
+```
 ````
 
-The skill is discovered by its `name` and `description`. When a user's request
-matches, the client loads the full document and the agent runs the RPL
-protocol. The same skill works in Cursor, Claude Code, or any client that
-supports the skill format — the RPL protocol is portable because it is just
+A fenced block tagged **`rpl`** adds formal expressions to the current
+heading's scope. Here, four `valid-component` facts declare the closed set of
+options. The agent can present these as a structured choice rather than parsing
+them from a sentence.
+
+Same for severity:
+
+````markdown
+## Assess Severity - severity($level)
+
+Ask how severe the issue is.
+
+```rpl
+valid-severity("critical")
+valid-severity("high")
+valid-severity("medium")
+valid-severity("low")
+```
+````
+
+The prose becomes cleaner — it provides the instruction ("ask how severe")
+while the `rpl` block provides the data. Adding a new option is one line, not
+a prose edit.
+
+---
+
+## Composing Facts
+
+So far each relation stands alone. But a real protocol often needs to group
+several facts into a composite — "the report" is the description, the
+component, and the severity taken together. Make this explicit with a **rule**:
+
+````markdown
+## Report - report(?text, ?name, ?level) <= description(?text), component(?name), severity(?level)
+
+Present the complete report: __text__, __name__, and __level__.
+Confirm with the user before filing.
+````
+
+**`<=`** on a non-goal heading creates a **rule**: `report` is established
+when `description`, `component`, and `severity` are all known. The shared
+variable names wire them together — `?text` in `report` binds to whatever
+value `description` collected as `$text`.
+
+The **`__text__`** emphasis in the prose marks the same variable. It tells the
+agent which values to weave into its response. The heading declares the data
+flow; the prose describes the presentation.
+
+Now the goal can reference the composite instead of listing every piece:
+
+```markdown
+# Bug Report - % <= report(?text, ?name, ?level)
+```
+
+The agent sees that `%` depends on `report`, and `report` depends on the three
+intake relations. It walks the dependency graph — the protocol's skeleton —
+and the prose under each heading is the skin.
+
+---
+
+## Branching on Outcome
+
+Every bug report collects the same information. But what happens next should
+depend on severity. Instead of writing "if critical then… else if high
+then…" in prose, express this as **multiple goals** joined by disjunction:
+
+```markdown
+# Bug Report - % <= %urgent | %normal | %backlog
+```
+
+**`|`** means **or** — the root goal succeeds when any one of the named goals
+succeeds. Each named goal defines its own conditions:
+
+```markdown
+# Urgent - %urgent <= report(_, _, "critical")
+
+Page the on-call engineer immediately. Include the full report.
+
+# Normal - %normal <= report(_, ?name, ?level), ?level != "critical", ?level != "low"
+
+Create a ticket in the __name__ component's queue.
+
+# Backlog - %backlog <= report(_, _, "low")
+
+Add to the backlog. No immediate action required.
+```
+
+**`_`** is the **anonymous variable** — it matches any value and discards it.
+`%urgent` only cares that the third argument is `"critical"`; it does not need
+the description or component to decide whether it is eligible.
+
+The agent collects the report (same intake relations, shared across all
+branches), then picks the first eligible sub-goal based on the severity that
+was collected. No duplication, no prose conditionals.
+
+---
+
+## The Complete Protocol
+
+Here is the full document with every feature applied:
+
+````markdown
+# Bug Report - % <= %urgent | %normal | %backlog
+
+## Describe the Problem - description($text)
+
+Ask the user to describe what went wrong, including what they
+expected and what actually happened.
+
+## Identify the Component - component($name)
+
+Ask which part of the system is affected.
+
+```rpl
+valid-component("frontend")
+valid-component("backend")
+valid-component("database")
+valid-component("infrastructure")
+```
+
+## Assess Severity - severity($level)
+
+Ask how severe the issue is.
+
+```rpl
+valid-severity("critical")
+valid-severity("high")
+valid-severity("medium")
+valid-severity("low")
+```
+
+## Report - report(?text, ?name, ?level) <= description(?text), component(?name), severity(?level)
+
+Present the complete report: __text__, __name__, and __level__.
+Confirm with the user before filing.
+
+# Urgent - %urgent <= report(_, _, "critical")
+
+Page the on-call engineer immediately. Include the full report.
+
+# Normal - %normal <= report(_, ?name, ?level), ?level != "critical", ?level != "low"
+
+Create a ticket in the __name__ component's queue.
+
+# Backlog - %backlog <= report(_, _, "low")
+
+Add to the backlog. No immediate action required.
+````
+
+Roughly forty lines of Markdown — all of it readable as documentation — and
+the agent has: named facts, a declared goal, typed inputs, closed option sets,
+a composition rule, and severity-based branching.
+
+---
+
+## Where It Lives
+
+The protocol above is ordinary Markdown. Where you put it determines when and
+how it runs. All three patterns below use exactly the same RPL; what varies is
+scope and triggering.
+
+**In a single prompt** — paste the protocol into a conversation when you need
+structured intake for a one-off task. Prefix with "You understand RPL" so the
+agent knows to interpret the signatures. Useful for ad-hoc workflows
+mid-conversation.
+
+**In a project system prompt** — place it in your project's rules or
+instructions file. Every conversation in that project inherits the protocol.
+Useful for recurring workflows: code reviews, onboarding, bug triage. The
+agent activates the protocol whenever the context matches.
+
+**As an agent skill** — wrap the protocol in a skill manifest (YAML
+frontmatter with `name` and `description`) and package it as a `SKILL.md`.
+Skill-aware clients (Cursor, Claude Code) load it on demand when a user's
+request matches the description. The protocol is portable because it is just
 Markdown with structure.
 
 ---
 
 ## What RPL Does Not Do
 
-RPL is a protocol language, not a programming language. A few boundaries worth
-noting:
+RPL is a protocol language, not a programming language:
 
-- **No control flow.** There are no loops, conditionals, or mutable variables
-  in the imperative sense. Branching emerges from disjunction and goal
-  eligibility; iteration from set semantics and abductives.
-- **No computation.** RPL does not evaluate arithmetic or transform data. It
-  expresses what must hold and lets the agent (and tools) do the work.
-- **No enforcement.** RPL is a contract between author and agent. The agent
-  interprets it in good faith; there is no sandbox or runtime that prevents
-  deviation. Constraints and traces provide accountability, not enforcement.
-- **Agent judgment fills gaps.** Where the spec does not prescribe behaviour,
-  the agent uses its best judgment. This is by design — RPL specifies the
-  structure, not every micro-decision.
+- **No imperative control flow.** No loops, conditionals, or mutable state.
+  Branching comes from goal disjunction; iteration from set semantics.
+- **No computation.** RPL declares what must hold. The agent and its tools do
+  the work.
+- **No enforcement.** RPL is a contract between author and agent, interpreted
+  in good faith. Constraints and traces provide accountability, not a sandbox.
+- **Agent judgment fills gaps.** Where the spec is silent, the agent decides.
+  This is deliberate — RPL structures the protocol, not every micro-decision.
 
 ---
 
 ## Further Reading
 
 - [spec.md](spec.md) — Full formal specification: syntax, semantics, execution
-  model, worked example, formal grammar.
+  model, worked examples, and formal grammar.

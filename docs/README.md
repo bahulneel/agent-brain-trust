@@ -5,3 +5,5 @@ This folder holds workspace-oriented guides: how the repository is laid out, how
 - [Install prebuilt (no local build)](install-prebuilt.md) — download release zip, Cursor / Claude Code / MCP / skill zips
 - [Repository layout](repository-layout.md) — `content/`, `packages/`, and build entrypoints
 - [Build and validation](build.md) — commands, `dist/` outputs, `skills-ref`, local Claude Code
+- [RPL language overview](rpl/README.md) — motivation, core ideas, and usage patterns for the Relational Prompt Language
+- [RPL formal specification](rpl/spec.md) — full syntax, semantics, execution model, and grammar

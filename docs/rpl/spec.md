@@ -3,16 +3,34 @@
 ## 1. Overview
 
 RPL (Relational Prompt Language) is a Markdown-embedded language for defining
-multi-step LLM-driven protocols as Datalog-style relations. Each step in a
-protocol is a named relation with arguments. Relations compose via implication
-rules into a dependency graph. Goals drive execution by specifying what must be
-solved for. Tools provide access to external capabilities. Bound values flow
-forward from prior steps or session context; unbound values arrive via async
-vars or interactive collection. An eight-phase operating model provides the
-execution rhythm; where the language does not specify evaluation behaviour,
-the agent uses its best judgment.
+multi-step **LLM-driven protocols** as Datalog-style relations. The **primary**
+use case is **prompts and conversational protocols**—documents the agent and
+author steer together. **Living documents** are also in scope: Markdown that
+grows, versioned or edited over time, with the same relational reading.
 
-Three namespaces partition the language:
+RPL is an **enabling** language: it **permits** formal rules, constraints, and
+tool boundaries where you want them; it does **not** **prescribe** a single
+planner, workflow engine, or decomposition strategy. Features described in this
+spec are **available**, not mandatory—omit what you do not need.
+
+Each step in a protocol can be read as a named relation with arguments.
+Relations compose via implication into a dependency graph. Goals mark what
+may be solved for. Tools reach external capabilities. Bound values flow forward
+from prior steps or session context; unbound values may arrive via async vars or
+interactive collection. An eight-phase operating model suggests a **rhythm** for
+implementations; where the language does not pin behaviour, the agent uses its
+best judgment.
+
+**Prose-first authoring** — Natural-language bodies are **materialised** into
+rules when text is first **encountered**: either once (e.g. the agent normalises
+a document in a dedicated pass) or **incrementally** as portions are read. A
+side effect is that **carefully written prose alone** can describe a coherent RPL
+program with **no** explicit `rel(...)`, `%`, or `$` syntax in the source—the
+heading titles, emphasis, and structure still yield definitions under this
+reading. Relational surface syntax remains the **canonical** interchange when
+precision matters.
+
+Three namespaces partition the language when you use explicit syntax:
 
 ```
 rel(?a, ?b)      -- relation: a fact to be established or queried
@@ -63,9 +81,12 @@ Collections are **lists**, **sets**, and **maps**. A **collection** is either a
 list, set, or map. An **element** of a collection is a **variable** (§3), a
 **literal** (§2), or a nested collection. A **relation application**
 (`name(?...)`) is **not** a collection element — data and relation calls are
-separate shapes. Gathering multiple tuples from a relation into a collection
-uses a **rule head** with destructuring (defined once lists, sets, maps, and
-implication are all introduced below).
+separate shapes. When you need to **gather** multiple answers of a relation into a **list or
+set** value, that pattern is expressed via a rule **head** with destructuring
+(defined below). That placement is a **technical requirement** for this specific
+construct—because collection literals may only contain data, not relation
+applications—not a general rule that “all heads must aggregate” or that every
+program must use heads that way.
 
 **List** — `[` … `]` with a **list expression**: elements; `.` separates a
 first element from the rest; `& VAR` captures remaining entries (full
@@ -253,8 +274,12 @@ Without `.` or `&`, pattern forms are as in §4:
 {:name ?n, :age ?a}      -- properties
 ```
 
-**Aggregation** of a relation’s extension into a collection happens in the
-**head** of a rule, not inline in the tail:
+**Gathering a relation into a collection** — Collection literals (§4) cannot
+contain relation applications. **If** you need to collect every answer of a
+relation into a list or set **value**, do it in the **head** of an implication
+that uses destructuring (`&`), not by “inlining” the relation inside `[` … `]`
+or `#` `{` … `}` in the tail. This is a **grammar-level** requirement for that
+pattern, **not** a stylistic mandate for every rule head:
 
 ```
 severity-options([& ?v]) <= valid-severity(?v)
@@ -305,8 +330,10 @@ TAIL       = CLAUSE | CLAUSE ',' TAIL | '(' TAIL ')' [ '^' VAR ]?
 **Conjunction** is `,`; **disjunction** is `|`; parentheses group. A **clause**
 is an atom optionally annotated with `^` / `^^` (§11).
 
-**Double implication** — `HEAD <= HEAD <= TAIL` is allowed (e.g. HTN-style
-methods with abductives in §16.6).
+**Double implication** — `HEAD <= HEAD <= TAIL` is **allowed**. It can express
+**nested** or **method-shaped** decompositions (sometimes compared to HTN). That
+shape is **one permitted idiom**, not **the** runtime model: nothing requires
+hierarchical task networks, and planning stays agent-chosen (§18.3, §16.6).
 
 **Grouping and metadata** — `( EXPR ) ^ VAR` attaches metadata access to the
 grouped expression (§11).
@@ -573,8 +600,9 @@ ask(?prompt, ?answer) <= $ask(?prompt) ^ ~ {:result ?answer}
 choose(?desc, ?options, ?choice) <= $choose(?desc, ?options) ^ ~ {:result ?choice}
 ```
 
-**Aggregation** of options into a list is in the **head** of a separate relation
-(§8), not inline:
+**If** a tool such as `$choose` needs a **list value** built from every answer
+of another relation, build that list via a separate rule **head** (§8)—because
+the literal list in the tail cannot embed the relation call:
 
 ```
 severity-options([& ?v]) <= valid-severity(?v)
@@ -723,16 +751,21 @@ Force iteration over **all** bindings.
 
 Iterate via a step relation (init / condition / step analogy).
 
-### 16.6 HTN-style Methods
+### 16.6 Decomposition patterns (HTN-shaped expressivity)
 
-Combine double implication, `@when`, and several rules on the same goal head:
+RPL **can** express structures that look like **hierarchical task decomposition**
+(double implication, `@when`, several rules sharing a goal head). That is
+**expressivity**—a **permitted** way to write protocols—not the **definition**
+of how planning ought to work internally. The **model** is: goals exist,
+abductives qualify rules, the agent updates plans however it chooses (§18.3).
+HTN is a **familiar analogy**, not a **required** semantics.
+
+Example of what the surface language allows:
 
 ```
 %task(?a) <= method-one(?a) <= tail-one(?a) ; @when(!%task, precondition-one(?a))
 %task(?a) <= method-two(?a) <= tail-two(?a) ; @when(!%task, precondition-two(?a))
 ```
-
-Planning algorithm is **not** prescribed (§18.3).
 
 ---
 
@@ -741,6 +774,15 @@ Planning algorithm is **not** prescribed (§18.3).
 RPL is written in **Markdown**. Every heading that carries a **signature** in one
 of the three namespaces is an RPL definition. Plain headings without a
 signature are ignored.
+
+**Materialising prose** — Implementations may treat **free text** as latent RPL
+until it is **first read**: on that encounter, the agent (or tooling) **projects**
+headings, emphasis, structure, and narrative into the rule forms this spec
+describes (§17.2–17.4). That can run as a **one-off** normalisation pass or **on
+the fly** as the document is traversed. It follows that prose-only sources remain
+**valid** under an enabling reading when they are **unambiguous** enough to map
+cleanly; explicit relational syntax is recommended when authors want portable,
+reviewable precision.
 
 ### 17.1 Heading Forms
 
@@ -767,14 +809,16 @@ head <= <heading-tail>, <body-tail>
 
 ### 17.2 Body Prose
 
-Prose is documentation and LLM instruction unless it contains:
+Prose is **LLM instruction** and, after materialisation (§17 opening), part of
+the **rule**: the narrative guides the agent; emphasised spans become variable
+sites. **Where** prose contains:
 
 ```
 __word__
 __multi word__
 ```
 
-Each term marks a variable, normalized to **kebab-case** (`__first name__` →
+each span marks a variable, normalized to **kebab-case** (`__first name__` →
 `?first-name`). The agent uses full context to decide how to unify or collect.
 `rpl.check` may reject uninterpretable sections.
 
@@ -870,8 +914,9 @@ are checked.
 **4. Activate goals** — Evaluate **`;`** clauses (§16). Root **`%`** first if
 present (§15.2).
 
-**5. Update plans** — Agent-chosen; goals imply planning. HTN-style expressions
-(§16.6) are **not** a fixed algorithm.
+**5. Update plans** — Agent-chosen; goals imply **some** planning activity.
+Patterns that resemble hierarchical decomposition (§16.6) are **expressible**, not
+**prescribed**—no required HTN or fixed planning algorithm.
 
 **6. Progress plan** — New facts become novelty for the next quiescence.
 
@@ -974,6 +1019,20 @@ Trace sketch:
 
 ## 20. Design Principles
 
+- **Enabling, not limiting** — the spec states what RPL **may** express and what
+  implementations **might** enforce at boundaries (e.g. collection literals vs
+  relation calls); it does not dictate a single workflow, planner, or authoring
+  style.
+- **Primary vs secondary use** — **prompts and LLM protocols** are the main
+  target; **living Markdown** and long-lived documents are also supported.
+- **Prose canonical at Author’s option** — relational syntax is the precision
+  interchange; **prose-first** documents can still denote valid programs when
+  materialised unambiguously (§17).
+- **Technical vs prescriptive** — rules such as “gather relation into collection
+  via head” are **constraints on that pattern** (§8), not commandments about
+  every head.
+- **HTN-shaped, not HTN-bound** — nested methods and `@when` are **permitted**
+  idioms (§16.6), not **the** execution model.
 - **Declarative naming** — relations name facts, not actions.
 - **Three namespaces** — relations, goals, tools are syntactically distinct but
   uniform under the rule grammar (§10).

@@ -7,3 +7,4 @@ This folder holds workspace-oriented guides: how the repository is laid out, how
 - [Build and validation](build.md) — commands, `dist/` outputs, `skills-ref`, local Claude Code
 - [RPL language overview](rpl/README.md) — motivation, core ideas, and usage patterns for the Relational Prompt Language
 - [RPL formal specification](rpl/spec.md) — full syntax, semantics, execution model, and grammar
+- [RPL protocol reimplementations](rpl/protocols/README.md) — Brain Trust and expert protocols rewritten in RPL, plus an experience report on language gaps

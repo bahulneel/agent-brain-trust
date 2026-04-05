@@ -321,3 +321,12 @@ RPL is a protocol language, not a programming language:
 
 - [spec.md](spec.md) — Full formal specification: syntax, semantics, execution
   model, worked examples, and formal grammar.
+- [protocols/expert-opinion.md](protocols/expert-opinion.md) — canonical RPL
+  reimplementation of the single-expert protocol
+- [protocols/brain-trust-technical-dialectic.md](protocols/brain-trust-technical-dialectic.md) —
+  canonical RPL reimplementation of the technical Brain Trust protocol
+- [protocols/brain-trust-editorial-room.md](protocols/brain-trust-editorial-room.md) —
+  canonical RPL reimplementation of the editorial Brain Trust protocol
+- [protocols/experience-report.md](protocols/experience-report.md) — expressivity
+  gaps, ambiguities, and frictions encountered while reimplementing the
+  protocols

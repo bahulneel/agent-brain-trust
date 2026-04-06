@@ -18,16 +18,28 @@ LRPL adds three capabilities to RPL:
 
 And two standard library additions:
 
-- **`$index`** — lazy external data traversal
+- **`$index`** — external data mapped into relation positions (**not** `<expr>`-lazy by
+  default; traversal runs under ordinary relational demand)
 - **`$generate`**, **`$write`** — generation and persistence
 - **`length`** — cardinality via **expansion** `|#?x|` so the `|…|` operand uses the **syntax** reading of `?x` (§spec §3, §5.7)
 
+**Tool calls** (`$name(…)`, §spec §14, including stdlib names): **lazy dispatch by
+default** — the runtime does not invoke the external capability until **forward
+progress** requires its outputs (ground args, metadata bindings, or other results
+that cannot be obtained otherwise). This is independent of `<expr>`: wrap a call
+in `<…>` only when explicit lazy-expression deferral is intended.
+
 ### 1.1 Theoretical Anchor
 
-LRPL's evaluation model follows **Bloom** (Alvaro et al.) and the **CALM
-theorem**: monotonic logic is coordination-free. The relational core is
-monotonic — facts accumulate, memos narrow, the trace grows. Non-monotonic
-operations are the coordination points where agent judgment is required:
+LRPL's evaluation model follows **Bloom** (Hellerstein, Alvaro, et al.) and the
+**CALM** result (Consistency as Logical Monotonicity): Hellerstein conjectured
+(PODS 2010); Ameloot, Neven, and Van den Bussche proved a revised statement
+(2013) that a problem admits a consistent, coordination-free distributed
+implementation **if and only if** it is monotonic. Work such as *Keeping CALM:
+When Distributed Consistency Is Easy* (2019/2020) extends the story. The
+relational core is monotonic — facts accumulate, memos narrow, the trace grows.
+Non-monotonic operations are the coordination points where agent judgment is
+required:
 
 ```
 Monotonic:
@@ -171,10 +183,22 @@ These define the stopping shape, not the algorithm.
 
 ## 5. Standard Library
 
+### 5.0 Tool dispatch
+
+In LRPL, **every tool invocation** `$name(…)` (user-defined or stdlib) is subject
+to **lazy dispatch by default**: the implementation avoids calling the tool until
+forward progress (derivation, goal satisfaction, or memo propagation) **requires**
+a result that only that call can supply. Speculative or eager tool execution is not
+prescribed.
+
+**`$index`** is **not** additionally lazy in the **`<expr>`** sense (§2). It does
+not imply “defer until a downstream goal forces entry” beyond normal relational
+scheduling: once the `$index` site participates in active rule evaluation, mapping
+and scan proceed under that demand. To defer a read explicitly, wrap it in `<…>`.
+
 ### 5.1 `$index`
 
-Maps an external source to a relation's argument positions. Lazy by default —
-not entered until a downstream goal requires bound values.
+Maps an external source to a relation's argument positions.
 
 ```
 $index(LOCATION)

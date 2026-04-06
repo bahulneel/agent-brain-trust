@@ -70,12 +70,17 @@ a deduction procedure that produces a value the agent does not yet have.
 
 ## Theoretical Foundations
 
-RPL's operating model follows **Bloom** — Peter Alvaro's language for distributed
-programming under the CALM theorem. The central insight of CALM is that monotonic
-logic is coordination-free: any agent with the same facts reaches the same
-conclusions, regardless of order or timing. Non-monotonic operations — retractions,
-forced choices, conflict resolutions — are the points where coordination is
-required.
+RPL's operating model follows **Bloom** — a language for distributed programming
+from Hellerstein, Alvaro, and collaborators, grounded in **CALM** (Consistency as
+Logical Monotonicity). Joe Hellerstein introduced the conjecture (PODS 2010
+keynote); Ameloot, Neven, and Van den Bussche proved a revised form (2013). The
+**CALM theorem** says a problem has a consistent, coordination-free distributed
+implementation **if and only if** the problem is monotonic — so monotonic stages
+need no coordination for consistency, and non-monotonic steps are where
+coordination is required. In RPL terms: any agent with the same facts reaches the
+same conclusions in the monotonic core, regardless of order or timing.
+Non-monotonic operations — retractions, forced choices, conflict resolutions —
+are the coordination points.
 
 RPL maps directly onto this model. The relational core — fact accumulation, rule
 derivation, goal satisfaction — is monotonic. The trace grows but never shrinks.

@@ -5,10 +5,20 @@ composable, declarative relations. Instead of imperative instructions that tell
 an agent *how* to proceed step by step, you declare *what* must be true and the
 agent derives a path.
 
-This overview introduces RPL by example. We start with a plain Markdown prompt
-and progressively add language features — one at a time — until we have a
-composable protocol. The companion [spec.md](spec.md) provides the full formal
-specification and grammar.
+## Document map
+
+| Document | Role |
+|----------|------|
+| [motivation.md](motivation.md) | Problem framing and language overview (why RPL, how to read it) |
+| [scope.md](scope.md) | Boundaries, `?` vs `$`, use cases, document index |
+| [theory.md](theory.md) | Bloom, CALM, monotonicity, formal vs agent layer |
+| [vision.md](vision.md) | Central ideas, trace, lazy extension summary, design principles |
+| [specification/rpl.md](specification/rpl.md) | Normative base spec: syntax, semantics, runtime, grammar |
+| [specification/lrpl.md](specification/lrpl.md) | Normative LRPL delta (lazy expressions, memos, stdlib) |
+
+The sections below walk through one **worked example** (bug report intake) to show
+how signatures and goals compose. They are not a substitute for the
+specifications.
 
 ---
 
@@ -317,7 +327,8 @@ RPL is a protocol language, not a programming language:
 
 ---
 
-## Further Reading
+## Further reading
 
-- [spec.md](spec.md) — Full formal specification: syntax, semantics, execution
-  model, worked examples, and formal grammar.
+- [specification/rpl.md](specification/rpl.md) — Base specification: syntax, semantics, execution model, grammar.
+- [specification/lrpl.md](specification/lrpl.md) — LRPL delta: lazy evaluation, memos, satisfactory quiescence, stdlib.
+- [scope.md](scope.md) — Scope, boundaries, and document map.

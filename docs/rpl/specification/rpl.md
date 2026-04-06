@@ -2,43 +2,16 @@
 
 ## 1. Overview
 
-RPL (Relational Prompt Language) is a Markdown-embedded language for defining
-multi-step **LLM-driven protocols** as Datalog-style relations. The **primary**
-use case is **prompts and conversational protocols**—documents the agent and
-author steer together. **Living documents** are also in scope: Markdown that
-grows, versioned or edited over time, with the same relational reading.
+This document is the **normative** specification of the Relational Prompt
+Language (RPL): syntax, semantics, runtime operating model, and grammar.
 
-RPL is an **enabling** language: it **permits** formal rules, constraints, and
-tool boundaries where you want them; it does **not** **prescribe** a single
-planner, workflow engine, or decomposition strategy. Features described in this
-spec are **available**, not mandatory—omit what you do not need.
-
-Each step in a protocol can be read as a named relation with arguments.
-Relations compose via implication into a dependency graph. Goals mark what
-may be solved for. Tools reach external capabilities. Bound values flow forward
-from prior steps or session context; unbound values may arrive via async vars or
-interactive collection. An eight-phase operating model suggests a **rhythm** for
-implementations; where the language does not pin behaviour, the agent uses its
-best judgment.
-
-**How to read RPL** — Read the surface syntax **declaratively**. A fragment states
-**what holds**, **what follows from what**, or **what must remain true**, as
-relations and constraints over bindings — not a script of steps for an engine to
-execute. Heads (`rel`, `%`, `$`), connectives (`,`, `|`, `<-`, `->`), variables and
-patterns, literals and collections, metadata (`^`), tools, goals, and abductives
-each have a **meaning** (a claim or constraint shape) fixed in the sections
-below; **lvars** in particular are §3. **How** an implementation or agent
-**searches**, **schedules**, or **materialises** witnesses is not defined here
-except where explicitly noted as suggestive (e.g. the timestep rhythm in §18).
-
-**Prose-first authoring** — Natural-language bodies are **materialised** into
-rules when text is first **encountered**: either once (e.g. the agent normalises
-a document in a dedicated pass) or **incrementally** as portions are read. A
-side effect is that **carefully written prose alone** can describe a coherent RPL
-program with **no** explicit `rel(...)`, `%`, or `$` syntax in the source—the
-heading titles, emphasis, and structure still yield definitions under this
-reading. Relational surface syntax remains the **canonical** interchange when
-precision matters.
+- **Motivation** (problem framing and how to read RPL in prose) —
+  [motivation.md](../motivation.md).
+- **Theory** (Bloom, CALM, monotonicity, formal vs agent layer) —
+  [theory.md](../theory.md).
+- **Vision** (central ideas, trace, lazy extension summary, design principles) —
+  [vision.md](../vision.md).
+- **LRPL** (lazy extension delta) — [lrpl.md](lrpl.md).
 
 Three namespaces partition the language when you use explicit syntax:
 
@@ -1010,7 +983,7 @@ $sql-select#table    -- tool with named query target
 ## 18. Runtime — Operating Model
 
 Each **timestep** runs eight **phases**. Where behaviour is unspecified, the agent
-judges (§20).
+judges ([design principles in vision.md](../vision.md#design-principles)).
 
 ```
 Timestep:
@@ -1026,11 +999,7 @@ Timestep:
 
 ### 18.1 Two Layers
 
-```
-Formal layer     rules, constraints, abductives, quiescence, dispatch
-Agent layer      interpretation, ambiguity, non-monotonic change, planning,
-                 error recovery
-```
+The formal vs agent layer split is stated in [theory.md](../theory.md#layers-formal-and-agent).
 
 ### 18.2 Binding Store
 
@@ -1151,44 +1120,6 @@ Trace sketch:
 ) ^^ {p "patient-1", s "low"} -> true
 %low ^ false
 ```
-
----
-
-## 20. Design Principles
-
-- **Enabling, not limiting** — the spec states what RPL **may** express and what
-  implementations **might** enforce at boundaries (e.g. collection literals vs
-  relation calls); it does not dictate a single workflow, planner, or authoring
-  style.
-- **Primary vs secondary use** — **prompts and LLM protocols** are the main
-  target; **living Markdown** and long-lived documents are also supported.
-- **Prose canonical at Author’s option** — relational syntax is the precision
-  interchange; **prose-first** documents can still denote valid programs when
-  materialised unambiguously (§17).
-- **Technical vs prescriptive** — rules such as “gather relation into collection
-  via head” are **constraints on that pattern** (§8), not commandments about
-  every head.
-- **HTN-shaped, not HTN-bound** — nested methods and `@when` are **permitted**
-  idioms (§16.6), not **the** execution model.
-- **Declarative naming** — relations name facts, not actions.
-- **Three namespaces** — relations, goals, tools are syntactically distinct but
-  uniform under the rule grammar (§10).
-- **Uniform interpretation** — the same form means the same thing in the same
-  context.
-- **`VAR` subsumes matching** — `?lvar`, `$avar`, and `~ PATTERN` are **VAR**
-  forms; **`=` is equality**; **in-place matching** is via **`~ PATTERN`** (§6).
-- **`^` is single metadata access** — bind the whole map or match in place (§11).
-- **Async as temporal connective** — `$x` bridges timesteps (§13, §18).
-- **Activation not blocking** — `;` activates or disqualifies; no busy-wait (§16).
-- **Undirected composition** — definitions do not encode callers.
-- **Safety by default** — head variables in body; provenance metadata for gaps.
-- **First valid resolution** — syntactic order among eligible rules.
-- **User-driven termination** — agent offers continue; user stops (§15.6).
-- **Constraints ground to traces** — live check vs trace; order; retraction
-  (§12).
-- **Agent judgment is default** — rigour where specified; judgment elsewhere.
-- **Conversational co-authorship** — user may extend schema and facts live.
-- **Timestep discipline** — eight phases (§18).
 
 ---
 

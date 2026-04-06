@@ -84,12 +84,12 @@ The agent knows what facts each section produces, but not what it is working
 *toward*. Add a **goal** to the top-level heading:
 
 ```markdown
-# Bug Report - % <= description($text), component($name), severity($level)
+# Bug Report - % <- description($text), component($name), severity($level)
 
 Summarize the report and confirm with the user before filing.
 ```
 
-**`%`** marks a **goal** — the thing the agent is trying to satisfy. **`<=`**
+**`%`** marks a **goal** — the thing the agent is trying to satisfy. **`<-`**
 reads as "is satisfied when." So this says: *the bug report goal is satisfied
 when description, component, and severity are all established.*
 
@@ -156,13 +156,13 @@ several facts into a composite — "the report" is the description, the
 component, and the severity taken together. Make this explicit with a **rule**:
 
 ````markdown
-## Report - report(?text, ?name, ?level) <= description(?text), component(?name), severity(?level)
+## Report - report(?text, ?name, ?level) <- description(?text), component(?name), severity(?level)
 
 Present the complete report: __text__, __name__, and __level__.
 Confirm with the user before filing.
 ````
 
-**`<=`** on a non-goal heading creates a **rule**: `report` is established
+**`<-`** on a non-goal heading creates a **rule**: `report` is established
 when `description`, `component`, and `severity` are all known. The shared
 variable names wire them together — `?text` in `report` binds to whatever
 value `description` collected as `$text`.
@@ -174,7 +174,7 @@ flow; the prose describes the presentation.
 Now the goal can reference the composite instead of listing every piece:
 
 ```markdown
-# Bug Report - % <= report(?text, ?name, ?level)
+# Bug Report - % <- report(?text, ?name, ?level)
 ```
 
 The agent sees that `%` depends on `report`, and `report` depends on the three
@@ -190,22 +190,22 @@ depend on severity. Instead of writing "if critical then… else if high
 then…" in prose, express this as **multiple goals** joined by disjunction:
 
 ```markdown
-# Bug Report - % <= %urgent | %normal | %backlog
+# Bug Report - % <- %urgent | %normal | %backlog
 ```
 
 **`|`** means **or** — the root goal succeeds when any one of the named goals
 succeeds. Each named goal defines its own conditions:
 
 ```markdown
-# Urgent - %urgent <= report(_, _, "critical")
+# Urgent - %urgent <- report(_, _, "critical")
 
 Page the on-call engineer immediately. Include the full report.
 
-# Normal - %normal <= report(_, ?name, ?level), ?level != "critical", ?level != "low"
+# Normal - %normal <- report(_, ?name, ?level), ?level != "critical", ?level != "low"
 
 Create a ticket in the __name__ component's queue.
 
-# Backlog - %backlog <= report(_, _, "low")
+# Backlog - %backlog <- report(_, _, "low")
 
 Add to the backlog. No immediate action required.
 ```
@@ -225,7 +225,7 @@ was collected. No duplication, no prose conditionals.
 Here is the full document with every feature applied:
 
 ````markdown
-# Bug Report - % <= %urgent | %normal | %backlog
+# Bug Report - % <- %urgent | %normal | %backlog
 
 ## Describe the Problem - description($text)
 
@@ -254,20 +254,20 @@ valid-severity("medium")
 valid-severity("low")
 ```
 
-## Report - report(?text, ?name, ?level) <= description(?text), component(?name), severity(?level)
+## Report - report(?text, ?name, ?level) <- description(?text), component(?name), severity(?level)
 
 Present the complete report: __text__, __name__, and __level__.
 Confirm with the user before filing.
 
-# Urgent - %urgent <= report(_, _, "critical")
+# Urgent - %urgent <- report(_, _, "critical")
 
 Page the on-call engineer immediately. Include the full report.
 
-# Normal - %normal <= report(_, ?name, ?level), ?level != "critical", ?level != "low"
+# Normal - %normal <- report(_, ?name, ?level), ?level != "critical", ?level != "low"
 
 Create a ticket in the __name__ component's queue.
 
-# Backlog - %backlog <= report(_, _, "low")
+# Backlog - %backlog <- report(_, _, "low")
 
 Add to the backlog. No immediate action required.
 ````

@@ -21,6 +21,16 @@ interactive collection. An eight-phase operating model suggests a **rhythm** for
 implementations; where the language does not pin behaviour, the agent uses its
 best judgment.
 
+**How to read RPL** — Read the surface syntax **declaratively**. A fragment states
+**what holds**, **what follows from what**, or **what must remain true**, as
+relations and constraints over bindings — not a script of steps for an engine to
+execute. Heads (`rel`, `%`, `$`), connectives (`,`, `|`, `<-`, `->`), variables and
+patterns, literals and collections, metadata (`^`), tools, goals, and abductives
+each have a **meaning** (a claim or constraint shape) fixed in the sections
+below; **lvars** in particular are §3. **How** an implementation or agent
+**searches**, **schedules**, or **materialises** witnesses is not defined here
+except where explicitly noted as suggestive (e.g. the timestep rhythm in §18).
+
 **Prose-first authoring** — Natural-language bodies are **materialised** into
 rules when text is first **encountered**: either once (e.g. the agent normalises
 a document in a dedicated pass) or **incrementally** as portions are read. A
@@ -50,10 +60,10 @@ a literal appears: **symbols**, **keywords**, **strings**, **numbers**,
 **booleans** (`true` / `false`), and **nil**. Data structures follow EDN reading
 rules.
 
-**String templates** — `{?x}` inside a double-quoted string constructs the string
-(if `?x` is bound) or participates in matching (if `?x` is unbound). String
-templates are for full construction and matching; **regex** patterns (below)
-are for partial matching with named captures.
+**String templates** — `{?x}` inside a double-quoted string uses the **value**
+reading of `?x` (§3): it constructs the string (if `?x` is bound) or participates
+in matching (if `?x` is unbound). **Regex** patterns (below) are for partial
+matching with named captures.
 
 **Regex** — written `/.../`; the regex body is delimited by slashes.
 
@@ -70,6 +80,45 @@ LVAR = '?' NAME | '_'
 
 The anonymous variable `_` matches any value and binds nothing.
 
+**Bindings** — An lvar may stand for any **expression** the grammar allows at the
+binding site (§9, Appendix `ARG`): literals, collections, variables, `_`, nested
+relation calls such as `inner(?x)` inside `outer(inner(?x), ?y)`, and so on.
+
+**How a reference is read** — The same stored binding supports two different
+**claims** at an occurrence:
+
+- **`?x`** — The occurrence **means** the **value** of the expression bound to
+  `?x`. Unification here is **by value**: constraints **propagate** with that
+  binding (ranges, data, relational **extensions** where defined, etc.).
+- **`#?x`** — The occurrence **means** the **syntax** of that expression: the
+  **form** that would sit in this position if the bound expression were written
+  there literally. Unification here is **by form**. Where **several** bindings are
+  admissible for `?x`, the surrounding sentence may be read as **several**
+  expressions—one per choice—with this site replaced by each binding’s
+  expression shape; with **one** admissible binding, it is that single shape.
+  (This is what other parts of the spec call **expansion**; §5.7 gives notation,
+  precedence with `|…|`, and shape constraints.)
+
+Together, this is **declarative**: it states what the sentence **asserts** about
+values and forms, not how an engine **schedules** work.
+
+**Factoring an argument** — To name a subexpression with an lvar, match it in the
+head and pin its shape with a **constraint** (§12):
+
+```rpl
+outer(?r, ?y) <- ... -> ?r -> inner(?x)
+```
+
+That is equivalent (up to unification) to `outer(inner(?x), ?y)` for the same
+tail.
+
+**Callee position** — The **operator** of a relation call must be a **label** (a
+declared relation name). An lvar **must not** appear in callee position:
+`?q(?a)` is **ill-formed** and has no reading in RPL: following an lvar with
+`( … )` does not form a call, because the callee must be syntactically a label.
+To abstract over an inner goal, bind an **argument** lvar to the subexpression
+(as above), or use a named relation and implication.
+
 Lvars are introduced before **async vars** (`$x`, §13) and **in-place patterns**
 (`~ PATTERN`, §6).
 
@@ -79,13 +128,15 @@ Lvars are introduced before **async vars** (`$x`, §13) and **in-place patterns*
 
 Collections are **lists**, **sets**, and **maps**. A **collection** is either a
 list, set, or map. An **element** of a collection is a **variable** (§3), a
-**literal** (§2), or a nested collection. A **relation application**
-(`name(?...)`) is **not** a collection element — data and relation calls are
-separate shapes. When you need to **gather** multiple answers of a relation into a **list or
+**literal** (§2), or a nested collection. A **relation call** (`name(?...)`) is
+**not** a collection element — collection syntax only allows the **element**
+forms above (§4, Appendix). A nested relation call that is valid as another
+relation’s **argument** (§3) is still not a collection element: it may not appear
+inside `[` … `]` or `#` `{` … `}` as an element. When you need to **gather** multiple answers of a relation into a **list or
 set** value, that pattern is expressed via a rule **head** with destructuring
 (defined below). That placement is a **technical requirement** for this specific
-construct—because collection literals may only contain data, not relation
-applications—not a general rule that “all heads must aggregate” or that every
+construct—because collection literals may only contain data-shaped elements, not
+relation calls—not a general rule that “all heads must aggregate” or that every
 program must use heads that way.
 
 **List** — `[` … `]` with a **list expression**: elements; `.` separates a
@@ -129,15 +180,24 @@ and with equality in §5):
 ?x / ?y          division
 ```
 
+**`<=` here is comparison only** (e.g. `?x <= ?y`). **Implication** in rules is
+**`<-`** and **constraints** use **`->`** (§10, §12), so those arrows are not
+spelled with `<=` / `=>`.
+
 Structural **matching** against patterns uses the `~ PATTERN` variable form (§6),
 not bare `=`.
 
 ### 5.2 Cardinality
 
 ```
-|rel(?x, ?y)|       number of distinct tuples satisfying the named relation
-|?list|             length of a list-valued arg
+|rel(?x, ?y)|       number of distinct tuples (relation call written in place)
+|?list|             length when the operand is a list (value reading of ?list, §3)
+|#?t|              tuple count when the operand is the syntax reading of ?t (§3); precedence §5.7
 ```
+
+The `|…|` operand may be a relation call in place, a list lvar under the **value**
+reading, or **`#?t`** when the operand position must be the **syntax** reading of `?t`
+(§3).
 
 ### 5.3 Set Operators
 
@@ -178,14 +238,40 @@ From highest to lowest:
 1.  Arithmetic       * /
 2.  Arithmetic       + -
 3.  Comparison       = != < > <= >=
-4.  Cardinality      |expr|
-5.  Temporal         before after within between
-6.  Logical          not
-7.  Logical          , (conjunction)
-8.  Logical          | (disjunction)
+4.  Expansion        #LVAR (§5.7)
+5.  Cardinality      |expr|
+6.  Temporal         before after within between
+7.  Logical          not
+8.  Logical          , (conjunction)
+9.  Logical          | (disjunction)
 ```
 
 Use parentheses to override.
+
+### 5.7 Expansion
+
+**Notation** — **`#`** immediately before an **lvar** (`#?x`) is the **expansion**
+form (nonterminal `EXPANSION` in the Appendix). Its **meaning** is the **syntax**
+reading of that lvar’s binding (§3).
+
+**Shape** — If a position’s grammar requires a **relation call** (or another fixed
+head) and the bound expression is not of an allowed shape, the sentence is
+**ill-formed** or the case is **implementation-defined**.
+
+```rpl
+length(?t, $l) <- $l = |#?t|
+```
+
+```rpl
+#?t ^:scope $s     -- ^ on the atom under the syntax reading of ?t (§11)
+$l = |#?t|
+```
+
+**Precedence** — `#` before an lvar binds tighter than `|…|`: in `|#?t|`, the
+operand is **`#?t`**, not `|#` applied to `?t`.
+
+**Callee** — **`#?x`** does not produce a well-formed **callee**; relation calls
+stay **`label(?…)`** (§3, §9).
 
 ---
 
@@ -275,15 +361,15 @@ Without `.` or `&`, pattern forms are as in §4:
 ```
 
 **Gathering a relation into a collection** — Collection literals (§4) cannot
-contain relation applications. **If** you need to collect every answer of a
+embed relation calls. **If** you need to collect every answer of a
 relation into a list or set **value**, do it in the **head** of an implication
 that uses destructuring (`&`), not by “inlining” the relation inside `[` … `]`
 or `#` `{` … `}` in the tail. This is a **grammar-level** requirement for that
 pattern, **not** a stylistic mandate for every rule head:
 
 ```
-severity-options([& ?v]) <= valid-severity(?v)
-active-ids(#{& ?id}) <= user(?id, ?status), ?status = "active"
+severity-options([& ?v]) <- valid-severity(?v)
+active-ids(#{& ?id}) <- user(?id, ?status), ?status = "active"
 ```
 
 ---
@@ -297,6 +383,9 @@ RELATION = LABEL '(' [ ARG [ ',' ARG ]* ]? ')'
 LABEL    = NAME | NS '#' NAME
 ```
 
+Each **argument** may be any **expression** permitted by `ARG` in the Appendix —
+typically a variable, literal, collection, `_`, or a nested relation call.
+
 **Naming** — relation names are declarative; they name facts, not actions:
 
 ```
@@ -309,20 +398,25 @@ All names use **kebab-case**. **Keywords** use `:` (e.g. `:tel` in arguments).
 
 **Namespaces** — names may be scoped with `#` (full convention in §17.7).
 
+**Composition** — Prefer **nested** subexpressions and **argument** lvars with
+constraints (§3): e.g. `outer(inner(?x), ?y)` or `outer(?r, ?y)` with
+`?r -> inner(?x)`. Parameterise over **expressions in argument positions**, not over
+the callee name.
+
 ---
 
 ## 10. Rules and Implication
 
-Rules combine **heads** and **tails** with `<=`. A **sentence** may be:
+Rules combine **heads** and **tails** with `<-`. A **sentence** may be:
 
 - an expression (tail only),
-- `HEAD <= EXPR` (implication),
-- optionally followed by `;` **abductives** (§16) and/or `=>` **constraints** (§12).
+- `HEAD <- EXPR` (implication),
+- optionally followed by `;` **abductives** (§16) and/or `->` **constraints** (§12).
 
 ```
-RULE       = [ HEAD '<=' ]? EXPR [ ';' ABDUCTIVE ]? [ '=>' CONSTRAINT ]?
-NESTED-RULE = HEAD '<=' '(' RULE ')'
-EXPR       = TAIL | HEAD '<=' EXPR | '(' EXPR ')' [ '^' VAR ]?
+RULE       = [ HEAD '<-' ]? EXPR [ ';' ABDUCTIVE ]? [ '->' CONSTRAINT ]?
+NESTED-RULE = HEAD '<-' '(' RULE ')'
+EXPR       = TAIL | HEAD '<-' EXPR | '(' EXPR ')' [ '^' VAR ]?
 HEAD       = GOAL | RELATION | TOOL
 TAIL       = CLAUSE | CLAUSE ',' TAIL | '(' TAIL ')' [ '^' VAR ]?
 ```
@@ -330,13 +424,13 @@ TAIL       = CLAUSE | CLAUSE ',' TAIL | '(' TAIL ')' [ '^' VAR ]?
 **Conjunction** is `,`; **disjunction** is `|`; parentheses group. A **clause**
 is an atom optionally annotated with `^` / `^^` (§11).
 
-**Double implication** — `HEAD <= HEAD <= TAIL` is **allowed**. It can express
+**Double implication** — `HEAD <- HEAD <- TAIL` is **allowed**. It can express
 **nested** or **method-shaped** decompositions (sometimes compared to HTN). That
 shape is **one permitted idiom**, not **the** runtime model: nothing requires
 hierarchical task networks, and planning stays agent-chosen (§18.3, §16.6).
 
-**Grouping and metadata** — `( EXPR ) ^ VAR` attaches metadata access to the
-grouped expression (§11).
+**Grouping and metadata** — In `( EXPR ) ^ VAR`, the **meaning** is metadata access
+on the grouped expression (§11).
 
 **Namespaces in heads** — `HEAD` may be a **relation** (§9), **goal** (%…, §15), or
 **tool** call (`$…`, §14). Async vars `$x` without parentheses are not tool heads
@@ -346,17 +440,20 @@ grouped expression (§11).
 
 ## 11. Metadata
 
-`^` accesses the **metadata** of the immediately preceding form. Metadata is an
-associative collection keyed by literals (typically keywords or symbols). `^`
-takes a single **VAR** (§3, §6):
+In **`clause ^ VAR`** and **`clause ^^ VAR`**, the **meaning** is access to
+**metadata** on the immediately preceding form, or to the **`bindings`**
+sub-map of that metadata when using **`^^`**. The operand is a **VAR** (§3, §6):
+an lvar, async var, `~ PATTERN`, or other permitted form.
+
+**Full map and patterns** — bind or match the whole metadata map:
 
 ```
-clause ^ ?meta              -- bind entire metadata map to ?meta
-clause ^ ~ {:doc ?x}        -- match metadata against map pattern, bind :doc to ?x
-clause ^ ~ {:key ?v, ...}   -- destructure multiple fields
+clause ^ ?meta              -- entire metadata map -> ?meta
+clause ^ ~ {:doc ?x}        -- match :doc, bind ?x
+clause ^ ~ {:key ?v, ...}   -- destructure several fields
 ```
 
-The full EDN literal set is valid as map keys in a `~ PATTERN`:
+The full EDN literal set is valid as map keys inside `~ PATTERN`:
 
 ```
 clause ^ ~ {:status ?s}     -- keyword key
@@ -364,32 +461,56 @@ clause ^ ~ {foo ?v}         -- symbol key
 clause ^ ~ {"key" ?v}       -- string key
 ```
 
-**Distribution** — `^` on a grouped tail distributes only to clauses whose vars
-appear in the pattern:
+**Single metadata key** — these are **alternative spellings** with the **same
+reading** (one field of metadata). None is the mandated normal form; rewrites
+below are only for clarity.
 
-```
-(?a, ?b) ^ ~ {foo ?a}               =>  ?a ^ ~ {foo ?a}, ?b
-(?a, ?b, ?c) ^ ~ {foo ?a, bar ?c}   =>  (?a, ?c) ^ ~ {foo ?a, bar ?c}, ?b
+- **Keyword key** — `^:KEY VAR` (e.g. `^:scope ?s`, `^:result ?r`).
+- **Symbol key** — `^` *name* `VAR` with no colon: *name* is a bare **symbol** (same
+  role as a map key in `^ ~ {name ?v}`), e.g. `^doc ?x`, `^patient-id ?p`.
+
+```rpl
+clause ^:scope ?s     -- same reading as: clause ^ ~ {:scope ?s}
+clause ^doc ?x        -- same reading as: clause ^ ~ {doc ?x}
 ```
 
-**`^^` binding access** — shorthand for `:bindings` in metadata. Binding keys
-are **symbols** (lvar names without `?`), not keywords:
+**Bindings (`:bindings`)** — Values live under the **`:bindings`** entry in
+metadata (often written as its own map). These surface forms are **equivalent
+readings**; pick any. **No** required expansion of `^^` into `^:bindings` or into
+`^ ~ {:bindings …}` — each is an acceptable **terminal** form.
 
-```
+- **`^^ ~ {…}`** — pattern over the binding map (keys = lvar **names** without
+  `?`, values = `VAR`s).
+- **`^^ {…}`** — map literal (typical in **traces**, §12).
+- **`^:bindings {…}`** — explicit keyword key on the outer metadata map.
+- **Single binding slot** — `^^` *name* `VAR` with bare symbol *name*, same
+  reading as `^^ ~ {name VAR}` (e.g. `^^a ?a`, `^^patient-id ?patient-id`).
+
+```rpl
 clause ^^ ~ {a ?b, c ?d}
--- desugars to:
+clause ^:bindings {a ?b, c ?d}
 clause ^ ~ {:bindings {a ?b, c ?d}}
+-- the three lines above are the same meaning (illustrative equivalence)
+
+clause ^^ {a "val1", c "val2"}           -- ground bindings (trace-shaped)
+clause ^:bindings {a "val1", c "val2"}  -- same reading
+
+^^a ?a
+^^ ~ {a ?a}
+-- same reading (single-slot binding pattern)
 ```
 
-Ground form (in traces, §12):
+The same **bindings** shapes attach when a **goal head** lists capture arguments
+on the tail (§15.1).
+
+**Distribution** — `^` on a grouped tail distributes only to clauses whose vars
+appear in the pattern (examples use `->` as “same programme, rewritten for
+display”, not as a required step):
 
 ```
-clause ^^ {a "val1", c "val2"}
--- desugars to:
-clause ^ {:bindings {a "val1", c "val2"}}
+(?a, ?b) ^ ~ {foo ?a}               ->  ?a ^ ~ {foo ?a}, ?b
+(?a, ?b, ?c) ^ ~ {foo ?a, bar ?c}   ->  (?a, ?c) ^ ~ {foo ?a, bar ?c}, ?b
 ```
-
-`^^` follows the same rules as `^` — one `VAR` (lvar or `~ PATTERN`).
 
 **Provenance** — typical metadata keys:
 
@@ -417,25 +538,25 @@ $tool ^ ~ {result ?x}      -- :result is the primary key
 
 ### 12.1 Constraint Syntax
 
-`=>` expresses an **invariant**. Moving a relation from right to left is valid by
-logical rewriting:
+`->` expresses an **invariant**: under the **left-hand** conditions, the
+**right-hand** side must hold (or the stated truth value). Examples:
 
 ```
-triage(?p, ?s), severity(?s) => valid-severity(?s)
-triage(?p, ?s), severity(?s), valid-severity(?s) => true
+triage(?p, ?s), severity(?s) -> valid-severity(?s)
+triage(?p, ?s), severity(?s), valid-severity(?s) -> true
 triage(?p, ?s), severity(?s), valid-severity(?s)
 ```
 
 Exclusion invariant:
 
 ```
-rel1(?x, ?y), rel2(?y) => false
+rel1(?x, ?y), rel2(?y) -> false
 ```
 
 Conditional invariant via metadata matching:
 
 ```
-triage(?p, ?s, ?notes) ^ ~ {:s "critical"} => valid-severity(?s), ?notes != ""
+triage(?p, ?s, ?notes) ^ ~ {:s "critical"} -> valid-severity(?s), ?notes != ""
 ```
 
 ### 12.2 Constraint Grounding
@@ -462,8 +583,8 @@ Traces are fully grounded constraints. Each trace carries the binding context in
 scope at grounding, using **`^^`** (§11):
 
 ```
-severity(?s) ^^ {s "critical", p "patient-0"} => true
-%critical ^^ {p "patient-0", tel "+44 7700 900000"} => true
+severity(?s) ^^ {s "critical", p "patient-0"} -> true
+%critical ^^ {p "patient-0", tel "+44 7700 900000"} -> true
 %low ^ false
 ```
 
@@ -472,10 +593,10 @@ onward; later traces build on earlier ones.
 
 ### 12.4 Trace Retraction
 
-Retract by asserting the same constraint with `=> false`:
+Retract by asserting the same constraint with `-> false`:
 
 ```
-severity(?s) ^^ {s "critical", p "patient-0"} => false
+severity(?s) ^^ {s "critical", p "patient-0"} -> false
 ```
 
 Retraction is recorded in the trace log.
@@ -537,24 +658,24 @@ When an avar resolves, **async novelty** (phase 1 of §18) is a **fully grounded
 constraint — a **trace** (§12.2). Example with `^^` (§11):
 
 ```
-$query-db("select * from patients") ^ ~ {:result "[{id: 1}]"} ^^ {query "select * from patients"} => true
+$query-db("select * from patients") ^ ~ {:result "[{id: 1}]"} ^^ {query "select * from patients"} -> true
 ```
 
 Bare avar:
 
 ```
-$answer ^ ~ {:result "I'm fine, thanks"} => true
+$answer ^ ~ {:result "I'm fine, thanks"} -> true
 ```
 
 Values are ground; no free variables. Traces are the **message log** for async
-history; retract with `=> false` (§12.4).
+history; retract with `-> false` (§12.4).
 
 **Relational abstraction** — match tool results with **lvars** in metadata, not
 `$` in the result position:
 
 ```
-ask(?prompt, ?answer) <= $ask(?prompt) ^ ~ {:result ?answer}
-%greet <= ask("How are you?", ?answer)
+ask(?prompt, ?answer) <- $ask(?prompt) ^ ~ {:result ?answer}
+%greet <- ask("How are you?", ?answer)
 ```
 
 The tool is implementation detail; the relation is the interface.
@@ -596,8 +717,8 @@ $choose(?desc, ?options) ^ ~ {:result ?choice}
 Wrap in relations for goals:
 
 ```
-ask(?prompt, ?answer) <= $ask(?prompt) ^ ~ {:result ?answer}
-choose(?desc, ?options, ?choice) <= $choose(?desc, ?options) ^ ~ {:result ?choice}
+ask(?prompt, ?answer) <- $ask(?prompt) ^ ~ {:result ?answer}
+choose(?desc, ?options, ?choice) <- $choose(?desc, ?options) ^ ~ {:result ?choice}
 ```
 
 **If** a tool such as `$choose` needs a **list value** built from every answer
@@ -605,8 +726,8 @@ of another relation, build that list via a separate rule **head** (§8)—becaus
 the literal list in the tail cannot embed the relation call:
 
 ```
-severity-options([& ?v]) <= valid-severity(?v)
-severity(?s) <= severity-options(?options), choose("Select severity", ?options, ?s)
+severity-options([& ?v]) <- valid-severity(?v)
+severity(?s) <- severity-options(?options), choose("Select severity", ?options, ?s)
 ```
 
 ### 14.3 Tool Headings
@@ -626,17 +747,21 @@ A **goal** is a rule whose head is in the **`%`** namespace. Goals drive executi
 ### 15.1 Goal Syntax
 
 ```
-% <= tail                     -- root goal, anonymous
-%name <= tail                 -- named goal
-%name(?a, ?b) <= tail         -- named goal with capture args
+% <- tail                     -- root goal, anonymous
+%name <- tail                 -- named goal
+%name(?a, ?b) <- tail         -- named goal with capture args
 ```
 
-Capture args desugar to metadata on the tail:
+Capture args attach **bindings** on the grouped tail (§11): **bare** argument
+names as keys, **lvars** as values. Any of the §11 **bindings** spellings is fine,
+e.g.:
 
 ```
-%name(?a, ?b) <= tail
--- desugars to:
-%name <= (tail) ^ ~ {?a ?a, ?b ?b}
+%name(?a, ?b) <- tail
+-- same reading, e.g.:
+%name <- (tail) ^^ ~ {a ?a, b ?b}
+%name <- (tail) ^:bindings {a ?a, b ?b}
+%name <- (tail) ^ ~ {:bindings {a ?a, b ?b}}
 ```
 
 ### 15.2 Root Goal
@@ -645,7 +770,7 @@ The unnamed **`%`** is the root goal — first candidate when present. Multiple 
 rules **disjoin**:
 
 ```
-% <= %low | %warning | %critical
+% <- %low | %warning | %critical
 ```
 
 ### 15.3 Named Goals and Agent Choice
@@ -658,9 +783,9 @@ ease of satisfaction.
 Exclusive strategies may use **constraints** (§12):
 
 ```
-% <= %low => !%
-% <= %warning => !%
-% <= %critical => !%
+% <- %low -> !%
+% <- %warning -> !%
+% <- %critical -> !%
 ```
 
 Alternatively **`@when`** on the activation clause (§16.1).
@@ -681,7 +806,7 @@ termination (§18.5).
 ### 15.7 Goal Headings
 
 ```markdown
-# Critical Triage - %critical(?p, ?tel) <= triage(?p, ?s), ?s = "critical", name(?p, ?n), contact-info(?p, :tel, ?tel)
+# Critical Triage - %critical(?p, ?tel) <- triage(?p, ?s), ?s = "critical", name(?p, ?n), contact-info(?p, :tel, ?tel)
 
 Present as a call sheet ordered by arrival time.
 On completion suggest trying %warning for remaining patients.
@@ -714,9 +839,9 @@ Activated when `tail` holds; bindings flow into the body.
 **Mutual exclusion** — e.g.:
 
 ```
-% <= %low ; @when(!%)
-% <= %warning ; @when(!%)
-% <= %critical ; @when(!%)
+% <- %low ; @when(!%)
+% <- %warning ; @when(!%)
+% <- %critical ; @when(!%)
 ```
 
 ### 16.2 @choose
@@ -738,10 +863,10 @@ Activated; **one** binding satisfying `tail` is selected.
 ### 16.4 @each
 
 ```
-; @each(binding)
+; @each(binding, items)
 ```
 
-Force iteration over **all** bindings.
+Force iteration over **all** bindings of items.
 
 ### 16.5 @for
 
@@ -763,8 +888,8 @@ HTN is a **familiar analogy**, not a **required** semantics.
 Example of what the surface language allows:
 
 ```
-%task(?a) <= method-one(?a) <= tail-one(?a) ; @when(!%task, precondition-one(?a))
-%task(?a) <= method-two(?a) <= tail-two(?a) ; @when(!%task, precondition-two(?a))
+%task(?a) <- method-one(?a) <- tail-one(?a) ; @when(!%task, precondition-one(?a))
+%task(?a) <- method-two(?a) <- tail-two(?a) ; @when(!%task, precondition-two(?a))
 ```
 
 ---
@@ -797,14 +922,14 @@ reviewable precision.
 **Partial tail:**
 
 ```
-# Human Title - rel(?arg1) <= body-rel(?arg1), ...
-# Human Title - %goal(?arg1) <= rel(?arg1), ...
+# Human Title - rel(?arg1) <- body-rel(?arg1), ...
+# Human Title - %goal(?arg1) <- rel(?arg1), ...
 ```
 
 The heading starts the rule; the body **conjoins**:
 
 ```
-head <= <heading-tail>, <body-tail>
+head <- <heading-tail>, <body-tail>
 ```
 
 ### 17.2 Body Prose
@@ -954,22 +1079,22 @@ User declines arg                Unbound; agent checks continuable
 ## 19. Example — Medical Triage
 
 ```markdown
-% <= %critical(?p, _) | %warning(?p, _) | %low(?p)
+% <- %critical(?p, _) | %warning(?p, _) | %low(?p)
 
-# Critical Triage - %critical(?p, ?tel) <= triage(?p, $s), $s = "critical", name(?p, ?n), contact-info(?p, :tel, ?tel), patient(?p)
+# Critical Triage - %critical(?p, ?tel) <- triage(?p, $s), $s = "critical", name(?p, ?n), contact-info(?p, :tel, ?tel), patient(?p)
 
 Present as a call sheet ordered by arrival time.
 On completion suggest trying %warning for remaining patients.
 
-# Warning Triage - %warning(?p, ?tel) <= triage(?p, $s), $s = "warning", name(?p, ?n), contact-info(?p, :tel, ?tel)
+# Warning Triage - %warning(?p, ?tel) <- triage(?p, $s), $s = "warning", name(?p, ?n), contact-info(?p, :tel, ?tel)
 
 Present as a follow-up list.
 
-# Low Triage - %low(?p) <= triage(?p, $s), $s = "low", patient(?p)
+# Low Triage - %low(?p) <- triage(?p, $s), $s = "low", patient(?p)
 
 Log only, no immediate action required.
 
-# Triage - triage(?p, ?s) <= history(?p, ?symptoms), severity(?s)
+# Triage - triage(?p, ?s) <- history(?p, ?symptoms), severity(?s)
 
 ## History - history(?patient-id, $symptoms)
 
@@ -1002,16 +1127,16 @@ Key structural points:
 Trace sketch:
 
 ```
-(triage(?p, ?s) <=
-  (history(?patient-id, $symptoms) <= ...) ^^ {patient-id "patient-0", symptoms "chest pain"},
-  (severity($s) <= ...) ^^ {s "critical"}
-) ^^ {p "patient-0", s "critical"} => true
-%critical ^^ {p "patient-0", tel "+44 7700 900000"} => true
+(triage(?p, ?s) <-
+  (history(?patient-id, $symptoms) <- ...) ^^ {patient-id "patient-0", symptoms "chest pain"},
+  (severity($s) <- ...) ^^ {s "critical"}
+) ^^ {p "patient-0", s "critical"} -> true
+%critical ^^ {p "patient-0", tel "+44 7700 900000"} -> true
 
-(triage(?p, ?s) <=
-  (history(?patient-id, $symptoms) <= ...) ^^ {patient-id "patient-1", symptoms "headache"},
-  (severity($s) <= ...) ^^ {s "low"}
-) ^^ {p "patient-1", s "low"} => true
+(triage(?p, ?s) <-
+  (history(?patient-id, $symptoms) <- ...) ^^ {patient-id "patient-1", symptoms "headache"},
+  (severity($s) <- ...) ^^ {s "low"}
+) ^^ {p "patient-1", s "low"} -> true
 %low ^ false
 ```
 
@@ -1062,10 +1187,10 @@ Complete syntax (semantics in preceding sections).
 ```
 SENTENCE        = RULE | EXPR | NESTED-RULE
 
-RULE            = [ HEAD '<=' ]? EXPR [ ';' ABDUCTIVE ]? [ '=>' CONSTRAINT ]?
-NESTED-RULE     = HEAD '<=' '(' RULE ')'
+RULE            = [ HEAD '<-' ]? EXPR [ ';' ABDUCTIVE ]? [ '->' CONSTRAINT ]?
+NESTED-RULE     = HEAD '<-' '(' RULE ')'
 EXPR            = TAIL
-                | HEAD '<=' EXPR
+                | HEAD '<-' EXPR
                 | '(' EXPR ')' [ '^' VAR ]?
 
 ABDUCTIVE       = WHEN-ACT
@@ -1087,9 +1212,14 @@ TAIL            = CLAUSE
                 | CLAUSE ',' TAIL
                 | '(' TAIL ')' [ '^' VAR ]?
 CLAUSE          = ATOM [ '^' VAR ]? [ '^^' VAR ]?
-ATOM            = RELATION | GOAL | TOOL | VAR | LITERAL | '(' EXPR ')'
+ATOM            = RELATION | GOAL | TOOL | VAR | LITERAL | EXPANSION
+                | '(' EXPR ')'
 BINDING         = CLAUSE | CLAUSE ',' BINDING
 STEP            = CLAUSE | CLAUSE ',' STEP
+
+EXPANSION       = '#' LVAR
+OPERAND         = RELATION | VAR | LITERAL | COLLECTION | EXPANSION
+                | '(' OPERAND ')'
 
 VAR             = LVAR | ASYNC-VAR | '~' PATTERN
 PATTERN         = MAP | LIST | SET | STRING | REGEX
@@ -1137,8 +1267,12 @@ RELATION        = LABEL '(' [ ARG [ ',' ARG ]* ]? ')'
 GOAL            = '%' LABEL? [ '(' [ ARG [ ',' ARG ]* ]? ')' ]?
 TOOL            = '$' LABEL '(' [ ARG [ ',' ARG ]* ]? ')'
 
-ARG             = VAR | LITERAL | COLLECTION | '_'
+ARG             = VAR | LITERAL | COLLECTION | '_' | RELATION
 ```
+
+**Cardinality** — The expression between `|` and `|` in §5.2 is an `OPERAND`
+when it is a surface relation call, a bare lvar (value reading), or **`#?x`**
+(syntax reading, §3; precedence §5.7).
 
 **Namespaces** — `$name` without `(` `)` is an async var; `$name(` … `)` is a tool
 call. Relation and goal heads use §9 and §15 respectively.

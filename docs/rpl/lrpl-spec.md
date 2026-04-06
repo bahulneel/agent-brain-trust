@@ -1,7 +1,9 @@
 # Lazy Relational Prompt Language (LRPL) — Formal Specification
 
-Extends RPL (spec.md with errata applied). Defines only the delta. All base
+Extends RPL (`spec.md`). Defines only the delta. All base
 definitions are as specified in spec.md unless explicitly overridden here.
+LRPL inherits the **declarative reading** of surface syntax (§spec §1); sections
+below add **meaning** for lazy forms and memos, not a mandatory execution recipe.
 
 ---
 
@@ -18,7 +20,7 @@ And two standard library additions:
 
 - **`$index`** — lazy external data traversal
 - **`$generate`**, **`$write`** — generation and persistence
-- **`length`** — cardinality over any collection or relation-valued lvar
+- **`length`** — cardinality via **expansion** `|#?x|` so the `|…|` operand uses the **syntax** reading of `?x` (§spec §3, §5.7)
 
 ### 1.1 Theoretical Anchor
 
@@ -43,7 +45,7 @@ Non-monotonic (agent judgment required):
 Adds to §spec §3:
 
 ```
-<expr>    lazy: deferred until progress stalls or unquoted
+<expr>    lazy: deferred until progress stalls or until `#<expr>` expands it
 ```
 
 All other variable forms are as in spec.md.
@@ -60,24 +62,22 @@ LAZY-EXPR = '<' EXPR '>'
 
 Valid wherever CLAUSE is valid (§spec §10).
 
-A lazy expression participates in constraint propagation — constraints
-accumulate against its free variables from outside — but its interior is not
-entered and no bindings within it are produced until either:
+The **meaning** of `<expr>` includes **deferral**: constraints from outside may
+bear on its free variables, but the interior is **not** yet asserted as the same
+reading as plain `EXPR` until either progress **stalls** without the bindings it
+would yield, or **`#<expr>`** supplies the **syntax** reading of the lazy wrapper
+at that site (§spec §5.7). Once the interior counts as **present** under that
+reading, accumulated constraints on those variables apply as usual; novelty and
+store updates follow §spec §18.2.
 
-- forward progress **stalls** without the bindings it would produce, or
-- it is **unquoted** (`` ` ``), which forces immediate entry
+**Expansion at a lazy site.** `#<expr>` is the form whose **meaning** is: at this
+position, the deferred body is read **as** `EXPR` (brackets dropped) for purposes
+of constraints and derivation (§spec §3, §5.7). That is the LRPL-specific
+expansion case; all other expansion **meaning** is as in spec.md.
 
-On entry, all accumulated constraints on free variables are applied as a filter
-before any enumeration or derivation begins. Results enter the binding store as
-novelty (§spec §18.2).
-
-**Unquote interaction.** Unquoting a lazy expression (`` `<expr> ``) forces
-entry at that point. Accumulated constraints still apply. This is the one
-LRPL-specific effect of the unquote operator; all other unquote semantics are
-defined in spec.md.
-
-**Property, not action.** Outside of explicit unquote, evaluation is triggered
-by conditions being met, not by an external call.
+**Deferral without `#<expr>`.** The lazy form still **says** that the interior is
+not yet contributing as a full `EXPR` would; **when** implementations widen that
+assertion (e.g. on stall) is not fixed by this spec (§spec §1).
 
 **Free variable scope.** Variables appearing both inside and outside `<expr>`
 are shared. Variables appearing only inside are scoped to the expression.
@@ -216,11 +216,11 @@ stratum.
 ### 5.4 `length`
 
 ```rpl
-length(?collection, $n) <= $n = |`?collection|
+length(?collection, $n) <- $n = |#?collection|
 ```
 
-`?collection` may be a list, set, or relation-valued lvar. `$n` is deduced as
-the cardinality.
+`?collection` binds to an **expression**; expansion (`#?collection`) supplies that
+expression as **syntax** inside `|…|` (§spec §3). `$n` is the cardinality.
 
 ---
 
@@ -246,7 +246,7 @@ Extends §spec §18. Phases 3, 7, and 8 are modified:
 4. Surface conflict if no disjuncts remain.
 
 **Lazy dispatch** — avars inside `<expr>` are not dispatched at phase 8 unless
-the expression has been entered (via stall or unquote).
+the expression has been entered (via stall or expansion `#<expr>`).
 
 **Additional failure modes** (extends §spec §18.6):
 

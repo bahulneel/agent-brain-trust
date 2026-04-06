@@ -258,9 +258,21 @@ reading of that lvar’s binding (§3).
 head) and the bound expression is not of an allowed shape, the sentence is
 **ill-formed** or the case is **implementation-defined**.
 
+**Syntax-level abstraction** — Because `#` splices the **syntax** reading of an
+lvar, you can abstract over forms that would otherwise be fixed at authoring time:
+an expression bound to `?x` can be reinserted as syntax and become the operand of
+another operator. That yields **higher-order relations** (relations parameterised
+over syntactic structure) without a separate macro system. For example, counting
+tuples for whatever expression `?x` denotes uses `|…|` (§5.2) on the expanded
+syntax:
+
 ```rpl
-length(?t, $l) <- $l = |#?t|
+length(?x, $l) <- $l = |#?x|
 ```
+
+`?x` is typically bound to a relation call or collection term; `#?x` supplies that
+expression inside `|…|` (§3). This is ordinary RPL composition — **not** an LRPL
+feature or a reserved built-in name; any author may define such a relation.
 
 ```rpl
 #?t ^:scope $s     -- ^ on the atom under the syntax reading of ?t (§11)

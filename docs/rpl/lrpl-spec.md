@@ -16,18 +16,16 @@ LRPL adds three capabilities to RPL:
 - **Satisfactory quiescence** — goal-relative quiescence boundary in place of
   full fixpoint
 
-And two standard library additions:
+And standard library additions:
 
-- **`$index`** — external data mapped into relation positions (**not** `<expr>`-lazy by
-  default; traversal runs under ordinary relational demand)
+- **`$index`** — external data mapped into relation positions
 - **`$generate`**, **`$write`** — generation and persistence
-- **`length`** — cardinality via **expansion** `|#?x|` so the `|…|` operand uses the **syntax** reading of `?x` (§spec §3, §5.7)
 
-**Tool calls** (`$name(…)`, §spec §14, including stdlib names): **lazy dispatch by
-default** — the runtime does not invoke the external capability until **forward
-progress** requires its outputs (ground args, metadata bindings, or other results
-that cannot be obtained otherwise). This is independent of `<expr>`: wrap a call
-in `<…>` only when explicit lazy-expression deferral is intended.
+**Lazy tool dispatch** — LRPL’s delta on §spec §14: a tool invocation **`$label(…)`**
+does not run its external capability until forward progress needs a result only
+that call can supply (normative detail §5.0). That is independent of **`<expr>`**
+(§2), which defers when a wrapped subexpression counts as fully present for
+derivation; `<$label(…)>` applies both mechanisms.
 
 ### 1.1 Theoretical Anchor
 
@@ -185,16 +183,14 @@ These define the stopping shape, not the algorithm.
 
 ### 5.0 Tool dispatch
 
-In LRPL, **every tool invocation** `$name(…)` (user-defined or stdlib) is subject
-to **lazy dispatch by default**: the implementation avoids calling the tool until
-forward progress (derivation, goal satisfaction, or memo propagation) **requires**
-a result that only that call can supply. Speculative or eager tool execution is not
-prescribed.
+For every **`$label(…)`** (§spec §14), the runtime must not invoke the external
+capability until derivation, goal satisfaction, or memo propagation **requires** a
+value, binding, or effect that only that invocation can provide. Speculative or
+eager tool execution is not prescribed by this document.
 
-**`$index`** is **not** additionally lazy in the **`<expr>`** sense (§2). It does
-not imply “defer until a downstream goal forces entry” beyond normal relational
-scheduling: once the `$index` site participates in active rule evaluation, mapping
-and scan proceed under that demand. To defer a read explicitly, wrap it in `<…>`.
+**`<expr>`** (§2) is a different axis: it defers when the interior participates as
+ordinary syntax in the rule. Wrapping `<$label(…)>` combines expression deferral with
+lazy tool dispatch; an unwrapped call is subject only to the latter.
 
 ### 5.1 `$index`
 
@@ -236,15 +232,6 @@ $write(?content, ?location, ?options)
 
 A trace stratum written via `$write` is a valid `$index` source for a future
 stratum.
-
-### 5.4 `length`
-
-```rpl
-length(?collection, $n) <- $n = |#?collection|
-```
-
-`?collection` binds to an **expression**; expansion (`#?collection`) supplies that
-expression as **syntax** inside `|…|` (§spec §3). `$n` is the cardinality.
 
 ---
 
@@ -300,7 +287,7 @@ RELATION-WITH-AVAR = LABEL '(' [ INDEX-ARG [ ',' INDEX-ARG ]* ]? ')'
 INDEX-ARG          = LVAR | ASYNC-VAR | LITERAL | '_'
 
 STDLIB = '$index' | '$generate' | '$write' | '$copy'
-       | '$transform' | 'length'
+       | '$transform'
 ```
 
 `:memo` is a reserved metadata key; its value must be `DNF-EXPR`.

@@ -1,44 +1,38 @@
-import { it } from "vitest";
 import {
-  chatCompletion,
-  resolvedLlmApiKey,
-  resolvedLlmModel,
-} from "../support/llm-chat.js";
-import {
-  assertGoalBindings,
-  buildGoalBindingsUserPrompt,
-  type GoalBindingCase,
-} from "../support/goal-bindings.js";
-import { loadGoalBindingCases } from "../support/load-goal-binding-suite.js";
-import {
-  REMOTE_LLM_TIMEOUT_MS,
-  describeRemotePrompts,
-} from "../support/remote-suite.js";
-import { proseSystemPrompt } from "../support/rpl-prompt-stacks.js";
+  assert,
+  chat,
+  content,
+  describeLogged,
+  fixtures,
+} from "@test/support";
 
-const PROSE_CASES: GoalBindingCase[] = loadGoalBindingCases(
-  "tests/prompts/rpl/fixtures/prose.json"
-);
-const PROSE_QUALITY_CASES: GoalBindingCase[] = loadGoalBindingCases(
-  "tests/prompts/rpl/fixtures/prose-quality-judgement.json"
-);
-const CASES: GoalBindingCase[] = [...PROSE_CASES, ...PROSE_QUALITY_CASES];
+const fixtureLabels: fixtures.Label[] = ["prose", "proseQualityJudgement"];
+const cases = fixtures.load(...fixtureLabels);
 
-describeRemotePrompts("Prose verification (remote LLM)", () => {
-  const system = proseSystemPrompt();
-  const apiKey = resolvedLlmApiKey()!;
+describeLogged("Prose verification (remote LLM)", (suite) => {
+  const system = content.load("rplEager").text;
 
-  it.each(CASES)(
-    "$id",
-    { timeout: REMOTE_LLM_TIMEOUT_MS },
-    async (c: GoalBindingCase) => {
-      const output = await chatCompletion({
-        apiKey,
-        model: resolvedLlmModel(),
-        system,
-        user: buildGoalBindingsUserPrompt(c),
-      });
-      assertGoalBindings(output, c);
-    }
-  );
+  suite.beforeAll(({ addDeps }) => {
+    addDeps({ system });
+  });
+
+  const apiKey = chat.resolvedLlmApiKey()!;
+
+  for (const c of cases) {
+    suite(
+      c.id,
+      async ({ alreadyPassed }) => {
+        const userPrompt = fixtures.buildUserPrompt(c);
+        if (alreadyPassed({ case: c, userPrompt, system })) return;
+
+        const modelOutput = await chat.chatCompletion({
+          apiKey,
+          model: chat.resolvedLlmModel(),
+          system,
+          user: userPrompt,
+        });
+        assert.assertModelJson(modelOutput, c);
+      }
+    );
+  }
 });

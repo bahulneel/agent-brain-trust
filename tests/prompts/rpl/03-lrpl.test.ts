@@ -1,49 +1,42 @@
-import { it } from "vitest";
 import {
-  chatCompletion,
-  resolvedLlmApiKey,
-  resolvedLlmModel,
-} from "../support/llm-chat.js";
-import {
-  assertGoalBindings,
-  buildGoalBindingsUserPrompt,
-  type GoalBindingCase,
-} from "../support/goal-bindings.js";
-import { loadGoalBindingCases } from "../support/load-goal-binding-suite.js";
-import {
-  REMOTE_LLM_TIMEOUT_MS,
-  describeRemotePrompts,
-} from "../support/remote-suite.js";
-import { lrplSystemPrompt } from "../support/rpl-prompt-stacks.js";
+  assert,
+  chat,
+  content,
+  describeLogged,
+  fixtures,
+} from "@test/support";
 
-const LRPL_ONLY = loadGoalBindingCases("tests/prompts/rpl/fixtures/lrpl.json");
-const LRPL_ADVANCED = loadGoalBindingCases(
-  "tests/prompts/rpl/fixtures/lrpl-advanced.json"
-);
-const LRPL_INDEX_INLINE_DATA = loadGoalBindingCases(
-  "tests/prompts/rpl/fixtures/lrpl-index-inline-data.json"
-);
-const CASES: GoalBindingCase[] = [
-  ...LRPL_ONLY,
-  ...LRPL_ADVANCED,
-  ...LRPL_INDEX_INLINE_DATA,
+const fixtureLabels: fixtures.Label[] = [
+  "lrpl",
+  "lrplAdvanced",
+  "lrplIndexInlineData",
 ];
+const cases = fixtures.load(...fixtureLabels);
 
-describeRemotePrompts("LRPL spec verification (remote LLM)", () => {
-  const system = lrplSystemPrompt();
-  const apiKey = resolvedLlmApiKey()!;
+describeLogged("LRPL spec verification (remote LLM)", (suite) => {
+  const system = content.load("rplLazy").text;
 
-  it.each(CASES)(
-    "$id",
-    { timeout: REMOTE_LLM_TIMEOUT_MS },
-    async (c: GoalBindingCase) => {
-      const output = await chatCompletion({
-        apiKey,
-        model: resolvedLlmModel(),
-        system,
-        user: buildGoalBindingsUserPrompt(c),
-      });
-      assertGoalBindings(output, c);
-    }
-  );
+  suite.beforeAll(({ addDeps }) => {
+    addDeps({ system });
+  });
+
+  const apiKey = chat.resolvedLlmApiKey()!;
+
+  for (const c of cases) {
+    suite(
+      c.id,
+      async ({ alreadyPassed }) => {
+        const userPrompt = fixtures.buildUserPrompt(c);
+        if (alreadyPassed({ case: c, userPrompt, system })) return;
+
+        const modelOutput = await chat.chatCompletion({
+          apiKey,
+          model: chat.resolvedLlmModel(),
+          system,
+          user: userPrompt,
+        });
+        assert.assertModelJson(modelOutput, c);
+      }
+    );
+  }
 });

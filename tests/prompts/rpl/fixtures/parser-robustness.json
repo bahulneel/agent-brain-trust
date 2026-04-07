@@ -18,9 +18,9 @@
     }
   },
   {
-    "id": "parser-loose-binding-lines",
-    "description": "Falls back to ?var = value line parsing when JSON is absent.",
-    "output": "?patient = 'p-1'\n?count = 3\n?approved = true",
+    "id": "parser-trailing-comma",
+    "description": "Repairs trailing comma in object literal.",
+    "output": "{\"patient\": \"p-1\", \"count\": 3, \"approved\": true,}",
     "expectation": {
       "patient": "p-1",
       "count": 3,
@@ -29,7 +29,7 @@
   },
   {
     "id": "parser-colon-lvar-bindings",
-    "description": "Falls back to ?var: 'value' parsing when JSON extraction fails.",
+    "description": "Near-JSON with logical-var keys repaired by jsonrepair.",
     "output": "{ ?ticket: 'INC-42', ?state: 'open' }",
     "expectation": {
       "ticket": "INC-42",
@@ -38,7 +38,7 @@
   },
   {
     "id": "parser-last-json-object-wins",
-    "description": "Selects the last valid JSON object from mixed model output.",
+    "description": "Selects the last JSON object from mixed model output.",
     "output": "Reasoning: {not-json}\n{\"candidate\":\"old\"}\nfinal:\n{\"candidate\":\"new\"}",
     "expectation": {
       "candidate": "new"

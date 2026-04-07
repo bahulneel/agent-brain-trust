@@ -1,6 +1,12 @@
 import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+/** Remote LLM prompt tests: one provider round-trip per case; slow models need headroom. */
+const remoteLlmTestTimeoutMs = 120_000;
 
 /**
  * Minimal .env loader (KEY=value, optional quotes). Avoids a vite peer install
@@ -36,6 +42,8 @@ const envFromFile = loadDotEnvFile(join(process.cwd(), ".env"));
 const PROMPTS_ENV_KEYS = [
   "PROMPTS_LLM_API_KEY",
   "PROMPTS_LLM_MODEL",
+  "PROMPTS_LLM_RESPONSE_FORMAT_JSON",
+  "PROMPT_TEST_RESULT_LOG",
   "PROMPTS_LLM_REQUESTS_PER_SECOND",
   "PROMPTS_LLM_RATE_LIMIT",
   "NVIDIA_NIM_API_KEY",
@@ -55,13 +63,18 @@ function processEnvOverrides(): Record<string, string> {
 }
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      "@test": resolve(__dirname, "tests"),
+    },
+  },
   test: {
     environment: "node",
     include: ["tests/**/*.test.ts"],
     /** One worker, one file at a time — avoids shared LLM rate-limit queue buildup across parallel tests. */
     maxWorkers: 1,
     fileParallelism: false,
-    testTimeout: 120_000,
+    testTimeout: remoteLlmTestTimeoutMs,
     hookTimeout: 30_000,
     env: { ...envFromFile, ...processEnvOverrides() },
   },

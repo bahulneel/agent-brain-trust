@@ -1,4 +1,7 @@
 {
   "files": [],
-  "references": [{ "path": "./packages/repo-tooling" }]
+  "references": [
+    { "path": "./packages/repo-tooling" },
+    { "path": "./tsconfig.tests.json" }
+  ]
 }

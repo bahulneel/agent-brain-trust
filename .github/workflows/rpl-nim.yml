@@ -1,0 +1,67 @@
+# RPL language integration tests against NVIDIA NIM (chat completions).
+# Runs after merges to main; exercises content/rpl prompts with a small model matrix.
+#
+# Setup: add repository secret `NVIDIA_NIM_API_KEY`.
+# Model ids must match your NVIDIA API catalog (update matrix if slugs change).
+# Qwen LLM ids use an underscore in the minor version (e.g. `qwen2_5`), not a dot.
+
+name: RPL NIM
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: rpl-nim-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  rpl-nim:
+    name: RPL NIM — ${{ matrix.nim_model }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      # One matrix job at a time: same API key / rate limits; avoids burst timeouts.
+      max-parallel: 1
+      matrix:
+        nim_model:
+          # Instruction-tuned Llama 3 (70B): strongest default for structured RPL / traces.
+          - meta/llama3-70b-instruct
+          # Smaller Llama 3: faster/cheaper regression signal.
+          - meta/llama3-8b-instruct
+          # Mixtral MoE: different tokenizer/architecture; catches prompt fragility.
+          - mistralai/mixtral-8x7b-instruct-v0.1
+          # Qwen 2.5 instruct (7B): non-Llama tokenizer, strong multilingual / tool-style prompts.
+          - qwen/qwen2_5-7b-instruct
+          # DeepSeek R1 distillation on Llama 8B: reasoning-oriented; different system-prompt sensitivities.
+          - deepseek-ai/deepseek-r1-distill-llama-8b
+          # DeepSeek R1 distillation on Qwen2.5-7B: combines R1 reasoning with Qwen backbone.
+          - deepseek-ai/deepseek-r1-distill-qwen-7b
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Require NVIDIA_NIM_API_KEY
+        env:
+          NVIDIA_NIM_API_KEY: ${{ secrets.NVIDIA_NIM_API_KEY }}
+        run: |
+          if [ -z "${NVIDIA_NIM_API_KEY}" ]; then
+            echo "::error::Add repository secret NVIDIA_NIM_API_KEY to run RPL NIM tests."
+            exit 1
+          fi
+
+      - run: npm ci
+
+      - name: Vitest — RPL language (NIM)
+        env:
+          NVIDIA_NIM_API_KEY: ${{ secrets.NVIDIA_NIM_API_KEY }}
+          NIM_MODEL: ${{ matrix.nim_model }}
+          NIM_MAX_REQUESTS_PER_SECOND: "40"
+        run: npm run test:rpl

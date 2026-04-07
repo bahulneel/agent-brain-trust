@@ -32,6 +32,24 @@ function loadDotEnvFile(envPath: string): Record<string, string> {
 
 const envFromFile = loadDotEnvFile(join(process.cwd(), ".env"));
 
+/** CI / shell env overrides values from `.env` for these keys. */
+const NIM_ENV_KEYS = [
+  "NVIDIA_NIM_API_KEY",
+  "NIM_MODEL",
+  "NVIDIA_NIM_MODEL",
+  "NIM_MAX_REQUESTS_PER_SECOND",
+  "NIM_RATE_LIMIT",
+] as const;
+
+function processEnvOverrides(): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const key of NIM_ENV_KEYS) {
+    const v = process.env[key];
+    if (v !== undefined) out[key] = v;
+  }
+  return out;
+}
+
 export default defineConfig({
   test: {
     environment: "node",
@@ -41,6 +59,6 @@ export default defineConfig({
     fileParallelism: false,
     testTimeout: 120_000,
     hookTimeout: 30_000,
-    env: envFromFile,
+    env: { ...envFromFile, ...processEnvOverrides() },
   },
 });

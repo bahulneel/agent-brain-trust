@@ -6,9 +6,22 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, "..", "..");
 export const RPL_CONTENT_DIR = join(ROOT, "content", "rpl");
 
+/** Default when `NIM_MODEL` / `NVIDIA_NIM_MODEL` is unset. */
 export const DEFAULT_NIM_MODEL = "meta/llama3-70b-instruct";
 export const NIM_CHAT_COMPLETIONS_URL =
   "https://integrate.api.nvidia.com/v1/chat/completions";
+
+/**
+ * Active chat model for NIM (`/v1/chat/completions`).
+ * Set `NIM_MODEL` (or `NVIDIA_NIM_MODEL`) locally or in CI matrix jobs.
+ */
+export function resolvedNimModel(): string {
+  const raw =
+    process.env.NIM_MODEL?.trim() ||
+    process.env.NVIDIA_NIM_MODEL?.trim() ||
+    DEFAULT_NIM_MODEL;
+  return raw.length > 0 ? raw : DEFAULT_NIM_MODEL;
+}
 
 /** Rolling 1s window: max HTTP request *starts* (default 40). Override with NIM_MAX_REQUESTS_PER_SECOND. Set NIM_RATE_LIMIT=0 to disable. */
 const RATE_LIMIT_WINDOW_MS = 1000;
@@ -77,10 +90,12 @@ export async function nimChatCompletion(options: {
     apiKey,
     system,
     user,
-    model = DEFAULT_NIM_MODEL,
+    model,
     temperature = 0.1,
     maxTokens = 500,
   } = options;
+
+  const effectiveModel = model ?? resolvedNimModel();
 
   const response = await fetch(NIM_CHAT_COMPLETIONS_URL, {
     method: "POST",
@@ -89,7 +104,7 @@ export async function nimChatCompletion(options: {
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model,
+      model: effectiveModel,
       messages: [
         { role: "system", content: system },
         { role: "user", content: user },

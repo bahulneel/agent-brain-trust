@@ -1,17 +1,22 @@
 /**
  * NVIDIA NIM integration tests for RPL prompt packs under content/rpl/.
- * Set NVIDIA_NIM_API_KEY (e.g. in .env); Vitest loads .env via vitest.config.ts.
+ *
+ * - `NVIDIA_NIM_API_KEY` — required for NIM chat calls (e.g. in `.env`).
+ * - `NIM_MODEL` or `NVIDIA_NIM_MODEL` — chat model id (default: see `DEFAULT_NIM_MODEL` in support).
+ *   CI sets `NIM_MODEL` per matrix job (`.github/workflows/rpl-nim.yml`).
+ *
+ * Vitest merges `.env` then overrides with these keys from the process env (`vitest.config.ts`).
  */
 
 import { beforeEach, describe, expect, it } from "vitest";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import {
-  DEFAULT_NIM_MODEL,
   RPL_CONTENT_DIR,
   acquireNimRequestSlot,
   loadRplPrompt,
   nimChatCompletion,
+  resolvedNimModel,
 } from "./support/rpl-nim.js";
 
 const hasApiKey = Boolean(process.env.NVIDIA_NIM_API_KEY);
@@ -38,6 +43,7 @@ describe.skipIf(!hasApiKey)("RPL language (NIM integration)", () => {
           "Translate this to RPL:\n# Process Refund\nCheck if the __refund amount__ is less than 100. If so, auto-approve it.";
         const output = await nimChatCompletion({
           apiKey: process.env.NVIDIA_NIM_API_KEY!,
+          model: resolvedNimModel(),
           system,
           user,
         });
@@ -57,6 +63,7 @@ describe.skipIf(!hasApiKey)("RPL language (NIM integration)", () => {
         ].join("\n");
         const output = await nimChatCompletion({
           apiKey: process.env.NVIDIA_NIM_API_KEY!,
+          model: resolvedNimModel(),
           system,
           user,
         });
@@ -76,6 +83,7 @@ describe.skipIf(!hasApiKey)("RPL language (NIM integration)", () => {
           "In LRPL, before an lvar is bound, where does the agent record candidate worlds, and in what format?";
         const output = await nimChatCompletion({
           apiKey: process.env.NVIDIA_NIM_API_KEY!,
+          model: resolvedNimModel(),
           system,
           user,
         });
@@ -87,7 +95,7 @@ describe.skipIf(!hasApiKey)("RPL language (NIM integration)", () => {
 });
 
 describe("RPL language (local checks, no API)", () => {
-  it("documents the model used when NIM tests run", () => {
-    expect(DEFAULT_NIM_MODEL).toMatch(/\S+/);
+  it("resolves a non-empty NIM model id", () => {
+    expect(resolvedNimModel()).toMatch(/\S/);
   });
 });

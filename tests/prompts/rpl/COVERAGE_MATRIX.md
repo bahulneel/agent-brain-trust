@@ -6,7 +6,7 @@ This matrix maps current prompt fixtures to the `docs/rpl` specification surface
 
 | Family | Fixture file | Spec areas covered | Status |
 | --- | --- | --- | --- |
-| Shared core bindings | `fixtures/shared.json` | RPL relations, simple implication, numeric guard | Covered |
+| Shared core bindings | `fixtures/shared.json` | RPL relations, simple implication, numeric guard, string literals (single/double quotes per spec §2) | Covered |
 | RPL derivation | `fixtures/rpl.json` | Multi-step rule chaining | Covered |
 | LRPL basic lazy | `fixtures/lrpl.json` | LRPL lazy wrapper (`<...>`) basic derivation | Covered |
 | Prose translation (sections 1-5) | `fixtures/prose.json` | Markdown-to-RPL guide `content/rpl/translation.md` sections 1-5 | Covered |

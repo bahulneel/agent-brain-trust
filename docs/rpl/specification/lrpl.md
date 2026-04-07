@@ -249,7 +249,8 @@ Realisation forced prematurely         agent warns; records in trace
 
 ## Appendix. Grammar Extensions
 
-Extends rpl.md Appendix.
+Extends rpl.md Appendix. Nonterminals not listed here are unchanged there—including
+`STRING`, which allows both single- and double-quoted literals (rpl.md §2).
 
 ```
 VAR      += LAZY-EXPR

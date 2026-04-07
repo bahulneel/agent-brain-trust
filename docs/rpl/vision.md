@@ -100,6 +100,9 @@ syntax- and runtime-focused. Section numbers in the bullets refer to that spec.
   implementations **might** enforce at boundaries (e.g. collection literals vs
   relation calls); it does not dictate a single workflow, planner, or authoring
   style.
+- **Readability-first surface** — when equivalent spellings exist (e.g. string
+  delimiters, §2 in the base spec), prefer the form that makes each expression
+  easiest for humans to read and review.
 - **Primary vs secondary use** — **prompts and LLM protocols** are the main
   target; **living Markdown** and long-lived documents are also supported.
 - **Prose canonical at Author’s option** — relational syntax is the precision

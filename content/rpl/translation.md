@@ -2,6 +2,10 @@
 
 RPL is designed to be inferred from prose. This guide provides examples of how an LLM can translate Markdown prose into formal RPL syntax. It relies on the LLM's ability to infer intent, rather than a rigid formal transformation.
 
+## 0. Style: readability and string quotes
+
+**Readability comes first** for every formal expression you emit: short, clear rules that scan well beat clever compression. **String literals** may use `"…"` or `'…'` interchangeably—the meaning is the same. Choose the delimiter (and line breaks) that keeps each rule easiest to read in context (for example, single quotes when the text contains double quotes, or vice versa).
+
 ## 1. No RPL + No Emphasis (Pure Prose Inference)
 
 **Prose:**

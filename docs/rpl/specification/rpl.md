@@ -31,12 +31,20 @@ for reference.
 The basic data types are **literals**. All EDN literal types are valid everywhere
 a literal appears: **symbols**, **keywords**, **strings**, **numbers**,
 **booleans** (`true` / `false`), and **nil**. Data structures follow EDN reading
-rules.
+rules. For **strings**, RPL accepts both the usual EDN double-quoted form and an
+equivalent **single-quoted** form (Appendix); both denote the same literal.
 
-**String templates** — `{?x}` inside a double-quoted string uses the **value**
-reading of `?x` (§3): it constructs the string (if `?x` is bound) or participates
-in matching (if `?x` is unbound). **Regex** patterns (below) are for partial
-matching with named captures.
+**String literals** — A string may be written with **double quotes** (`"…"`) or
+**single quotes** (`'…'`). The two forms are **interchangeable** and denote the
+same literal. **Readability comes first**: choose the delimiter (and layout) that
+makes the surrounding expression easiest to scan—e.g. single quotes when the text
+contains double quotes, or the opposite when it helps nesting and punctuation read
+clearly.
+
+**String templates** — `{?x}` inside a quoted string (either delimiter) uses the
+**value** reading of `?x` (§3): it constructs the string (if `?x` is bound) or
+participates in matching (if `?x` is unbound). **Regex** patterns (below) are for
+partial matching with named captures.
 
 **Regex** — written `/.../`; the regex body is delimited by slashes.
 
@@ -185,7 +193,8 @@ reading, or **`#?t`** when the operand position must be the **syntax** reading o
 ### 5.4 Temporal Operators
 
 Time values are opaque unless a temporal operator is applied. Durations are
-quoted strings: `"48h"`, `"30min"`, `"7d"`. `now` is a built-in reference.
+quoted strings, e.g. `"48h"` or `'48h'`, `"30min"` / `'30min'`, `"7d"` / `'7d'`.
+`now` is a built-in reference.
 
 ```
 ?t before ?ref
@@ -270,7 +279,7 @@ Matching is written with equality to an lvar or by placing `~ PATTERN` in an
 argument position:
 
 ```
-?x = ~ "foo {?bar}"         -- string pattern; ?bar binds suffix
+?x = ~ "foo {?bar}"         -- string pattern; ?bar binds suffix ('foo {?bar}' equivalent)
 ?x = ~ {:key ?val}          -- map pattern; ?val binds value
 ?x = ~ /(?P<a>\w+)/         -- regex; named capture ?a binds
 rel(~ "foo {?bar}")         -- in-place match in arg position
@@ -1190,9 +1199,13 @@ LITERAL         = STRING | NUMBER | KEYWORD | BOOLEAN | NIL | SYMBOL
 BOOLEAN         = 'true' | 'false'
 NIL             = 'nil'
 SYMBOL          = NAME
-STRING          = '"' STRING-PART* '"'
-STRING-PART     = TEXT | '{' LVAR '}'
-TEXT            = [^"{]+
+STRING          = DQ-STRING | SQ-STRING
+DQ-STRING       = '"' DQ-PART* '"'
+DQ-PART         = DQ-TEXT | '{' LVAR '}'
+DQ-TEXT         = [^"{]+
+SQ-STRING       = '\'' SQ-PART* '\''
+SQ-PART         = SQ-TEXT | '{' LVAR '}'
+SQ-TEXT         = [^'{]+
 NUMBER          = [0-9]+ [ '.' [0-9]+ ]?
 KEYWORD         = ':' NAME
 

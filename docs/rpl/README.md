@@ -133,6 +133,8 @@ valid-component("infrastructure")
 ```
 ````
 
+String literals in these blocks may use `"…"` or `'…'` interchangeably (same meaning); pick the form that keeps each line easiest to read.
+
 A fenced block tagged **`rpl`** adds formal expressions to the current
 heading's scope. Here, four `valid-component` facts declare the closed set of
 options. The agent can present these as a structured choice rather than parsing

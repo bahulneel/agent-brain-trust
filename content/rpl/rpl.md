@@ -4,13 +4,15 @@ RPL is a declarative logic language for defining agent behaviors. It builds prog
 
 ## Level 0: Primitives
 RPL uses EDN literals for data:
-- **Strings**: `"hello"` (can include templates: `"hello {?name}"`)
+- **Strings**: `"hello"` or `'hello'` — **single- and double-quoted literals are interchangeable**; use whichever makes the surrounding expression easier to read (including nested quotes). Templates work in either form: `"hello {?name}"`, `'hello {?name}'`.
 - **Regex**: `/(?P<name>\w+)/`
 - **Numbers**: `42`, `3.14`
 - **Booleans**: `true`, `false`
 - **Keywords**: `:status`
 - **Symbols**: `foo`
 - **Nil**: `nil`
+
+**Readability first** — When you write or complete any RPL expression (literals, tails, constraints, patterns), prefer clarity and scan-ability over minimal token count. If two spellings are allowed, pick the one reviewers can follow at a glance.
 
 ## Level 1: Variables & Matching
 - **Logical Variable (lvar)**: `?name` (binds to a value)

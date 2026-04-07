@@ -55,6 +55,10 @@ specification; **lvars** in particular are §3 there. **How** an implementation 
 **searches**, **schedules**, or **materialises** witnesses is not defined there
 except where explicitly noted as suggestive (e.g. the timestep rhythm in §18).
 
+**Readable expressions** — Where the base spec allows equivalent surface forms (e.g.
+string literals with single or double quotes, §2), authors should choose what
+reads best; the intended review experience is **clarity first**.
+
 **Prose-first authoring** — Natural-language bodies are **materialised** into
 rules when text is first **encountered**: either once (e.g. the agent normalises
 a document in a dedicated pass) or **incrementally** as portions are read. A

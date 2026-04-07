@@ -58,6 +58,7 @@ export function buildUserPrompt(c: Case): string[] {
     "```rpl",
     `% <- ${c.output}`,
     "```",
+    "When writing or completing RPL in your answer, prioritize readability: layout and quoting should make each expression easy to scan. Single- and double-quoted string literals are interchangeable; use whichever reads clearest in context.",
     "Respond with one JSON object only (no prose, no markdown).",
   ];
 }

@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@test/support": ["tests/support/index.ts"],
+      "@test/*": ["tests/*"]
+    }
+  },
+  "include": ["tests/**/*.ts"]
+}

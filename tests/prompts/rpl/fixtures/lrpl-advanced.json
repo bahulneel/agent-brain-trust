@@ -1,0 +1,41 @@
+[
+  {
+    "id": "lrpl-expansion-of-lazy-template",
+    "description": "LRPL §2: #<expr> expansion can realize deferred clauses when needed.",
+    "rpl": [
+      "candidate(?item) <- ?tmpl = <available(?item)>, #?tmpl",
+      "available('item-z')"
+    ],
+    "output": "candidate(?item)",
+    "expectation": {
+      "item": "item-z"
+    }
+  },
+  {
+    "id": "lrpl-memo-shorthand-shape",
+    "description": "LRPL §3: :memo shorthand appears as a deferred candidate-world annotation.",
+    "rpl": [
+      "pending-choice(?value) <- option(?value) ^:memo ((approved(?value)))",
+      "option('v-1')",
+      "approved('v-1')"
+    ],
+    "output": "pending-choice(?value)",
+    "expectation": {
+      "value": "v-1"
+    }
+  },
+  {
+    "id": "lrpl-lazy-shared-variable",
+    "description": "LRPL §2: variables shared inside/outside lazy expressions stay linked.",
+    "rpl": [
+      "recommend(?user, ?item) <- preference(?user, ?item), <in-stock(?item)>",
+      "preference('u-1', 'item-a')",
+      "in-stock('item-a')"
+    ],
+    "output": "recommend(?user, ?item)",
+    "expectation": {
+      "user": "u-1",
+      "item": "item-a"
+    }
+  }
+]

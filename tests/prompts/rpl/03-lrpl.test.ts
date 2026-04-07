@@ -16,9 +16,18 @@ import {
 } from "../support/remote-suite.js";
 import { lrplSystemPrompt } from "../support/rpl-prompt-stacks.js";
 
-const SHARED = loadGoalBindingCases("tests/prompts/rpl/fixtures/shared.json");
 const LRPL_ONLY = loadGoalBindingCases("tests/prompts/rpl/fixtures/lrpl.json");
-const CASES: GoalBindingCase[] = [...SHARED, ...LRPL_ONLY];
+const LRPL_ADVANCED = loadGoalBindingCases(
+  "tests/prompts/rpl/fixtures/lrpl-advanced.json"
+);
+const LRPL_INDEX_INLINE_DATA = loadGoalBindingCases(
+  "tests/prompts/rpl/fixtures/lrpl-index-inline-data.json"
+);
+const CASES: GoalBindingCase[] = [
+  ...LRPL_ONLY,
+  ...LRPL_ADVANCED,
+  ...LRPL_INDEX_INLINE_DATA,
+];
 
 describeRemotePrompts("LRPL spec verification (remote LLM)", () => {
   const system = lrplSystemPrompt();

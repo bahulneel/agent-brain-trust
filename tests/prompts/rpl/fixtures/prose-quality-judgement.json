@@ -1,0 +1,44 @@
+[
+  {
+    "id": "prose-quality-relation-all-good",
+    "description": "Judge relation prose quality as all good when naming, arguments, and constraints are explicit.",
+    "rpl": [
+      "# Relation Review",
+      "Is this relation description good?",
+      "A user is eligible when `eligible(?user)` depends on `registered(?user)` and `age(?user, ?age)` with `?age >= 18`.",
+      "Use declarative naming and explicit constraints."
+    ],
+    "output": "relation-quality(?verdict)",
+    "expectation": {
+      "verdict": "all good"
+    }
+  },
+  {
+    "id": "prose-quality-program-some-good",
+    "description": "Judge program prose quality as some good for partially structured but incomplete logic.",
+    "rpl": [
+      "# Program Review",
+      "Is this program description good?",
+      "It has a clear goal and one rule, but missing error handling and one decision branch.",
+      "Core flow exists but coverage is incomplete."
+    ],
+    "output": "program-quality(?verdict)",
+    "expectation": {
+      "verdict": "some good"
+    }
+  },
+  {
+    "id": "prose-quality-protocol-none-good",
+    "description": "Judge protocol prose quality as none good when steps are contradictory and non-relational.",
+    "rpl": [
+      "# Protocol Review",
+      "Is this protocol description good?",
+      "Do random actions quickly, skip validation, and overwrite results without checks.",
+      "No clear goal, no stop condition, and no stable interaction boundaries."
+    ],
+    "output": "protocol-quality(?verdict)",
+    "expectation": {
+      "verdict": "none good"
+    }
+  }
+]

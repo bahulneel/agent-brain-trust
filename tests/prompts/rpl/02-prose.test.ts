@@ -16,9 +16,13 @@ import {
 } from "../support/remote-suite.js";
 import { proseSystemPrompt } from "../support/rpl-prompt-stacks.js";
 
-const CASES: GoalBindingCase[] = loadGoalBindingCases(
+const PROSE_CASES: GoalBindingCase[] = loadGoalBindingCases(
   "tests/prompts/rpl/fixtures/prose.json"
 );
+const PROSE_QUALITY_CASES: GoalBindingCase[] = loadGoalBindingCases(
+  "tests/prompts/rpl/fixtures/prose-quality-judgement.json"
+);
+const CASES: GoalBindingCase[] = [...PROSE_CASES, ...PROSE_QUALITY_CASES];
 
 describeRemotePrompts("Prose verification (remote LLM)", () => {
   const system = proseSystemPrompt();

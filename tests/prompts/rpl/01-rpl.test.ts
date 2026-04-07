@@ -18,7 +18,22 @@ import { rplSystemPrompt } from "../support/rpl-prompt-stacks.js";
 
 const SHARED = loadGoalBindingCases("tests/prompts/rpl/fixtures/shared.json");
 const RPL_ONLY = loadGoalBindingCases("tests/prompts/rpl/fixtures/rpl.json");
-const CASES: GoalBindingCase[] = [...SHARED, ...RPL_ONLY];
+const SOURCE_FORMAT = loadGoalBindingCases(
+  "tests/prompts/rpl/fixtures/source-format.json"
+);
+const OPERATORS_AND_MATCHING = loadGoalBindingCases(
+  "tests/prompts/rpl/fixtures/operators-and-matching.json"
+);
+const GOALS_METADATA_CONSTRAINTS = loadGoalBindingCases(
+  "tests/prompts/rpl/fixtures/goals-metadata-constraints.json"
+);
+const CASES: GoalBindingCase[] = [
+  ...SHARED,
+  ...RPL_ONLY,
+  ...SOURCE_FORMAT,
+  ...OPERATORS_AND_MATCHING,
+  ...GOALS_METADATA_CONSTRAINTS,
+];
 
 describeRemotePrompts("RPL spec verification (remote LLM)", () => {
   const system = rplSystemPrompt();

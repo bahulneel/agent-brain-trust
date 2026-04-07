@@ -37,14 +37,19 @@
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
+    "@types/object-hash": "^3.0.6",
     "brain-trust-core": "*",
     "brain-trust-db": "*",
     "esbuild": "^0.24.2",
+    "jsonrepair": "^3.13.3",
     "skills-ref": "^0.1.5",
     "tsx": "^4.19.2",
     "turbo": "^2.4.4",
     "typescript": "^5.7.2",
     "vitest": "^4.1.2",
     "yaml": "^2.7.0"
+  },
+  "dependencies": {
+    "object-hash": "^3.0.0"
   }
 }

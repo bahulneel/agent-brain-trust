@@ -1,0 +1,86 @@
+---
+alwaysApply: true
+---
+
+# Naming & Construction Style Guide
+
+## 1. General Rules
+
+- **camelCase**: Use for variables, functions, constants, and modules.
+- **PascalCase**: Use for classes, components, and exported namespaces that contain domain values or helpers.
+- **kebab-case**: Use for file names.
+- **Organisational Namespaces**: These must stay **camelCase** as they exist to mirror the filesystem taxonomy and provide structure rather than collecting type-specific values.
+- **Structure**: Prefer a **domain/sub-domain taxonomical** structure over use-case organisation.
+- **Mononyms**: Use singular mononyms for the **filenames** of components and pages. The component name itself must be the PascalCase join of its path parts to ensure uniqueness and context.
+
+## 2. Visual Distinction & Privacy
+
+- **Domain Language**: Use **PascalCase** for constants and namespaces that define the vocabulary of the domain.
+- **Infrastructure, Global, & Symbolic**: Use **UPPER_SNAKE_CASE** for environment-specific values, application-wide "universal truths", or abstract tokens used for logic branching.
+- **All Other Identifiers**: Use **camelCase** for everything else, including organisational namespaces and general variables.
+- **Privacy**: Use the `#` prefix for private members. The `_` prefix is reserved exclusively for unused function arguments. Any other non-argument identifier starting with `_` should be removed.
+
+## 3. Eliminating Nominative Redundancy
+
+Do not repeat context provided by the file path, object, or scope.
+
+- **Entry Points**: Prefer single, generic entry points within a specific scope.
+- **Members**: Member functions should not repeat the name of the object or class they belong to.
+- **Scope**: In a non-conflicting scope, use the simplest name available.
+- **Auto-Import Caveat**: Do not introduce redundant specificity prematurely to avoid potential auto-import collisions. Naming should remain minimal by default; address collisions only when they occur in practice.
+
+## 4. Relational & Functional Naming
+
+- **Pure Functions (Relations)**: Use **nouns** or **adjectives** for functions that describe a relationship or a calculation.
+- **Type Transitions**: Use **verbs** when a pure function models a transition or transformation between states or types.
+- **Side-Effects (Imperatives)**: Use **imperative verbs** for functions that change state or interact with external systems.
+
+## 5. Getter Naming
+
+When defining member functions that return a value and are not constrained by an interface:
+
+- **The Keyword Rule**: Prefer the `get` syntax over a standard method.
+- **The Noun Rule**: Getters must be named as the domain concept they represent. Never use "get" as a prefix in the identifier itself.
+- **Predicates**: For boolean returns, use a prefix that describes the state (e.g. `is`, `has`, `can`, `should`).
+
+## 6. Type Architecture
+
+Types are categorised by their balance of state and behaviour:
+
+- **Data Types**: Model domain concepts. They contain values/state but no member functions.
+- **Interpretations**: Contain member functions/behaviour but no values. Name these after the system, algorithm, or principle they implement.
+- **Traditional Classes**: Contain both state and behaviour.
+
+**Precedence and Naming**:
+When a domain concept could be represented by multiple type kinds, use this precedence:
+
+1. **Classes** > 2. **Type Unions** > 3. **Interfaces**.
+
+- **Standard Case**: If a class and interface share a name, the class takes the bare name and the interface is appended with `Interface` (e.g. `User` class and `UserInterface` interface).
+  - **Note**: Downstream code should still depend on the **interface** and not the class. This is a practical consideration for TypeScript compilation—classes are values and can impact bundle size or create runtime dependencies, whereas interfaces are type-only.
+- **Canonical Abstract Case**: If the interface is the canonical type being depended upon, it takes the bare domain name. Implementations are then named by their specific nature (e.g. `User` interface and `UserLdap` class).
+
+## 7. Domain Object Construction
+
+Choose a construction pattern based on complexity in the following order of preference:
+
+1. **Builder**: For complex objects requiring staged configuration or validation. Termination should be the most appropriate available pattern (e.g. `.value()` or `.build()`).
+2. **Factory**: For objects requiring specific interpretations or transformations.
+3. **Constructor**: For simple, internal objects with stable and minimal dependency graphs.
+4. **POJO**: Strictly for ephemeral data structures or DTOs with no domain behaviour.
+
+## 8. Directory Taxonomy & Aggregation
+
+Code should be organised by its relevant domain and not its use case.
+
+> **Guidance**: Before naming, identify the active domain. It may not be the primary business domain. Consider if you are working within:
+>
+> - **Business Domains**: User management, Billing, Inventory.
+> - **Runtime/Infrastructure Domains**: Routing, Persistence, Logging.
+> - **Pattern/Algorithm Domains**: Sorting strategies, State machines, Mathematical models.
+
+- **Hierarchy**: Folders should create an informal, unbounded **domain/sub-domain taxonomical** structure.
+- **Filenames**: Component and page files must be singular mononyms.
+- **Component Naming**: The exported identifier must be the PascalCase join of the path (e.g. `users/profile.tsx` exports `UsersProfile`).
+- **Aggregation**: Use `index` files to aggregate and export sibling identifiers.
+- **Implementation**: If a domain folder requires its own logic and has children, place the implementation in a file named after the folder and use the `index` for exports. For high-volume exports, consider an `_exports` file.

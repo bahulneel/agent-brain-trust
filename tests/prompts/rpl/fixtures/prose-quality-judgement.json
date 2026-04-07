@@ -1,42 +1,43 @@
 [
   {
     "id": "prose-quality-relation-all-good",
-    "description": "Judge relation prose quality as all good when naming, arguments, and constraints are explicit.",
+    "description": "Relation prose is clear, relationally named, and constraint-complete.",
     "rpl": [
-      "# Relation Review",
-      "Is this relation description good?",
-      "A user is eligible when `eligible(?user)` depends on `registered(?user)` and `age(?user, ?age)` with `?age >= 18`.",
-      "Use declarative naming and explicit constraints."
+      "# Eligible Adult",
+      "A user is eligible when they are registered and they are an adult.",
+      "",
+      "# Adult",
+      "A person is an adult when we know their age and it is over 18."
     ],
-    "output": "relation-quality(?verdict)",
+    "output": "quality(\"The statements above are good RPL\", ?verdict), @choose(?verdict, [\"all good\", \"some good\", \"none good\"])",
     "expectation": {
       "verdict": "all good"
     }
   },
   {
     "id": "prose-quality-program-some-good",
-    "description": "Judge program prose quality as some good for partially structured but incomplete logic.",
+    "description": "Program prose has a coherent flow but omits one branch and failure handling.",
     "rpl": [
-      "# Program Review",
-      "Is this program description good?",
-      "It has a clear goal and one rule, but missing error handling and one decision branch.",
-      "Core flow exists but coverage is incomplete."
+      "# Weekly Summary Delivery",
+      "The system gathers this week's activity, formats a summary, and sends it to the user.",
+      "If the user has no email, the flow should use in-app delivery.",
+      "The success path is clear, but retry behavior and timeout handling are unspecified."
     ],
-    "output": "program-quality(?verdict)",
+    "output": "quality(\"The statements above are good RPL\", ?verdict), @choose(?verdict, [\"all good\", \"some good\", \"none good\"])",
     "expectation": {
       "verdict": "some good"
     }
   },
   {
     "id": "prose-quality-protocol-none-good",
-    "description": "Judge protocol prose quality as none good when steps are contradictory and non-relational.",
+    "description": "Protocol prose is contradictory and lacks stable boundaries or validation.",
     "rpl": [
-      "# Protocol Review",
-      "Is this protocol description good?",
-      "Do random actions quickly, skip validation, and overwrite results without checks.",
-      "No clear goal, no stop condition, and no stable interaction boundaries."
+      "# Incident Protocol",
+      "Start anywhere, skip confirmation, and overwrite previous outcomes whenever convenient.",
+      "Do steps in any order, including contradictory ones, and continue even when checks fail.",
+      "The protocol has no reliable start condition, handoff point, or stop condition."
     ],
-    "output": "protocol-quality(?verdict)",
+    "output": "quality(\"The statements above are good RPL\", ?verdict), @choose(?verdict, [\"all good\", \"some good\", \"none good\"])",
     "expectation": {
       "verdict": "none good"
     }

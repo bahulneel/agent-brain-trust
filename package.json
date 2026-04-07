@@ -29,7 +29,7 @@
     "validate:skills-ref": "tsx scripts/validate-skills-ref.ts",
     "test:mcp-drafting": "tsx scripts/test-mcp-drafting-protocol.ts",
     "test": "vitest run",
-    "test:rpl": "vitest run tests/rpl-language.integration.test.ts",
+    "test:prompts": "vitest run tests/prompts",
     "install:cursor-plugin": "npm run build && tsx scripts/install-cursor-plugin.ts",
     "install:claude-plugin": "npm run build && tsx scripts/install-claude-plugin.ts",
     "pack:mcp": "npm run build && npm pack -w @bahulneel/brain-trust-mcp",

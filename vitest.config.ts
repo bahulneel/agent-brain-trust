@@ -32,8 +32,12 @@ function loadDotEnvFile(envPath: string): Record<string, string> {
 
 const envFromFile = loadDotEnvFile(join(process.cwd(), ".env"));
 
-/** CI / shell env overrides values from `.env` for these keys. */
-const NIM_ENV_KEYS = [
+/** CI / shell env overrides values from `.env` for prompt integration tests. */
+const PROMPTS_ENV_KEYS = [
+  "PROMPTS_LLM_API_KEY",
+  "PROMPTS_LLM_MODEL",
+  "PROMPTS_LLM_REQUESTS_PER_SECOND",
+  "PROMPTS_LLM_RATE_LIMIT",
   "NVIDIA_NIM_API_KEY",
   "NIM_MODEL",
   "NVIDIA_NIM_MODEL",
@@ -43,7 +47,7 @@ const NIM_ENV_KEYS = [
 
 function processEnvOverrides(): Record<string, string> {
   const out: Record<string, string> = {};
-  for (const key of NIM_ENV_KEYS) {
+  for (const key of PROMPTS_ENV_KEYS) {
     const v = process.env[key];
     if (v !== undefined) out[key] = v;
   }
@@ -54,7 +58,7 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["tests/**/*.test.ts"],
-    /** One worker, one file at a time — avoids NIM rate-limit queue buildup across parallel tests. */
+    /** One worker, one file at a time — avoids shared LLM rate-limit queue buildup across parallel tests. */
     maxWorkers: 1,
     fileParallelism: false,
     testTimeout: 120_000,

@@ -42,6 +42,20 @@ RPL partitions the world into three namespaces:
 - **Goals**: `%goal(?a)` (objectives to solve)
 - **Tools**: `$tool(?a)` (external capabilities)
 
+## Relational Modelling
+
+Relations are named for what is *true*, not what to *do*.
+
+- **Arity 1 — type assertion**: `person(?p)`, `premium-member(?u)` — classifies a subject.
+- **Arity 2 — binary relation**: `age(?person, ?n)`, `severity(?patient, ?level)` — subject has or is related to a value.
+- **Arity 3+ — complex relation**: `appointment(?patient, ?doctor, ?time)` — a richer fact.
+
+Prefer nouns and adjectives over verbs: `eligible(?u)` not `check-eligibility(?u)`.
+
+Prose that refers to **action-shaped tools** (`$ask`, `$write`, `$generate`) may use imperative language — e.g. “Ask the user for their name” matches `$ask` as a command.
+
+Prose that refers to **query-shaped tools** (`$query-db`, `$index`) stays relational — e.g. “A query has results from the database” rather than “Run the query”.
+
 ## Level 5: Rules, Logic & Metadata
 Rules combine heads and tails using implication (`<-`).
 - **Implication**: `head <- tail`

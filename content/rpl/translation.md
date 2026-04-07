@@ -7,7 +7,7 @@ RPL is designed to be inferred from prose. This guide provides examples of how a
 **Prose:**
 ```markdown
 # Triage Patient
-Ask the user for the patient's name and their symptoms. If the symptoms include chest pain, mark the severity as critical.
+Ask the user for the patient's name and their symptoms. When symptoms include chest pain, severity is critical.
 ```
 
 **Inferred RPL:**
@@ -21,13 +21,13 @@ severity(?patient, "critical") <- symptoms(?patient, ?s), ?s ~ /chest pain/
 
 **Prose:**
 ```markdown
-# Process Order
-Check if the __order id__ is valid. If it is, fetch the __customer details__ and __shipping address__.
+# Order Fulfillment
+An order is fulfillable when its __order id__ is valid. A fulfillable order has __customer details__ and a __shipping address__.
 ```
 
 **Inferred RPL:**
 ```rpl
-# Process Order - process-order(?order-id) <- valid-order(?order-id), customer-details(?order-id, $customer-details), shipping-address(?order-id, $shipping-address)
+# Order Fulfillment - fulfillable(?order-id) <- valid-order(?order-id), customer-details(?order-id, $customer-details), shipping-address(?order-id, $shipping-address)
 ```
 
 ## 3. RPL Head + No Emphasis (Signature Provided, Body Inferred)
@@ -64,7 +64,7 @@ The loan is approved if the __credit score__ is above 700 and the __income__ is 
 **Prose:**
 ```markdown
 # Send Notification - notify(?user, ?message) <- email(?user, ?email)
-Also, ensure the user has opted in to notifications.
+Notification also requires the user to have opted in.
 ```
 
 **Inferred RPL:**
@@ -76,11 +76,11 @@ Also, ensure the user has opted in to notifications.
 
 **Prose:**
 ```markdown
-# Fetch Data - fetch-data(?query)
-Run the query against the database and return the results.
+# Query Result - query-result(?query, ?results)
+A query has results from the database.
 ```
 
 **Inferred RPL:**
 ```rpl
-# Fetch Data - fetch-data(?query) <- $query-db(?query) ^ ~ {:result ?results}
+# Query Result - query-result(?query, ?results) <- $query-db(?query) ^ ~ {:result ?results}
 ```

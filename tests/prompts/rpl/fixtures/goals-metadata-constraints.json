@@ -1,0 +1,39 @@
+[
+  {
+    "id": "metadata-doc-map-matching",
+    "description": "RPL §11: metadata map matching can constrain rule eligibility.",
+    "rpl": [
+      "seed('u-1') ^ ~ {:doc 'profile'}",
+      "candidate(?user) <- seed(?user) ^ ~ {:doc ?source}, ?source = 'profile'"
+    ],
+    "output": "candidate(?user)",
+    "expectation": {
+      "user": "u-1"
+    }
+  },
+  {
+    "id": "metadata-bindings-shorthand",
+    "description": "RPL §11: ^^ shorthand addresses :bindings maps.",
+    "rpl": [
+      "fact('row-1') ^^ {origin 'import'}",
+      "import-origin(?origin) <- fact(?row) ^^ {origin ?origin}"
+    ],
+    "output": "import-origin(?origin)",
+    "expectation": {
+      "origin": "import"
+    }
+  },
+  {
+    "id": "abductive-when-activation",
+    "description": "RPL §16.1: @when activation clause gates rule application.",
+    "rpl": [
+      "selected(?user) <- user(?user) ; @when(active(?user))",
+      "user('u-2')",
+      "active('u-2')"
+    ],
+    "output": "selected(?user)",
+    "expectation": {
+      "user": "u-2"
+    }
+  }
+]

@@ -14,6 +14,7 @@ const ROOT = join(__dirname, "..");
 const CONTENT = join(ROOT, "content");
 const FRAGMENTS = join(CONTENT, "skill-fragments");
 const DIST = join(ROOT, "dist");
+const PROMPT_ARTIFACTS = join(DIST, "prompts");
 const PLUGIN_OUT = join(DIST, "agent-brain-trust-cursor-plugin");
 const CLAUDE_PLUGIN_OUT = join(DIST, "agent-brain-trust-claude-plugin");
 /** Publishable MCP package (manifest + README in repo; bundle + resources written here by build). */
@@ -158,6 +159,15 @@ async function buildZipSkills(stems) {
     }
     await rm(stage, { recursive: true, force: true });
 }
+async function buildPromptArtifacts() {
+    await mkdir(PROMPT_ARTIFACTS, { recursive: true });
+    for (const filename of ["RPL.md", "LRPL.md"]) {
+        const entry = join(CONTENT, filename);
+        const { frontmatter, body } = await loadAndCompose(entry, CONTENT, "plugin");
+        const text = `${frontmatter}${body}`.trimEnd() + "\n";
+        await writeFile(join(PROMPT_ARTIFACTS, filename), text, "utf8");
+    }
+}
 async function copyResourcesToPluginRoot(pluginRoot, stems) {
     const res = join(pluginRoot, "resources");
     await mkdir(res, { recursive: true });
@@ -268,6 +278,7 @@ export async function cmdBuild() {
     }
     await mkdir(PLUGIN_OUT, { recursive: true });
     await mkdir(CLAUDE_PLUGIN_OUT, { recursive: true });
+    await buildPromptArtifacts();
     await buildPluginSkills(stems);
     await buildClaudePluginSkills(stems);
     await copyResourcesToPluginRoot(PLUGIN_OUT, stems);
@@ -285,6 +296,6 @@ export async function cmdBuild() {
         await runSkillsRef(join(PLUGIN_OUT, "skills", stem));
         await runSkillsRef(join(CLAUDE_PLUGIN_OUT, "skills", stem));
     }
-    console.log("Build complete:", PLUGIN_OUT, CLAUDE_PLUGIN_OUT, MCP_PKG_ROOT, SKILL_ZIPS);
+    console.log("Build complete:", PROMPT_ARTIFACTS, PLUGIN_OUT, CLAUDE_PLUGIN_OUT, MCP_PKG_ROOT, SKILL_ZIPS);
 }
 //# sourceMappingURL=build-impl.js.map

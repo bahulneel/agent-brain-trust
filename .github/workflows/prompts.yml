@@ -1,0 +1,61 @@
+# Exercise prompt packs under `content/` via Vitest (`npm run test:prompts`).
+# Runs on pushes to `main`; use a repository secret for the remote LLM API key.
+#
+# Prefer secret `PROMPTS_LLM_API_KEY`. `NVIDIA_NIM_API_KEY` is also accepted if set.
+# Model matrix entries must match models enabled for your key / provider.
+
+name: Prompt tests
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: prompts-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  prompts:
+    name: ${{ matrix.model }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        model:
+          - meta/llama3-70b-instruct
+          - meta/llama3-8b-instruct
+          - mistralai/mixtral-8x7b-instruct-v0.1
+          - qwen/qwen2_5-7b-instruct
+          - deepseek-ai/deepseek-r1-distill-llama-8b
+          - deepseek-ai/deepseek-r1-distill-qwen-7b
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Require LLM API key
+        env:
+          PROMPTS_LLM_API_KEY: ${{ secrets.PROMPTS_LLM_API_KEY }}
+          NVIDIA_NIM_API_KEY: ${{ secrets.NVIDIA_NIM_API_KEY }}
+        run: |
+          if [ -z "${PROMPTS_LLM_API_KEY}" ] && [ -z "${NVIDIA_NIM_API_KEY}" ]; then
+            echo "::error::Add repository secret PROMPTS_LLM_API_KEY (preferred) or NVIDIA_NIM_API_KEY."
+            exit 1
+          fi
+
+      - run: npm ci
+
+      - name: Vitest — prompt packs
+        env:
+          PROMPTS_LLM_API_KEY: ${{ secrets.PROMPTS_LLM_API_KEY }}
+          NVIDIA_NIM_API_KEY: ${{ secrets.NVIDIA_NIM_API_KEY }}
+          PROMPTS_LLM_MODEL: ${{ matrix.model }}
+          PROMPTS_LLM_REQUESTS_PER_SECOND: "40"
+        run: npm run test:prompts

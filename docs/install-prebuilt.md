@@ -11,6 +11,7 @@ You do **not** need Node, npm, or a clone of this repository. Download **only** 
 | `agent-brain-trust-cursor-plugin.zip` | Cursor (full plugin: skills, MCP wiring, resources) |
 | `agent-brain-trust-claude-plugin.zip` | Claude Code as a plugin |
 | `<skill-name>.zip` (e.g. `expert-opinion.zip`) | That skill alone, portable |
+| `RPL.md`, `LRPL.md` | Standalone composed prompt documents |
 
 **Standalone MCP** is distributed only via **[npm](https://www.npmjs.com/package/@bahulneel/brain-trust-mcp)** (see [Standalone MCP](#standalone-mcp-no-plugin) below)—not as a GitHub Release zip.
 
@@ -21,6 +22,7 @@ You do **not** need Node, npm, or a clone of this repository. Download **only** 
 | `agent-brain-trust-cursor-plugin` | Cursor plugin zip (one file) |
 | `agent-brain-trust-claude-plugin` | Claude plugin zip (one file) |
 | `brain-trust-skill-zips` | All per-skill zips from that build (folder of `.zip` files inside the downloaded artifact) |
+| `brain-trust-prompts` | `RPL.md` and `LRPL.md` as standalone markdown files |
 
 GitHub may expire workflow artifacts after a retention period; prefer Releases when you can.
 

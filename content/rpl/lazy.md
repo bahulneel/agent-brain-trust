@@ -42,6 +42,7 @@ LRPL replaces full fixpoint quiescence with goal-relative quiescence.
   - `LOCATION` can be a string path, URL, or relation call with a `$`-marked argument identifying the collection.
 - **`$generate(?prompt, ?options)`**: Generates content. Carries `:generated true` provenance in the trace.
 - **`$write(?content, ?location, ?options)`**: Writes content. A trace stratum written via `$write` is a valid `$index` source.
+- **`$json(?x)`** (built-in, RPL core): Appends to the **chat** one NDJSON line per possible binding instance of `?x` at that point in evaluation (line payload is the bound value encoded as JSON). No external API—lazy dispatch still applies until the emission is needed for progress.
 
 ## 5. Extended Timestep
 Phases 3, 7, and 8 of the eager timestep are modified:

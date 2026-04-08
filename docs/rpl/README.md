@@ -1,9 +1,10 @@
 # Relational Prompt Language (RPL)
 
-RPL is a Markdown-embedded language for describing multi-step LLM protocols as
-composable, declarative relations. Instead of imperative instructions that tell
-an agent *how* to proceed step by step, you declare *what* must be true and the
-agent derives a path.
+RPL is a Markdown-embedded reasoning framework with associated logic for
+structuring how an LLM reasons about user requests in an abstract, inspectable
+way. Instead of relying only on highly tuned prose and then guessing what the
+model inferred, you can declare explicit relations, goals, and constraints so
+reasoning state is easier to inspect, question, and improve.
 
 ## Document map
 
@@ -15,10 +16,49 @@ agent derives a path.
 | [vision.md](vision.md) | Central ideas, trace, lazy extension summary, design principles |
 | [specification/rpl.md](specification/rpl.md) | Normative base spec: syntax, semantics, runtime, grammar |
 | [specification/lrpl.md](specification/lrpl.md) | Normative LRPL delta (lazy expressions, memos, stdlib) |
+| [specification/logics.md](specification/logics.md) | Supplemental logic layer concepts (existential/modal composition) |
 
 The sections below walk through one **worked example** (bug report intake) to show
 how signatures and goals compose. They are not a substitute for the
 specifications.
+
+---
+
+## Start With a Bootstrap
+
+Do not start by formalizing everything. Start with a tiny RPL bootstrap at the
+point in the conversation where ambiguity or drift is causing trouble.
+
+Add one relation or constraint, observe behavior, then ask the agent what it
+believed was true and why it took an action. Use that feedback to harden prose
+and structure iteratively.
+
+Minimal bootstrap:
+
+````markdown
+## Severity - severity($level)
+
+Ask the user for severity.
+
+```rpl
+valid-severity("low")
+valid-severity("medium")
+valid-severity("high")
+valid-severity("critical")
+```
+````
+
+Hardening iteration:
+
+````markdown
+## Accepted Severity - accepted-severity(?level) <- severity(?level), valid-severity(?level)
+
+Ask for severity, derive accepted-severity only for allowed values, and reject
+everything else.
+If unclear, explain accepted values and ask again.
+````
+
+This is the intended authoring loop: bootstrap, observe, interrogate, refine.
 
 ---
 
@@ -51,10 +91,10 @@ medium, and low.
 This works. An agent reads it top to bottom, asks the questions, and wraps up.
 But the structure is entirely implicit. The agent has to *infer* that the
 sections are steps, that severity is a closed list, and that the protocol is
-done when all three are collected. As the prompt grows — more steps, branching
-outcomes, reuse across prompts — those inferences become fragile.
+done when all three are collected. As the prompt grows, that implicit
+understanding becomes black-box behavior that is hard to inspect and repair.
 
-RPL makes the structure explicit, one piece at a time.
+RPL makes that structure explicit, one piece at a time.
 
 ---
 
@@ -106,7 +146,8 @@ when description, component, and severity are all established.*
 Now the agent works backward from the goal. It sees that `%` needs three
 facts, checks which are missing, and goes to establish them — reading the prose
 under each relation's heading to learn how. The order of sections in the
-document no longer matters; the dependency structure drives execution.
+document no longer matters; dependency structure drives conversational
+progression.
 
 The prose on the goal heading ("Summarize the report…") tells the agent what
 to do once the goal is satisfied. Prose is always instruction; the signature
@@ -234,7 +275,8 @@ was collected. No duplication, no prose conditionals.
 
 ## The Complete Protocol
 
-Here is the full document with every feature applied:
+Here is the full document with every feature applied. Treat this as a bounded
+conversational reasoning aid, not a template for full software execution logic:
 
 ````markdown
 # Bug Report - % <- %urgent | %normal | %backlog
@@ -312,6 +354,8 @@ Skill-aware clients (Cursor, Claude Code) load it on demand when a user's
 request matches the description. The protocol is portable because it is just
 Markdown with structure.
 
+For enterprise boundary guidance, see [enterprise.md](enterprise.md).
+
 ---
 
 ## What RPL Does Not Do
@@ -326,6 +370,8 @@ RPL is a protocol language, not a programming language:
   in good faith. Constraints and traces provide accountability, not a sandbox.
 - **Agent judgment fills gaps.** Where the spec is silent, the agent decides.
   This is deliberate — RPL structures the protocol, not every micro-decision.
+- **Not an enterprise runtime substrate.** Do not treat RPL as infrastructure
+  for long-running mission-critical application control loops.
 
 ---
 
@@ -333,4 +379,6 @@ RPL is a protocol language, not a programming language:
 
 - [specification/rpl.md](specification/rpl.md) — Base specification: syntax, semantics, execution model, grammar.
 - [specification/lrpl.md](specification/lrpl.md) — LRPL delta: lazy evaluation, memos, satisfactory quiescence, stdlib.
+- [specification/logics.md](specification/logics.md) — Additional logic frameworks: existential and modal operators.
 - [scope.md](scope.md) — Scope, boundaries, and document map.
+- [enterprise.md](enterprise.md) — Enterprise boundary: non-fit for long-running systems, fit as HCI with business artifacts.

@@ -26,16 +26,22 @@ The following states what RPL is for and how authors should read it, before
 syntax and grammar in the [base specification](specification/rpl.md). (The base
 spec’s §1 overview is a short pointer into this document and related prose.)
 
-RPL (Relational Prompt Language) is a Markdown-embedded language for defining
-multi-step **LLM-driven protocols** as Datalog-style relations. The **primary**
-use case is **prompts and conversational protocols**—documents the agent and
-author steer together. **Living documents** are also in scope: Markdown that
-grows, versioned or edited over time, with the same relational reading.
+RPL (Relational Prompt Language) is a Markdown-embedded reasoning framework with
+associated logic for defining **LLM-driven conversational protocols** as
+relations. The **primary** use case is inspectable prompt reasoning in
+human-agent collaboration. **Living documents** are also in scope: Markdown
+that grows, versioned or edited over time, with the same relational reading.
 
-RPL is an **enabling** language: it **permits** formal rules, constraints, and
+RPL is an **enabling** framework: it **permits** formal rules, constraints, and
 tool boundaries where you want them; it does **not** **prescribe** a single
 planner, workflow engine, or decomposition strategy. Features described in the
-base specification are **available**, not mandatory—omit what you do not need.
+base specification are **available**, not mandatory—use only the fidelity you
+need.
+
+RPL is also not a substitute for enterprise runtime infrastructure. It is not a
+long-running orchestration substrate for mission-critical control loops. It is
+a way to move prompt behavior out of black-box prose and into inspectable
+structure.
 
 Each step in a protocol can be read as a named relation with arguments.
 Relations compose via implication into a dependency graph. Goals mark what
@@ -59,6 +65,10 @@ except where explicitly noted as suggestive (e.g. the timestep rhythm in §18).
 string literals with single or double quotes, §2), authors should choose what
 reads best; the intended review experience is **clarity first**.
 
+**Iterative authoring** — RPL authoring is collaborative and iterative in
+practice: bootstrap structure, observe behavior, ask the agent to explain how it
+interpreted the protocol, then harden prose and constraints where drift appears.
+
 **Prose-first authoring** — Natural-language bodies are **materialised** into
 rules when text is first **encountered**: either once (e.g. the agent normalises
 a document in a dedicated pass) or **incrementally** as portions are read. A
@@ -75,5 +85,6 @@ precision matters.
 - [Scope](scope.md) — what RPL is for, what it is not, and use cases.
 - [Theory](theory.md) — Bloom, CALM, monotonicity, formal vs agent layer.
 - [Vision](vision.md) — central ideas, trace, lazy extension summary, design principles.
+- [Enterprise](enterprise.md) — boundary guidance for enterprise contexts.
 - [Base specification](specification/rpl.md) — normative syntax, semantics, runtime, grammar.
 - [LRPL specification](specification/lrpl.md) — lazy extension delta.

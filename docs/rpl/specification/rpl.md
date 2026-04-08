@@ -724,6 +724,140 @@ severity-options([& ?v]) <- valid-severity(?v)
 severity(?s) <- severity-options(?options), choose("Select severity", ?options, ?s)
 ```
 
+**`$json`** — **built-in** observability tool: writes the **raw binding** of an
+lvar to the **chat** (user-visible transcript), not to an external HTTP API.
+
+```
+$json(?x)
+```
+
+- **Argument** — exactly one **lvar** `?x`. The call **dispatches** only when `?x`
+  is **bound** (or becomes bound before phase 8 in the same timestep, per
+  ordinary tool scheduling in §18).
+- **Chat effect** — the runtime appends one or more **newline-terminated** JSON
+  values to the chat stream (**NDJSON**): each line is the JSON encoding of one
+  possible **binding instance** of the **value reading** (§3) of `?x` at dispatch
+  time.
+- **Line payload (normative)** — each line is the bound **value** itself (not a
+  wrapper object). Maps, lists, strings, numbers, booleans, and `null` map to
+  JSON as usual; values with no JSON representation are encoded by a host-defined,
+  stable convention (e.g. string fallback) and **must** be documented by the
+  implementation.
+- **Multiple instances** — when set-style or disjunctive semantics yields **more
+  than one** ground binding for `?x` that is in play for this dispatch, the
+  runtime **must** emit **one NDJSON line per** such binding instance, in
+  deterministic order if the implementation enumerates multiple.
+
+**Trace** — Like other tool calls, resolution is a grounded constraint (§13.3).
+The **chat** carries the NDJSON payload; the trace records completion, e.g.:
+
+```rpl
+$json(?x) ^ ~ {:tool :json} -> true
+```
+
+**Example (goal tail)** — emit the captured binding after a choice is fixed:
+
+```rpl
+% <- pending-choice(?value) ^^choice ?x, $json(?x)
+```
+
+Here `^^choice ?x` (§11) attaches the bare key `choice` to `?x` on that clause;
+`$json(?x)` then prints the binding of `?x` to chat when the goal is pursued.
+
+#### 14.2.1 User contract examples (closed pure-RPL programs)
+
+These examples are intentionally written as **USER / AGENT scripts** because
+`$json` is a user-facing contract in shell-style operation (§15.8), not an
+internal-only debug stream.
+
+**A. Value of a single binding**
+
+USER:
+```rpl
+user('foo')
+% <- user(?u), $json(?u)
+```
+
+AGENT:
+```ndjson
+"foo"
+```
+
+**B. Binding map via `^^ ?b`**
+
+USER:
+```rpl
+user('foo')
+% <- user(?u) ^^ ?b, $json(?b)
+```
+
+AGENT:
+```ndjson
+{"u":"foo"}
+```
+
+**C. Multiple value instances**
+
+USER:
+```rpl
+user('foo')
+user('bar')
+% <- user(?u), $json(?u)
+```
+
+AGENT:
+```ndjson
+"foo"
+"bar"
+```
+
+**D. Multiple binding-map instances**
+
+USER:
+```rpl
+user('foo')
+user('bar')
+% <- user(?u) ^^ ?b, $json(?b)
+```
+
+AGENT:
+```ndjson
+{"u":"foo"}
+{"u":"bar"}
+```
+
+**E. Metadata projection (single instance)**
+
+USER:
+```rpl
+user('foo')
+% <- user(?u) ^ ?m, $json(?m)
+```
+
+AGENT:
+```ndjson
+{":bindings":[{"u":"foo"}]}
+```
+
+**F. Metadata projection (multiple instances)**
+
+USER:
+```rpl
+user('foo')
+user('bar')
+% <- user(?u) ^ ?m, $json(?m)
+```
+
+AGENT:
+```ndjson
+{":bindings":[{"u":"foo"},{"u":"bar"}]}
+```
+
+Completion trace (illustrative):
+```rpl
+$json(?x) ^ ~ {:tool :json} -> true
+```
+
 ### 14.3 Tool Headings
 
 ```markdown
@@ -805,6 +939,48 @@ termination (§18.5).
 Present as a call sheet ordered by arrival time.
 On completion suggest trying %warning for remaining patients.
 ```
+
+### 15.8 RPL shell mode (user message convention)
+
+Some hosts treat a **suffix line** on the user message as a **one-shot query**
+against the current programme. This section normatively defines that **RPL shell
+mode** for conforming assistants.
+
+**Trigger** — The assistant enters **RPL shell mode** for **this reply only**
+when the user’s message **ends with** a **non-empty line** whose **first
+non-whitespace character** is **`%`**. That line alone is the **query line**,
+parsed as RPL; **all preceding** lines are **context** (prose, prior facts,
+protocol document) unless the host specifies otherwise. Leading whitespace on the
+query line is stripped before parsing.
+
+**Parse** — The query line **must** be a **goal** form (§15.1): root `% <- …`,
+named `%name <- …`, or `%name(?a, …) <- …` with optional capture arguments. The
+assistant **evaluates** that goal against the active store, rules, and tools as
+usual for the timestep model (§18).
+
+**Response contract** — For the **assistant-authored** visible text of this
+turn (excluding tool-injected chat, §13.3, §14.2):
+
+1. **Goal with capture arguments** — If the goal head declares **one or more**
+   capture **lvars** in parentheses (§15.1), e.g. `%report(?x, ?y) <- …`:
+   output **only** what those arguments denote — the **values** or **minimal
+   structured result** (ground bindings, compact serialisation). **No** preamble,
+   apology, or tutorial unless the query itself requires prose.
+
+2. **No substantive result to print** — If the goal head has **no** capture
+   arguments that require a user-visible value **and** there would otherwise be
+   **no** substantive assistant text (no values under (1), and no separate
+   requirement to narrate): reply with exactly **`true`** (ASCII, lowercase) if
+   the goal is **satisfied**, or a **single concise reason** if it is
+   **unsatisfied** (e.g. missing fact, failed unification, constraint violation).
+
+3. **Tool output** — Effects that **append** to the chat (e.g. **`$json`**, §14.2)
+   are **not** assistant-authored prose. They **may** be the only structured
+   output. If (1) does not apply and tools produced no chat payload, apply (2).
+
+Shell mode **temporarily** relaxes the usual “offer to continue” phrasing (§15.6)
+for **this** turn: the reply is **terse** by contract unless the query demands
+otherwise.
 
 ---
 
@@ -1017,7 +1193,7 @@ equivalent where applicable. The store accumulates for the run.
 
 ### 18.3 Timestep Phases
 
-**1. Assert new avars** — Resolved async values (tools, `$ask` / `$choose`, events)
+**1. Assert new avars** — Resolved async values (tools, `$ask` / `$choose` / `$json`, events)
 enter as ground facts.
 
 **2. Assert input novelty** — **Data novelty** (new facts) and **schema novelty**

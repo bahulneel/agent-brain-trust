@@ -36,6 +36,9 @@ a deduction procedure that produces a value the agent does not yet have.
 RPL is not a programming language. It has no loops, no mutable state, no
 imperative control flow.
 
+RPL is not an enterprise runtime substrate. It should not be used as a
+long-running mission-critical execution layer.
+
 RPL is not an agent framework. It does not specify how an agent reasons, plans,
 or recovers from failure. Where the language is silent, agent judgment applies.
 
@@ -46,11 +49,15 @@ RPL is not a prompt template. Its relation to prose is the opposite of a templat
 prose provides human-readable instruction, RPL provides the formal structure
 that makes that instruction composable and verifiable.
 
+RPL is not a way to avoid thinking about prompts. It usually requires more
+intentional reasoning up front, in exchange for better inspectability and
+repairability.
+
 ---
 
 ## What RPL Is For
 
-RPL is for any goal-directed process that:
+RPL is for any goal-directed conversation process that:
 
 - exceeds what a single context can hold,
 - requires verifiable continuity across steps or participants,
@@ -81,6 +88,11 @@ where those points are and what must be true before and after each one.
 windows, multiple model instances, or multiple sessions. The trace from one
 stratum is the ground facts for the next. Continuity is structural, not assumed.
 
+**HCI over business artifacts** — RPL can sit between colleagues and business
+systems/artifacts (process docs, siloed data, training material, org charts,
+APIs, HR process descriptions), giving the model a shared semantic layer for
+connecting and querying across them in conversation.
+
 These are not different use cases requiring different tools. They are all instances
 of the same structural problem: goal-directed reasoning that needs to hold
 together across boundaries that would otherwise break it.
@@ -107,5 +119,6 @@ process work. The bug report is one instance. It is not the intended ceiling.
 - [motivation.md](motivation.md) — problem framing and language overview.
 - [theory.md](theory.md) — Bloom, CALM, layers.
 - [vision.md](vision.md) — central ideas, trace, lazy extension summary, design principles.
+- [enterprise.md](enterprise.md) — enterprise boundaries and HCI fit.
 - [specification/rpl.md](specification/rpl.md) — base normative specification.
 - [specification/lrpl.md](specification/lrpl.md) — LRPL delta specification.

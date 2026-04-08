@@ -8,30 +8,32 @@ in [specification/rpl.md](specification/rpl.md) and
 
 ## The Central Idea
 
-RPL is the glue that makes stratified relational reasoning possible.
+RPL is the reasoning framework that makes stratified relational reasoning
+possible in collaborative LLM conversations.
 
 By *stratified* we mean reasoning that proceeds in layers, where each layer's
 conclusions become the ground facts for the next. A single conversation turn is
 one stratum. A phase in a workshop is another. A handoff between agents, or
 between sessions, or between human and automated participants, is a stratum
-boundary. The task as a whole is the full stack.
+boundary. The task as a whole is the full conversational stack.
 
 By *relational* we mean that the content of each stratum — the facts established,
 the goals pursued, the dependencies between them — is expressed as named
 relations with declared argument structure. Not prose that implies structure, but
 structure that is explicit, composable, and queryable.
 
-By *glue* we mean that RPL does not replace the reasoning. It declares the shape
-of the reasoning so that any participant, at any point, with access to the trace,
-can determine what has been established, what depends on what, and what
-remains to be done. The context boundary becomes a practical concern, not a
-structural one.
+By *framework* we mean that RPL does not replace reasoning judgment. It
+declares the shape of reasoning so that any participant, at any point, with
+access to the trace, can determine what has been established, what depends on
+what, and what remains to be done. The context boundary becomes a practical
+concern, not a structural one.
 
 ---
 
 ## The Trace
 
-The trace is not a log. It is a first-class relational structure.
+The trace is not just a log. It is a first-class relational structure and
+reasoning checkpoint surface.
 
 Every fact established during execution, every goal satisfied, every tool result
 received — all of these become ground facts in the trace, queryable as ordinary
@@ -40,8 +42,9 @@ any separate persistence machinery. Prior conclusions are just relations with
 provenance.
 
 This is what makes stratification coherent. Each stratum does not start from
-scratch; it starts from the trace of everything that came before. The trace is the
-continuity mechanism.
+scratch; it starts from the trace of everything that came before. The trace is
+the continuity mechanism and the basis for explainable state queries ("what do
+you currently believe and why?").
 
 ---
 
@@ -49,7 +52,7 @@ continuity mechanism.
 
 RPL, as specified, derives facts eagerly within each timestep — working toward
 quiescence, then activating goals, then dispatching async operations. This is
-correct and sufficient for many tasks.
+correct and sufficient for many conversational reasoning tasks.
 
 But stratified reasoning over large or external fact sets introduces a different
 requirement: the ability to reason *about* a set of facts without enumerating them,
@@ -85,8 +88,8 @@ peeled by a separate relation. Only the bindings that downstream goals require
 are ever materialised.
 
 LRPL does not change the semantics of RPL. Every valid RPL programme is valid
-under LRPL. The extension adds the machinery for lazy evaluation without
-disturbing the relational and goal layer beneath it.
+under LRPL. The extension adds machinery for lazy evaluation without disturbing
+the relational and goal layer beneath it.
 
 ---
 
@@ -140,5 +143,6 @@ syntax- and runtime-focused. Section numbers in the bullets refer to that spec.
 - [Motivation](motivation.md)
 - [Theory](theory.md)
 - [Scope](scope.md)
+- [Enterprise](enterprise.md)
 - [Base specification](specification/rpl.md)
 - [LRPL specification](specification/lrpl.md)

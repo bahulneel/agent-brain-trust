@@ -4,14 +4,14 @@ The classic execution algorithm for RPL operates on an 8-phase timestep. It driv
 
 ## 1. The 8-Phase Timestep
 The runtime cycles through eight phases:
-1. **Assert New Avars**: Ground values from resolved async operations (tools, `$ask`, events) enter the store.
+1. **Assert New Avars**: Ground values from resolved async operations (tools, `$ask`, built-in `$json`, etc.) enter the store. **`$json`** also appends **NDJSON** lines to the **chat** when it completes.
 2. **Assert Input Novelty**: New facts or schema changes are asserted.
 3. **Quiesce Relations**: Derive all relations to fixpoint. Ungrounded constraints (`->`) are checked.
 4. **Activate Goals**: Evaluate abductives (`;`) on goal rules.
 5. **Update Plans**: The agent updates its internal plan based on active goals.
 6. **Progress Plan**: New facts from planning become novelty for the next quiescence.
 7. **Quiesce Relations**: Derive to fixpoint again. Constraints may become traces.
-8. **Dispatch Asyncs**: Unresolved avars and tool calls are dispatched.
+8. **Dispatch Asyncs**: Unresolved avars and tool calls are dispatched (including built-in **`$json(?x)`**, which requires `?x` bound and then writes binding JSON to **chat**).
 
 ## 2. Goal Resolution
 Goals (`%goal`) drive execution.
@@ -27,9 +27,9 @@ Goals (`%goal`) drive execution.
 A constraint (`->`) is an invariant.
 - **Ungrounded**: `rel(?x) -> valid(?x)` (live check during quiescence).
 - **Fully Grounded (Trace)**: When all variables are bound, it becomes a trace.
-  - `rel(?x) ^^ {x "value"} -> true` (holds from introduction onward).
+  - `rel(?x) ^^ {x "value"} -> true` (holds from introduction onward). The map key is **`x`**, not `?x`—**binding records drop the `?` / `$` sigils**; see Level 1 in the RPL primer.
   - Traces carry the binding context (`^^`).
 - **Retraction**: Asserting `-> false` retracts a trace.
-  - `rel(?x) ^^ {x "value"} -> false`
+  - `rel(?x) ^^ {x "value"} -> false` (again: key `x`, not `?x`)
 - **Async Resolution**: When an avar resolves, it creates a trace.
   - `$tool(?args) ^ ~ {:result "res"} ^^ {args "val"} -> true`

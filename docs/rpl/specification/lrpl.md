@@ -20,6 +20,7 @@ And standard library additions:
 
 - **`$index`** — external data mapped into relation positions
 - **`$generate`**, **`$write`** — generation and persistence
+- **`$json`** — built-in chat emission of an lvar’s binding as NDJSON (see rpl.md §14.2)
 
 **Lazy tool dispatch** — LRPL’s delta on rpl.md §14: a tool invocation **`$label(…)`**
 does not run its external capability until forward progress needs a result only
@@ -211,6 +212,16 @@ $write(?content, ?location, ?options)
 A trace stratum written via `$write` is a valid `$index` source for a future
 stratum.
 
+### 5.4 `$json`
+
+Same semantics as rpl.md §14.2. **`$json`** is a **built-in** tool (no external
+capability URL): it **only** serializes an lvar’s **value reading** to **JSON**
+and appends **NDJSON** lines to the **chat** transcript.
+
+Lazy dispatch (§5.0) applies: the call is not executed until progress requires it.
+Authors use `$json(?x)` to **trace** or **debug** bindings visible to the user
+without defining a custom tool.
+
 ---
 
 ## 6. Extended Timestep
@@ -265,7 +276,7 @@ INDEX-LOC          = STRING | RELATION-WITH-AVAR
 RELATION-WITH-AVAR = LABEL '(' [ INDEX-ARG [ ',' INDEX-ARG ]* ]? ')'
 INDEX-ARG          = LVAR | ASYNC-VAR | LITERAL | '_'
 
-STDLIB = '$index' | '$generate' | '$write' | '$copy'
+STDLIB = '$index' | '$generate' | '$write' | '$json' | '$copy'
        | '$transform'
 ```
 

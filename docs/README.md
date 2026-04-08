@@ -6,5 +6,7 @@ This folder holds workspace-oriented guides: how the repository is laid out, how
 - [Repository layout](repository-layout.md) — `content/`, `packages/`, and build entrypoints
 - [Build and validation](build.md) — commands, `dist/` outputs, `skills-ref`, local Claude Code
 - [RPL language overview](rpl/README.md) — entry point, worked example, and document map
+- [RPL release prompt artifact](../content/RPL.md) — canonical source entry for the shipped eager prompt
+- [LRPL release prompt artifact](../content/LRPL.md) — canonical source entry for the shipped lazy prompt
 - [RPL base specification](rpl/specification/rpl.md) — syntax, semantics, execution model, and grammar
 - [LRPL specification](rpl/specification/lrpl.md) — lazy extension delta

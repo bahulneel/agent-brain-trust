@@ -8,13 +8,14 @@ You do **not** need to clone the repo or use Node/npm to **download** artifacts.
 
 ### GitHub Releases (preferred)
 
-Open **[Releases](https://github.com/bahulneel/agent-brain-trust/releases)** and download **only** the zip you need. Files are uploaded when a release is **published**; creating or pushing a tag alone does not attach them.
+Open **[Releases](https://github.com/bahulneel/agent-brain-trust/releases)** and download **only** the artifact you need. Files are uploaded when a release is **published**; creating or pushing a tag alone does not attach them.
 
 | Download | For |
 | -------- | --- |
 | `agent-brain-trust-cursor-plugin.zip` | Cursor (skills, resources, MCP wiring) |
 | `agent-brain-trust-claude-plugin.zip` | Claude Code as a plugin |
 | `expert-opinion.zip`, `bt-*.zip`, … | One skill at a time |
+| `RPL.md`, `LRPL.md` | Standalone composed prompt artifacts |
 
 **Standalone MCP** is only on npm as [`@bahulneel/brain-trust-mcp`](https://www.npmjs.com/package/@bahulneel/brain-trust-mcp) — `npx -y @bahulneel/brain-trust-mcp` or `npm install -g` (see [docs/install-prebuilt.md](docs/install-prebuilt.md)).
 
@@ -29,6 +30,7 @@ From **[Actions → Release](https://github.com/bahulneel/agent-brain-trust/acti
 | `agent-brain-trust-cursor-plugin` | Cursor plugin as one zip |
 | `agent-brain-trust-claude-plugin` | Claude plugin as one zip |
 | `brain-trust-skill-zips` | All skill zips from that run (inside the artifact) |
+| `brain-trust-prompts` | `RPL.md` and `LRPL.md` from that run |
 
 **Manual “Run workflow”** builds these artifacts only—it does **not** add files to the Releases page. Prefer **Releases** for a single skill zip or a stable download. Workflow artifacts can expire; see GitHub’s retention settings.
 
@@ -266,6 +268,7 @@ For MCP **without** a plugin, install from npm: **`@bahulneel/brain-trust-mcp`**
 | --- | ------- |
 | [docs/install-prebuilt.md](docs/install-prebuilt.md) | Prebuilt install details |
 | [docs/README.md](docs/README.md) | Index of technical docs |
+| [docs/rpl/README.md](docs/rpl/README.md) | RPL overview and document map |
 | [docs/build.md](docs/build.md) | Build, validation, release workflow |
 | [docs/repository-layout.md](docs/repository-layout.md) | Repo layout |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Authoring experts, topics, and panel skills |

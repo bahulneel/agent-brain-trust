@@ -26,6 +26,7 @@ npm run db:cli        # build packages + run brain-trust-cli from test-skill cwd
 - `dist/agent-brain-trust-cursor-plugin/` — Cursor plugin (`.cursor-plugin/plugin.json`, `skills/`, `resources/`, `.mcp.json`, `scripts/mcp-server.cjs` — a copy of `packages/brain-trust-mcp/dist/brain-trust-mcp.js`)
 - `dist/agent-brain-trust-claude-plugin/` — Claude Code plugin (`.claude-plugin/plugin.json`, same `skills/`, `resources/`, `.mcp.json`, same MCP script copy; see [Create plugins](https://code.claude.com/docs/en/plugins))
 - `dist/skill-zips/<name>.zip` — one zip per skill (includes `SKILL.md`, `scripts/brain-trust-cli.js`, `assets/`)
+- `dist/prompts/RPL.md`, `dist/prompts/LRPL.md` — composed standalone prompt artefacts built from `content/RPL.md` and `content/LRPL.md`
 - `packages/brain-trust-mcp/` — npm  **`npm run build`** in that package (also run via Turbo) writes **`dist/brain-trust-mcp.js`**; the repo root **`npm run build`** step then writes **`resources/`** and **`LICENSE`** beside **`package.json`** for **`npm pack` / `npm publish`**. Not shipped as a GitHub Release zip (consumers use npm).
 
 ## Prebuilt distribution
@@ -34,6 +35,7 @@ The [Release](https://github.com/bahulneel/agent-brain-trust/actions/workflows/r
 
 - **`agent-brain-trust-cursor-plugin.zip`**, **`agent-brain-trust-claude-plugin.zip`** — one zip each, uploaded as matching **workflow artifacts** on every run, and attached to the [GitHub Release](https://github.com/bahulneel/agent-brain-trust/releases) when the **`release: published`** event runs (not when you only push a tag). **MCP** is published to npm on that event via **OIDC trusted publishing** — not as a release zip.
 - **Per-skill zips** — each `dist/skill-zips/<name>.zip` is attached to that same published release; the **`brain-trust-skill-zips`** artifact contains all of them for a given CI run.
+- **`RPL.md`** and **`LRPL.md`** — each `dist/prompts/*.md` file is uploaded as an individual release asset; the **`brain-trust-prompts`** workflow artifact contains both prompt files for a given CI run.
 
 **Maintainers:** from a clean `develop` branch you can run the project-level Cursor command **`/relase`**, which tells the agent to inspect commits since the last version tag, choose the semver bump, run the `git flow` release steps, bump workspace versions, push branches and tags, and publish the GitHub release for the workflow to populate. You can still create the tag manually and open **Releases → Draft a new release** if you prefer; the workflow builds from that tag and uploads the zips onto the release you publish. **Run workflow** (manual dispatch) only produces Actions artifacts—it does not add files to a Release.
 

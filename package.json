@@ -1,7 +1,7 @@
 {
   "name": "agent-brain-trust",
   "private": true,
-  "version": "0.5.1",
+  "version": "0.6.0",
   "description": "Agent Brain Trust: composable skills, Cursor plugin, MCP",
   "license": "MIT",
   "repository": {
@@ -28,6 +28,8 @@
     "validate": "tsx scripts/build.ts validate",
     "validate:skills-ref": "tsx scripts/validate-skills-ref.ts",
     "test:mcp-drafting": "tsx scripts/test-mcp-drafting-protocol.ts",
+    "test": "vitest run",
+    "test:prompts": "vitest run tests/prompts",
     "install:cursor-plugin": "npm run build && tsx scripts/install-cursor-plugin.ts",
     "install:claude-plugin": "npm run build && tsx scripts/install-claude-plugin.ts",
     "pack:mcp": "npm run build && npm pack -w @bahulneel/brain-trust-mcp",
@@ -35,13 +37,19 @@
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
+    "@types/object-hash": "^3.0.6",
     "brain-trust-core": "*",
     "brain-trust-db": "*",
     "esbuild": "^0.24.2",
+    "jsonrepair": "^3.13.3",
     "skills-ref": "^0.1.5",
     "tsx": "^4.19.2",
     "turbo": "^2.4.4",
     "typescript": "^5.7.2",
+    "vitest": "^4.1.2",
     "yaml": "^2.7.0"
+  },
+  "dependencies": {
+    "object-hash": "^3.0.0"
   }
 }

@@ -66,6 +66,10 @@ export default defineConfig({
   resolve: {
     alias: {
       "@test": resolve(__dirname, "tests"),
+      "@test/support/types": resolve(
+        __dirname,
+        "tests/support/types/index.d.ts"
+      ),
     },
   },
   test: {

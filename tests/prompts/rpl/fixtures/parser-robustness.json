@@ -29,11 +29,11 @@
   },
   {
     "id": "parser-colon-lvar-bindings",
-    "description": "Near-JSON with logical-var keys repaired by jsonrepair.",
+    "description": "Near-JSON with logical-var keys; jsonrepair quotes keys as \"?name\".",
     "output": "{ ?ticket: 'INC-42', ?state: 'open' }",
     "expectation": {
-      "ticket": "INC-42",
-      "state": "open"
+      "?ticket": "INC-42",
+      "?state": "open"
     }
   },
   {

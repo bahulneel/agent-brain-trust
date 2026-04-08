@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { loadFiles } from "./content.js";
+import { load } from "./content.js";
 
-describe("content.loadFiles", () => {
+describe("content.load", () => {
   it("loads prompt files in requested order with separators", () => {
-    const combined = loadFiles("content/rpl", "rpl.md", "eager.md");
+    const combined = load("content/rpl", "rpl.md", "eager.md");
     const relIdx = combined.indexOf("# Relational Prompt Language (RPL)");
     const eagerIdx = combined.indexOf("# RPL Eager Execution Algorithm");
     expect(relIdx).toBeGreaterThanOrEqual(0);
@@ -14,7 +14,7 @@ describe("content.loadFiles", () => {
 
   it("throws when a prompt file is missing", () => {
     expect(() =>
-      loadFiles("content/rpl", "rpl.md", "does-not-exist.md")
+      load("content/rpl", "rpl.md", "does-not-exist.md")
     ).toThrow(/ENOENT|no such file/i);
   });
 });

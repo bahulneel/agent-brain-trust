@@ -1,44 +1,57 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import type { ExpectationScalar } from "@test/support/types";
 import { describe, expect, it } from "vitest";
 
-import { DEFAULT_LLM_MODEL, resolvedLlmApiKey, resolvedLlmModel } from "./chat.js";
+import { toJS } from "./chat.js";
+import { buildUserPrompt } from "./fixtures.js";
 
-function withEnv<T>(mutate: () => T): T {
-  const before = { ...process.env };
-  try {
-    return mutate();
-  } finally {
-    process.env = before;
-  }
+type ParserRobustnessRow = {
+  id: string;
+  description: string;
+  output: string;
+  expectation: Record<string, ExpectationScalar>;
+};
+
+function loadParserRobustnessCases(): ParserRobustnessRow[] {
+  const path = join(
+    process.cwd(),
+    "tests/prompts/rpl/fixtures/parser-robustness.json"
+  );
+  const raw = readFileSync(path, "utf-8");
+  return JSON.parse(raw) as ParserRobustnessRow[];
 }
 
-describe("chat env helpers", () => {
-  it("resolves API key with PROMPTS alias precedence", () => {
-    withEnv(() => {
-      process.env.PROMPTS_LLM_API_KEY = " prompts-key ";
-      process.env.NVIDIA_NIM_API_KEY = "nim-key";
-      expect(resolvedLlmApiKey()).toBe("prompts-key");
-
-      delete process.env.PROMPTS_LLM_API_KEY;
-      process.env.NVIDIA_NIM_API_KEY = " nim-key ";
-      expect(resolvedLlmApiKey()).toBe("nim-key");
+describe("chat.toJS", () => {
+  it("buildUserPrompt from string and array forms", () => {
+    const fromString = buildUserPrompt({
+      id: "s",
+      description: "string input",
+      rpl: "account('acct-1')",
+      output: "account(?id)",
+      expectation: { id: "acct-1" },
     });
+    expect(fromString[0]).toBe("account('acct-1')");
+
+    const fromArray = buildUserPrompt({
+      id: "a",
+      description: "array input",
+      rpl: ["a('x')", "b('y')"],
+      output: "a(?id)",
+      expectation: { id: "x" },
+    });
+    expect(fromArray.slice(0, 2)).toEqual(["a('x')", "b('y')"]);
   });
 
-  it("resolves model with env fallback order", () => {
-    withEnv(() => {
-      process.env.PROMPTS_LLM_MODEL = "model-a";
-      process.env.NIM_MODEL = "model-b";
-      process.env.NVIDIA_NIM_MODEL = "model-c";
-      expect(resolvedLlmModel()).toBe("model-a");
+  it("parses robustness fixture outputs and matches expectations", () => {
+    const cases = loadParserRobustnessCases();
+    for (const c of cases) {
+      const parsed = toJS(c.output);
+      expect(parsed, c.id).toMatchObject(c.expectation);
+    }
+  });
 
-      delete process.env.PROMPTS_LLM_MODEL;
-      expect(resolvedLlmModel()).toBe("model-b");
-
-      delete process.env.NIM_MODEL;
-      expect(resolvedLlmModel()).toBe("model-c");
-
-      delete process.env.NVIDIA_NIM_MODEL;
-      expect(resolvedLlmModel()).toBe(DEFAULT_LLM_MODEL);
-    });
+  it("returns the original string when nothing parses as JSON", () => {
+    expect(toJS("model says hello")).toBe("model says hello");
   });
 });

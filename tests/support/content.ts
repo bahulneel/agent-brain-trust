@@ -2,31 +2,16 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import type { PromptContentBundle, PromptContentKey } from "@test/support/types";
+
+import { bundles } from "./content/bundles.config.js";
+
+export { bundles };
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(__dirname, "..", "..");
 
-/**
- * Prompt content aggregation config.
- * `basePath` is repo-relative; each bundle value is relative to `basePath`.
- */
-export const bundles = {
-  basePath: "content",
-  byLabel: {
-    rplEager: ["rpl/rpl.md", "rpl/eager.md", "rpl/translation.md"],
-    rplLazy: ["rpl/rpl.md", "rpl/lazy.md", "rpl/translation.md"],
-  },
-} as const;
-
-export type Label = keyof typeof bundles.byLabel;
-
-export type Loaded = {
-  label: Label;
-  files: Record<string, string>;
-  text: string;
-};
-
-/** Load and aggregate configured content files for one label. */
-export function load(label: Label): Loaded {
+function loadBundle(label: PromptContentKey): PromptContentBundle {
   const files = bundles.byLabel[label];
   const out: Record<string, string> = {};
 
@@ -45,16 +30,21 @@ export function load(label: Label): Loaded {
   };
 }
 
-/**
- * Join markdown files under a directory (repo-relative) with `---` separators.
- * Replaces the old `loadPromptFiles` helper from `chat.ts`.
- */
-export function loadFiles(
-  dirRelativeToRepoRoot: string,
-  ...filenames: string[]
-): string {
+function loadMarkdownDir(dirRelativeToRepoRoot: string, ...filenames: string[]): string {
   const dir = join(REPO_ROOT, dirRelativeToRepoRoot);
   return filenames
     .map((filename) => readFileSync(join(dir, filename), "utf-8"))
     .join("\n\n---\n\n");
+}
+
+export function load(key: PromptContentKey): PromptContentBundle;
+export function load(repoRelativeDir: string, ...filenames: string[]): string;
+export function load(
+  a: PromptContentKey | string,
+  ...rest: string[]
+): PromptContentBundle | string {
+  if (rest.length === 0) {
+    return loadBundle(a as PromptContentKey);
+  }
+  return loadMarkdownDir(a, ...rest);
 }

@@ -1,5 +1,6 @@
 import { appendFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
+import type { ExpectationScalar, PassLogIndex, PassLogRow } from "@test/support/types";
 import type { TestContext } from "vitest";
 import hash from "object-hash";
 import {
@@ -9,35 +10,17 @@ import {
   test as baseTest,
 } from "vitest";
 
-import { acquireLlmRequestSlot, resolvedLlmApiKey, resolvedLlmModel } from "./chat.js";
+import { apiKey, modelId, ready } from "./chat.js";
 
-/** Bump when assertion/parsing logic changes (invalidates prior passes). */
-export const TEST_ASSERT_VERSION = 2;
+/** Bump when log row shape, dependency hashing, or skip semantics change. */
+export const TEST_LOG_VERSION = 4;
 
-export type Scalar = string | number | boolean | null;
-
-export type TestResultRow = {
-  name: string;
-  hash: string;
-  metadata: Record<string, Scalar>;
-  timestamp: string;
-};
-
-export type TestResultIndex = Record<
-  string,
-  { passed: Set<string>; metadata: Record<string, Scalar> }
->;
-
-export const TEST_RESULTS_LOG_PATH = join(
-  process.cwd(),
-  ".meta",
-  "prompt-test-results.ndjson"
-);
+export const LOG_PATH = join(process.cwd(), ".meta", "prompt-test-results.ndjson");
 
 const CHAT_TEMPERATURE = 0.1;
 const CHAT_MAX_TOKENS = 500;
 
-function isScalar(v: unknown): v is Scalar {
+function isScalar(v: unknown): v is ExpectationScalar {
   return v === null || ["string", "number", "boolean"].includes(typeof v);
 }
 
@@ -50,7 +33,7 @@ function sortKeysDeep(value: unknown): unknown {
   return out;
 }
 
-function assertRow(raw: unknown): TestResultRow {
+function assertRow(raw: unknown): PassLogRow {
   if (raw === null || typeof raw !== "object" || Array.isArray(raw)) {
     throw new Error("test result log: row must be a JSON object");
   }
@@ -77,7 +60,7 @@ function assertRow(raw: unknown): TestResultRow {
     throw new Error("test result log: metadata must be a plain object");
   }
 
-  const metaOut: Record<string, Scalar> = {};
+  const metaOut: Record<string, ExpectationScalar> = {};
   for (const [k, v] of Object.entries(metadata)) {
     if (!isScalar(v)) {
       throw new Error(`test result log: metadata "${k}" must be scalar`);
@@ -88,21 +71,21 @@ function assertRow(raw: unknown): TestResultRow {
   return { name, hash: h, metadata: metaOut, timestamp };
 }
 
-export function testResultLogEnabled(): boolean {
+export function logEnabled(): boolean {
   const v = process.env.PROMPT_TEST_RESULT_LOG?.trim().toLowerCase();
   if (v === "0" || v === "off" || v === "false") return false;
   return true;
 }
 
-export function hashDeps(deps: Record<string, unknown>): string {
+export function fingerprint(deps: Record<string, unknown>): string {
   return hash(deps, { algorithm: "sha256", encoding: "hex" });
 }
 
-export function loadTestResultIndex(): TestResultIndex {
-  const index: TestResultIndex = {};
-  if (!existsSync(TEST_RESULTS_LOG_PATH)) return index;
+export function read(): PassLogIndex {
+  const index: PassLogIndex = {};
+  if (!existsSync(LOG_PATH)) return index;
 
-  const text = readFileSync(TEST_RESULTS_LOG_PATH, "utf-8");
+  const text = readFileSync(LOG_PATH, "utf-8");
   const lines = text.split(/\r?\n/);
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i]?.trim();
@@ -125,14 +108,10 @@ export function loadTestResultIndex(): TestResultIndex {
   return index;
 }
 
-export function appendPass(row: TestResultRow): void {
-  const dir = dirname(TEST_RESULTS_LOG_PATH);
+export function append(row: PassLogRow): void {
+  const dir = dirname(LOG_PATH);
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
-  appendFileSync(
-    TEST_RESULTS_LOG_PATH,
-    `${JSON.stringify(sortKeysDeep(row))}\n`,
-    "utf-8"
-  );
+  appendFileSync(LOG_PATH, `${JSON.stringify(sortKeysDeep(row))}\n`, "utf-8");
 }
 
 function mergeDeps(
@@ -143,23 +122,26 @@ function mergeDeps(
   return {
     ...suiteDeps,
     ...rest,
-    __assertVersion: TEST_ASSERT_VERSION,
+    __logVersion: TEST_LOG_VERSION,
     __env: {
-      PROMPTS_LLM_MODEL: resolvedLlmModel(),
+      PROMPTS_LLM_MODEL: modelId(),
       chatTemperature: CHAT_TEMPERATURE,
       chatMaxTokens: CHAT_MAX_TOKENS,
     },
   };
 }
 
-export class TestResultSession {
-  private index: TestResultIndex | null = null;
-  private pending: { name: string; hash: string; metadata: Record<string, Scalar> } | null =
-    null;
+export class PassLogSession {
+  private index: PassLogIndex | null = null;
+  private pending: {
+    name: string;
+    hash: string;
+    metadata: Record<string, ExpectationScalar>;
+  } | null = null;
   private readonly suiteDeps: Record<string, unknown> = {};
 
   load(): void {
-    this.index = testResultLogEnabled() ? loadTestResultIndex() : {};
+    this.index = logEnabled() ? read() : {};
   }
 
   addDeps(partial: Record<string, unknown>): void {
@@ -168,15 +150,15 @@ export class TestResultSession {
 
   alreadyPassed(testName: string, deps: Record<string, unknown>): boolean {
     this.pending = null;
-    if (!testResultLogEnabled()) return false;
+    if (!logEnabled()) return false;
 
-    if (!this.index) this.index = loadTestResultIndex();
+    if (!this.index) this.index = read();
 
-    const hashValue = hashDeps(mergeDeps(this.suiteDeps, deps));
+    const hashValue = fingerprint(mergeDeps(this.suiteDeps, deps));
     if (this.index[testName]?.passed.has(hashValue)) return true;
 
-    const metadata: Record<string, Scalar> = {
-      model: resolvedLlmModel(),
+    const metadata: Record<string, ExpectationScalar> = {
+      model: modelId(),
     };
     const gitSha =
       process.env.GITHUB_SHA?.trim() ||
@@ -190,21 +172,21 @@ export class TestResultSession {
 
   /** Only `task` is read; extended suites add `expect` / `_local` on full `TestContext`. */
   recordPass(ctx: Pick<TestContext, "task">): void {
-    if (!testResultLogEnabled()) return;
+    if (!logEnabled()) return;
     if (ctx.task.result?.state !== "pass") return;
 
     const p = this.pending;
     this.pending = null;
     if (!p || p.name !== ctx.task.name) return;
 
-    appendPass({
+    append({
       name: p.name,
       hash: p.hash,
       metadata: p.metadata,
       timestamp: new Date().toISOString(),
     });
 
-    if (!this.index) this.index = loadTestResultIndex();
+    if (!this.index) this.index = read();
     const entry =
       this.index[p.name] ?? (this.index[p.name] = { passed: new Set<string>(), metadata: {} });
     entry.passed.add(p.hash);
@@ -213,22 +195,22 @@ export class TestResultSession {
 }
 
 function hasApiKey(): boolean {
-  return Boolean(resolvedLlmApiKey());
+  return Boolean(apiKey());
 }
 
-const sessionStack: TestResultSession[] = [];
+const sessionStack: PassLogSession[] = [];
 
-function currentSession(): TestResultSession {
+function currentSession(): PassLogSession {
   const active = sessionStack[sessionStack.length - 1];
   if (!active) {
     throw new Error(
-      "Remote LLM tests must run inside describeLogged(...). Use only the `suite` collector passed into the callback."
+      "Remote LLM tests must run inside describeLogged(...). Use only the `test` collector passed into the callback."
     );
   }
   return active;
 }
 
-export const suiteTest = baseTest.extend<{
+export const test = baseTest.extend<{
   addDeps: (partial: Record<string, unknown>) => void;
   alreadyPassed: (deps: Record<string, unknown>) => boolean;
 }>({
@@ -258,17 +240,17 @@ export const suiteTest = baseTest.extend<{
 
 export function describeLogged(
   name: string,
-  fn: (suite: typeof suiteTest) => void
+  fn: (t: typeof test) => void
 ): void {
   describe.skipIf(!hasApiKey())(name, () => {
-    const session = new TestResultSession();
+    const session = new PassLogSession();
     sessionStack.push(session);
 
-    suiteTest.beforeAll(() => {
+    test.beforeAll(() => {
       session.load();
     });
 
-    suiteTest.afterAll(() => {
+    test.afterAll(() => {
       const last = sessionStack[sessionStack.length - 1];
       if (last === session) {
         sessionStack.pop();
@@ -279,13 +261,13 @@ export function describeLogged(
     });
 
     beforeEach(async () => {
-      await acquireLlmRequestSlot();
+      await ready();
     });
 
     afterEach(({ task }) => {
       session.recordPass({ task });
     });
 
-    fn(suiteTest);
+    fn(test);
   });
 }

@@ -1,4 +1,3 @@
-export * as assert from "./assert.js";
 export * as chat from "./chat.js";
 export * as content from "./content.js";
 export * as fixtures from "./fixtures.js";

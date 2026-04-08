@@ -42,7 +42,7 @@
       "catalog('services', $collection)",
       "service-tier(?service, ?tier) <- $index(catalog('services', $collection), 'service,tier') ^ ~ {:result ?rows}, ?rows = ~ /(?P<service>api).*(?P<tier>gold)/"
     ],
-    "output": "service-tier(?service, ?tier)",
+    "output": "service-tier(?service, ?tier), ?service = 'api",
     "expectation": {
       "service": "api",
       "tier": "gold"

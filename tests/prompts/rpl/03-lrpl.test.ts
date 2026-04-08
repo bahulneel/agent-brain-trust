@@ -1,41 +1,44 @@
+import type { RplFixtureKey } from "@test/support/types";
+import { expect } from "vitest";
+
 import {
-  assert,
   chat,
   content,
   describeLogged,
   fixtures,
 } from "@test/support";
 
-const fixtureLabels: fixtures.Label[] = [
+const fixtureLabels: RplFixtureKey[] = [
   "lrpl",
   "lrplAdvanced",
   "lrplIndexInlineData",
 ];
 const cases = fixtures.load(...fixtureLabels);
 
-describeLogged("LRPL spec verification (remote LLM)", (suite) => {
+describeLogged("LRPL spec verification (remote LLM)", (t) => {
   const system = content.load("rplLazy").text;
 
-  suite.beforeAll(({ addDeps }) => {
+  t.beforeAll(({ addDeps }) => {
     addDeps({ system });
   });
 
-  const apiKey = chat.resolvedLlmApiKey()!;
+  const key = chat.apiKey()!;
 
   for (const c of cases) {
-    suite(
+    t(
       c.id,
       async ({ alreadyPassed }) => {
         const userPrompt = fixtures.buildUserPrompt(c);
         if (alreadyPassed({ case: c, userPrompt, system })) return;
 
-        const modelOutput = await chat.chatCompletion({
-          apiKey,
-          model: chat.resolvedLlmModel(),
+        const modelOutput = await chat.complete({
+          apiKey: key,
+          model: chat.modelId(),
           system,
           user: userPrompt,
         });
-        assert.assertModelJson(modelOutput, c);
+        const parsed = chat.toJS(modelOutput);
+        expect(parsed, userPrompt.join("\n")).toMatchObject(c.expectation);
       }
     );
   }

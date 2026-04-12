@@ -110,41 +110,79 @@ Modal logic prevents "Flat Logic" errors (e.g., confusing a **User Goal** with a
 
 ---
 
+---
+
 ## 4. Additional Logic C: Interpretive
 
-This logic governs **how an expression is read under a named lens**—a specification, language, or model the agent treats as interpretable. It introduces:
+This logic governs **interpretation under named languages**. It introduces:
 
-- **`<@`** — **Definition / specification** (head-side commitment: “this lens is specified thus”).
-- **`@>`** — **Interpretation** (tail-side reading: “this subexpression under that lens”).
+- **`<@`** — on the assertion side, to **define** a Language from a Specification.
+- **`@>`** — on the goal side, to request the **Interpretation** of a Statement in a named Language.
 
-Interpretive operators are **orthogonal** to existential (`<%`, `%>`) and modal (`~>`, `<~`): they do not assert that the inner program is **true** in the knowledge base, only that a **well-formed reading** under the lens holds when the surrounding constraints say so.
+### 4.1 Syntax and Semantics
 
-### 4.1 Syntax and roles
+Four concepts organise this logic:
 
-Use **fixed unary forms** so roles stay unambiguous (avoid ad-hoc `lens(expr) <@` tails that blur definition vs use):
+| Concept | Role |
+|---|---|
+| **Language** | A named reading agent, identified by a kebab-case label — e.g. `sql`, `foaf`, `markdown` |
+| **Specification** | Any value the agent can interpret as a language definition |
+| **Statement** | A surface expression to be read under a Language |
+| **Interpretation** | The RPL program that results — always RPL, regardless of source Language |
 
-- **Specification on the assertion side** — bind or introduce what a **lens name** means, using **`<@`** in head-compatible positions (for example materializing a lens body from a source term or relation).
-- **Interpretation on the invariant / goal side** — read an **RPL expression** under a lens using **`expr @> LENS`**, where **`LENS`** is a **label** (see §4.2).
+The operator `@>` places an interpretive request in goal position: `Statement @> lang-name(Interpretation)`. A Statement that is valid in a Language holds when `Interpretation` unifies with its RPL reading:
 
-**Precedence:** among the additional logics, **`@>` binds tightest** by default: only **RPL subexpressions** are in the scope of the lens unless **parentheses** widen the operand (for example `(A & B) @> rpl` vs `A & (B @> rpl)`).
+```rpl
+'SELECT * FROM foo' @> sql(_)           # holds if the statement is valid sql
+'SELECT * FROM foo' @> sql(~ foo(_))    # holds if it reads as foo(...)
+```
 
-### 4.2 Lens labels (agent-first)
+Definitions use `<@` at head-compatible sites, supplying a Specification from which the agent derives the Language:
 
-Lens names such as `rpl`, `sql`, or `foaf` are **assumed interpretable** from this specification plus ordinary agent background. Authors **pin** a label (give an explicit **`<@`** specification) only when they need a **non-default** reading of a common name or a **custom** lens not shared by default.
+```rpl
+team-dsl(?spec) <@ $read(?path) ^:result ?spec
+```
 
-### 4.3 Witness programs (`?i`)
+After which `Statement @> team-dsl(Interpretation)` is available.
 
-For cross-lens alignment, an lvar may hold an **ordered list of RPL statements** `[ … ]`—**any valid RPL program** of any size—serving as a canonical interchange witness. Write **`?i`** when the same witness program is shared across lenses (for example two surfaces agreeing on the same underlying program).
+### 4.2 Analogy: Meaning as Interlingua
 
-### 4.4 Examples
+A linguist asking whether an English and a German utterance mean the same thing does not compare their words — she translates both into a shared meaning and checks if they align. The meaning is the interlingua; neither language needs to know anything about the other.
 
-- **Reflexive RPL reading (expression-level identity):**  
-  `A @> rpl(~ A)` — the RPL reading of `A` is `A` itself (under the default `rpl` lens), expressed without forcing extra KB truth beyond the interpretive claim.
+Interpretation plays the same role. Two Statements in different Languages share an Interpretation when their RPL readings unify. Here, an English surface is expanded and a German rendering is resolved through a shared `?i`:
 
-- **Cross-lens agreement with a shared witness:**  
-  `equivalent(?rpl, ?sql) <- #?rpl @> rpl(?i), #?sql @> sql(?i)` — two labeled surfaces refer to the **same** RPL program witness `?i`.
+```rpl
+en-to-de(?en, $de) <- ~ $de @> german(?i), #?en @> english(?i)
+```
 
-Interpretive claims compose with existential and modal operators; see **§5** and **§6**.
+A Specification is the linguist's semantic theory — it tells the agent how to produce an Interpretation for Statements in that Language.
+
+### 4.3 Reasoning: Diversity and Bridging
+
+**Diversity of representation.** Any Language whose Interpretations are RPL-compatible can contribute facts and structure to the same program. Here a SQL statement is interpreted to derive a projection, which then drives indexing into JSON data:
+
+```rpl
+user(?id, ?email, ?verified) <- 
+    'SELECT * FROM Users' @> sql(?projection),
+    $index('/path/to/data', ?projection)^:result ?json,
+    #?json @> json(~ {:id ?id, :email ?email, :info {:verified ?verified}})
+```
+
+**Cross-linguistic bridging.** Because every Interpretation is RPL, unification works across Languages without special machinery. Here a markdown table and a SQL query are bridged via a shared `?code`:
+
+```rpl
+errors(?id, ?message, ?timestamp) <-
+    $read('tables.md#Message+Codes', _) @> markdown(~ message-codes(?code, ?message)),
+    $query('SELECT id, code, timestamp FROM error') ^:result ?error,
+    #?error @> sql(~ error(?id, ?code, ?timestamp))
+```
+
+### 4.4 Implicit Languages
+
+Most programs need no definition clauses. The agent's background already fixes how common language names interpret — `sql`, `foaf`, `sparql`, and others are available without a `<@` clause. Definitions are only needed for languages the agent does not already know.
+
+`rpl` has special standing: it refers not to RPL in the abstract but to the RPL language as currently instantiated for this run — the active dialect, extensions, and logics included. A bare Statement is sugar for its Interpretation under `rpl`; the wrapper is elided because source and target coincide.
+
 
 ---
 
@@ -178,13 +216,13 @@ With existential anchors, precise assertions arise:
 ### 5.3 Interpretive with existential and modal
 
 - **Interpretive invariant under a mode:**  
-  `(expr @> rpl(?i)) ~> (expr2 @> rpl(?i)) ~> true` — shared `?i` ties the same witness program across nested modal goals; hosts may treat `~> true` as an elidable default tail where the spec allows.
+  `French(Paragraph, ?i) ~> French(PullQuote, ?i) ~> true` — same as **`(Paragraph @> french(?i)) ~> (PullQuote @> french(?i)) ~> true`**; shared **`?i`** ties the same RPL program across nested modal goals; hosts may treat `~> true` as an elidable default tail where the spec allows.
 
 - **Pending an interpretive reading:**  
-  `(A @> sql) %> true` — liveness until the SQL-lens reading of `A` is satisfiable alongside existential quiescence.
+  `Sql(A) %> true` — same as **`(A @> sql) %> true`**; liveness until the **Sql** interpretation is satisfiable alongside existential quiescence.
 
-- **Impulse with a lens:**  
-  `(fact @> foaf) <% true` — transient commitment to a FOAF-shaped reading of `fact`, without forcing the inner graph to be asserted as base RPL truth.
+- **Impulse under a language:**  
+  `Foaf(Fact) <% true` — same as **`(fact @> foaf) <% true`**; transient **Foaf** interpretation without forcing the inner graph to be asserted as base RPL truth.
 
 ---
 
@@ -197,7 +235,7 @@ The true power of (L)RPL emerges by synthesizing:
 - **Modal Logic**
 - **Interpretive Logic**
 
-This enables "reasoning machinery" that manages truth, temporal presence, modes, and **cross-lens** readings.
+This enables "reasoning machinery" that manages truth, temporal presence, modes, and **cross-language** interpretations.
 
 ### 6.1 The Teleological Modal Impulse
 
@@ -208,7 +246,7 @@ Combine existential impulse, modal projection, and base relation.
 
 *Analogy*: Impulse to see black swan under "Discovery" mode `(BlackSwan ~> :Discovery <% true)`. If so, triggers `-> :UpdateLog`.
 
-*Meaning*: The log is updated only for transient sightings matching an interpretative lens; the sighting fades, but the consequence remains.
+*Meaning*: The log is updated only for transient sightings that satisfy the modal goal and any interpretive side condition; the impulse fades, but the consequence remains.
 
 ### 6.2 The Invariant Proof of Possibility
 

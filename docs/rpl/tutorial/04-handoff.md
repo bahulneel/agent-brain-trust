@@ -2,9 +2,8 @@
 
 ## Required reading
 
-Read [../README.md](../README.md) through **Go Further**, especially **Park
-Progress In A Trace** and **Move That Trace Between Sessions**. For existential
-or modal framing (optional below), skim
+Read [00-recipe-protocol.md](00-recipe-protocol.md) through **Trace hooks for
+handoff**. For existential or modal framing (optional below), skim
 [../specification/logics.md](../specification/logics.md).
 
 LRPL builtins: [../specification/lrpl.md](../specification/lrpl.md).
@@ -22,9 +21,10 @@ pretending the entire conversational runtime migrated.
 
 ## New capability: trace projection + `$write` + `$index`
 
-You already have `recipe-artifact(?candidates, ?title, ?steps, ?parked)` in the
-README. For handoff, project the fields you are willing to trust across
-sessions, plus cook-mode anchors if you adopted [01-cook-mode.md](01-cook-mode.md):
+You already have `recipe-artifact(?candidates, ?title, ?steps, ?parked)` in
+[00-recipe-protocol.md](00-recipe-protocol.md). For handoff, project the fields
+you are willing to trust across sessions, plus cook-mode anchors if you adopted
+[01-cook-mode.md](01-cook-mode.md):
 
 ```rpl
 handoff-slice(?title, ?phase, ?stepOrdinal, ?stepText, ?serve)

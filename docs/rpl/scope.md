@@ -96,8 +96,9 @@ together across boundaries that would otherwise break it.
 
 The README introduces RPL through a recipe-building prompt — a familiar,
 goal-rich example that makes the language mechanics easy to follow.
-Continuations in [tutorial/](tutorial/) add cook-mode anchors, kitchen context,
-scheduling, and handoff. Core README flow stays deliberately small.
+Continuations in [tutorial/](tutorial/) finish the recipe protocol, then add
+cook-mode anchors, kitchen context, scheduling, and handoff. The README stops
+after the first RPL slices so the entry path stays short.
 
 The examples above suggest a wider range. The formal machinery that makes a
 single editing session work — named relations, goal-driven execution, async
@@ -119,7 +120,7 @@ tooling may still be specified in separate normative documents when needed.
 ## Document map
 
 - [README.md](README.md) — entry point and worked example.
-- [tutorial/](tutorial/) — README continuations (cook mode, kitchen context, scheduling, handoff).
+- [tutorial/](tutorial/) — README continuations (full recipe protocol, cook mode, kitchen context, scheduling, handoff).
 - [motivation.md](motivation.md) — problem framing and language overview.
 - [theory.md](theory.md) — Bloom, CALM, layers.
 - [vision.md](vision.md) — central ideas, trace, lazy extension summary, design principles.

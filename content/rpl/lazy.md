@@ -44,7 +44,7 @@ LRPL replaces full fixpoint quiescence with goal-relative quiescence.
 - **`$write(?content, ?location, ?options)`**: Writes content. A trace stratum written via `$write` is a valid `$index` source.
 - **`$json(?x)`** (built-in, RPL core): Appends to the **chat** one NDJSON line per possible binding instance of `?x` at that point in evaluation (line payload is the bound value encoded as JSON). No external API—lazy dispatch still applies until the emission is needed for progress.
 
-Further LRPL-related **language extensions** are specified only in separate docs under `docs/rpl/specification/` (for example [meta-programming.md](../../docs/rpl/specification/meta-programming.md)). This summary does not track extension syntax; read the extension spec for the current surface.
+Further LRPL-related **additional logics** (existential, modal, interpretive) are specified in [logics.md](../../docs/rpl/specification/logics.md). This summary does not track that syntax in full; read `logics.md` when you need those operators.
 
 ## 5. Extended Timestep
 Phases 3, 7, and 8 of the eager timestep are modified:

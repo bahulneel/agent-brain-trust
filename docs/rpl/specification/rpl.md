@@ -12,8 +12,8 @@ Language (RPL): syntax, semantics, runtime operating model, and grammar.
 - **Vision** (central ideas, trace, lazy extension summary, design principles) —
   [vision.md](../vision.md).
 - **LRPL** (lazy extension delta) — [lrpl.md](lrpl.md).
-- **Extensions** — Optional surface area is defined only in separate specifications (for example [meta-programming.md](meta-programming.md), which defines meta-vars and meta-relational handles). This
-  document does not restate extension syntax or tools; core-conformant RPL is
+- **Additional logics** — Optional operators for existential, modal, and interpretive readings are specified in [logics.md](logics.md). This
+  document does not restate that syntax; core-conformant RPL is
   exactly what is specified here and in LRPL where you adopt it.
 
 Three namespaces partition the language when you use explicit syntax:
@@ -242,6 +242,13 @@ reading of that lvar’s binding (§3).
 **Shape** — If a position’s grammar requires a **relation call** (or another fixed
 head) and the bound expression is not of an allowed shape, the sentence is
 **ill-formed** or the case is **implementation-defined**.
+
+**Head-position validity** — When expansion is used in a **head-compatible**
+position (a site that must parse as `HEAD` in §10 / Appendix), expansion is
+valid only if **every** expanded result is itself valid at that head grammar
+site. If any expanded result is not head-valid, the expanded form is invalid at
+that site and the program is rejected or that expansion case is rejected by host
+policy.
 
 **Syntax-level abstraction** — Because `#` splices the **syntax** reading of an
 lvar, you can abstract over forms that would otherwise be fixed at authoring time:
@@ -933,7 +940,21 @@ Alternatively **`@when`** on the activation clause (§16.1).
 When a goal is satisfied, the agent offers to continue; the **user** decides
 termination (§18.5).
 
-### 15.7 Goal Headings
+### 15.7 `%fail` (reserved built-in goal)
+
+`%fail(?reason, ?explanation)` is a reserved built-in goal for consistent
+failure reporting.
+
+- `?reason` is a concise, human-friendly failure reason.
+- `?explanation` is a logical stack-trace / derivation-context explanation.
+
+Hosts must preserve this argument meaning when they emit or process `%fail`.
+
+Authors may also write `%fail(...)` statements explicitly to model domain-specific
+failure modes. Author-authored `%fail` usage is optional and never required for a
+program to be valid.
+
+### 15.8 Goal Headings
 
 ```markdown
 # Needs Edit - %needs-edit(?d) <- edit-brief(?d, ?g), ?g != "unknown"
@@ -942,7 +963,7 @@ Produce one revision pass for __d__ and summarize changes.
 On completion suggest trying %needs-discovery only if context is still missing.
 ```
 
-### 15.8 RPL shell mode (user message convention)
+### 15.9 RPL shell mode (user message convention)
 
 Some hosts treat a **suffix line** on the user message as a **one-shot query**
 against the current programme. This section normatively defines that **RPL shell
@@ -979,6 +1000,10 @@ turn (excluding tool-injected chat, §13.3, §14.2):
 3. **Tool output** — Effects that **append** to the chat (e.g. **`$json`**, §14.2)
    are **not** assistant-authored prose. They **may** be the only structured
    output. If (1) does not apply and tools produced no chat payload, apply (2).
+
+4. **Failure reporting** — If evaluation surfaces a runtime failure mode (§18.6),
+   the assistant should return `%fail(?reason, ?explanation)` (or the captured
+   `%fail` args if present) as the canonical failure report for this turn.
 
 Shell mode **temporarily** relaxes the usual “offer to continue” phrasing (§15.6)
 for **this** turn: the reply is **terse** by contract unless the query demands
@@ -1234,12 +1259,15 @@ cross-timestep termination (§15.6).
 ### 18.6 Failure Modes
 
 ```
-No rule is eligible              Agent surfaces error; asks user
-Circular dependency              Agent warns; user may override
+No rule is eligible              Emit %fail(reason, explanation); ask user
+Circular dependency              Emit %fail(reason, explanation); user may override
 Activation clause never holds    Rule ineligible for this run
-Constraint violated              Agent surfaces; user decides
-User declines arg                Unbound; agent checks continuable
+Constraint violated              Emit %fail(reason, explanation); user decides
+User declines arg                Emit %fail(reason, explanation); check continuable
 ```
+
+For surfaced runtime failures, hosts should report using `%fail(?reason,
+?explanation)` (§15.7) instead of ad-hoc failure prose.
 
 ---
 
@@ -1406,3 +1434,6 @@ when it is a surface relation call, a bare lvar (value reading), or **`#?x`**
 
 **Namespaces** — `$name` without `(` `)` is an async var; `$name(` … `)` is a tool
 call. Relation and goal heads use §9 and §15 respectively.
+
+**Reserved goal label** — `%fail` is a reserved built-in goal label. The fixed
+form is `%fail(?reason, ?explanation)` (§15.7).

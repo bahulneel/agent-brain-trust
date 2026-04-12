@@ -43,11 +43,10 @@ long-running orchestration substrate for mission-critical control loops. It is
 a way to move prompt behavior out of black-box prose and into inspectable
 structure.
 
-Some problems are easier if the language can be extended; those extensions are
-specified in standalone documents (for example
-[meta-programming](specification/meta-programming.md), where meta-vars are
-defined as virtual semantic handles), not in this motivation text—read the
-linked spec when you need that surface.
+Some problems are easier if the language can be extended; optional **additional
+logics** (existential, modal, interpretive) are specified in
+[logics.md](specification/logics.md), not in this motivation text—read that
+document when you need those operators.
 
 Each step in a protocol can be read as a named relation with arguments.
 Relations compose via implication into a dependency graph. Goals mark what

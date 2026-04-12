@@ -1,4 +1,4 @@
-# (L)RPL Additional Logics: Existential and Modal Frameworks
+# (L)RPL Additional Logics: Existential, Modal, and Interpretive Frameworks
 
 ## 1. Motivation and Base Logic
 
@@ -40,7 +40,7 @@ A critical distinction is made between a **Relation** and a **Goal**:
 - **Goals (`->`)**:  
   *Forward looking*. Define the "Tail"—the invariant (what must be true for the assertion to hold).
 
-In the base logic, these two are balanced. But at scale, managing these independently provides power. Two composable additional logics support this.
+In the base logic, these two are balanced. But at scale, managing these independently provides power. Three composable additional logics support this: **existential**, **modal**, and **interpretive** (below).
 
 ---
 
@@ -110,11 +110,49 @@ Modal logic prevents "Flat Logic" errors (e.g., confusing a **User Goal** with a
 
 ---
 
-## 4. Composition and Dual Meaning
+## 4. Additional Logic C: Interpretive
+
+This logic governs **how an expression is read under a named lens**—a specification, language, or model the agent treats as interpretable. It introduces:
+
+- **`<@`** — **Definition / specification** (head-side commitment: “this lens is specified thus”).
+- **`@>`** — **Interpretation** (tail-side reading: “this subexpression under that lens”).
+
+Interpretive operators are **orthogonal** to existential (`<%`, `%>`) and modal (`~>`, `<~`): they do not assert that the inner program is **true** in the knowledge base, only that a **well-formed reading** under the lens holds when the surrounding constraints say so.
+
+### 4.1 Syntax and roles
+
+Use **fixed unary forms** so roles stay unambiguous (avoid ad-hoc `lens(expr) <@` tails that blur definition vs use):
+
+- **Specification on the assertion side** — bind or introduce what a **lens name** means, using **`<@`** in head-compatible positions (for example materializing a lens body from a source term or relation).
+- **Interpretation on the invariant / goal side** — read an **RPL expression** under a lens using **`expr @> LENS`**, where **`LENS`** is a **label** (see §4.2).
+
+**Precedence:** among the additional logics, **`@>` binds tightest** by default: only **RPL subexpressions** are in the scope of the lens unless **parentheses** widen the operand (for example `(A & B) @> rpl` vs `A & (B @> rpl)`).
+
+### 4.2 Lens labels (agent-first)
+
+Lens names such as `rpl`, `sql`, or `foaf` are **assumed interpretable** from this specification plus ordinary agent background. Authors **pin** a label (give an explicit **`<@`** specification) only when they need a **non-default** reading of a common name or a **custom** lens not shared by default.
+
+### 4.3 Witness programs (`?i`)
+
+For cross-lens alignment, an lvar may hold an **ordered list of RPL statements** `[ … ]`—**any valid RPL program** of any size—serving as a canonical interchange witness. Write **`?i`** when the same witness program is shared across lenses (for example two surfaces agreeing on the same underlying program).
+
+### 4.4 Examples
+
+- **Reflexive RPL reading (expression-level identity):**  
+  `A @> rpl(~ A)` — the RPL reading of `A` is `A` itself (under the default `rpl` lens), expressed without forcing extra KB truth beyond the interpretive claim.
+
+- **Cross-lens agreement with a shared witness:**  
+  `equivalent(?rpl, ?sql) <- #?rpl @> rpl(?i), #?sql @> sql(?i)` — two labeled surfaces refer to the **same** RPL program witness `?i`.
+
+Interpretive claims compose with existential and modal operators; see **§5** and **§6**.
+
+---
+
+## 5. Composition and Dual Meaning
 
 These logics can be used separately or combined—yielding a "physics of information." The "Fact vs. Proof" duality is made explicit.
 
-### 4.1 Composing the Impulse and the Mode
+### 5.1 Composing the Impulse and the Mode
 
 - **Filtered Impulse**:  
   `(A ~> B) <% true`  
@@ -124,7 +162,7 @@ These logics can be used separately or combined—yielding a "physics of informa
   `true <% (A ~> B)`  
   *Analogy*: Grounds the fact that the black swan exists within a region—proof is now permanent.
 
-### 4.2 The Meaning of the Dual
+### 5.2 The Meaning of the Dual
 
 - **Forward Projection** (`A ~> B`):  
   "Given A, the mode of B must be satisfied." (fact requirement)
@@ -137,19 +175,31 @@ With existential anchors, precise assertions arise:
 - `true %> (BlackSwan ~> :Protected)` — Any found swan must be viewed as protected.
 - `(BlackSwan <~ :Mutation) <% true` — Immediate impulse: black swan is identified since the "Mutation" mode is seen.
 
+### 5.3 Interpretive with existential and modal
+
+- **Interpretive invariant under a mode:**  
+  `(expr @> rpl(?i)) ~> (expr2 @> rpl(?i)) ~> true` — shared `?i` ties the same witness program across nested modal goals; hosts may treat `~> true` as an elidable default tail where the spec allows.
+
+- **Pending an interpretive reading:**  
+  `(A @> sql) %> true` — liveness until the SQL-lens reading of `A` is satisfiable alongside existential quiescence.
+
+- **Impulse with a lens:**  
+  `(fact @> foaf) <% true` — transient commitment to a FOAF-shaped reading of `fact`, without forcing the inner graph to be asserted as base RPL truth.
+
 ---
 
-## 5. Composition of the Three Logics
+## 6. Composition of Core with Additional Logics
 
 The true power of (L)RPL emerges by synthesizing:
 
 - **Core Form**
 - **Existential Logic**
 - **Modal Logic**
+- **Interpretive Logic**
 
-This enables "reasoning machinery" that manages its own truth and temporal presence.
+This enables "reasoning machinery" that manages truth, temporal presence, modes, and **cross-lens** readings.
 
-### 5.1 The Teleological Modal Impulse
+### 6.1 The Teleological Modal Impulse
 
 **Form:**  
 `(A ~> B) <% true -> C`
@@ -160,7 +210,7 @@ Combine existential impulse, modal projection, and base relation.
 
 *Meaning*: The log is updated only for transient sightings matching an interpretative lens; the sighting fades, but the consequence remains.
 
-### 5.2 The Invariant Proof of Possibility
+### 6.2 The Invariant Proof of Possibility
 
 **Form:**  
 `true %> (A <~ B) <- C`
@@ -171,7 +221,7 @@ Anchors modal possibility as structural invariant.
 
 *Meaning*: System is invalid if the environment scan can’t justify diversity through presence of the swan. Proof is tied to fact existence.
 
-### 5.3 The Eventually Nested Necessity
+### 6.3 The Eventually Nested Necessity
 
 **Form:**  
 `(A ~> B) %> true`
@@ -184,13 +234,13 @@ Uses liveness promise to wait for a modal necessity.
 
 ---
 
-## 6. Summary
+## 7. Summary
 
-By treating these as additional logics, we preserve the performance of the core language while equipping developers to build sophisticated, clean, context-aware agents. This modular approach ensures logic stability even as the agent's world-view becomes more complex.
+By treating existential, modal, and interpretive constructs as **additional logics**, we preserve the performance of the core language while equipping developers to build sophisticated, clean, context-aware agents—including **cross-surface** programs shared via interpretive witnesses. This modular approach ensures logic stability even as the agent's world-view becomes more complex.
 
 ---
 
-## 7. Related Documents
+## 8. Related Documents
 
 - [../README.md](../README.md) — RPL entry point and worked example.
 - [rpl.md](rpl.md) — Base normative specification (syntax, semantics, runtime).

@@ -21,10 +21,13 @@ reasoning state is easier to inspect, question, and improve.
 
 The sections below walk through one **worked example**: a single-chat
 **recipe-building and cooking** prompt that starts as ordinary Markdown, gets
-misread in predictable ways, then becomes more reliable as RPL structure is
-added. Relation names are kept concrete (who/when/what) rather than vague
-validators—see [content/rpl/rpl.md](../../content/rpl/rpl.md) on arity and
-subject–value facts. They are not a substitute for the specifications.
+misread in predictable ways, then becomes more reliable as you layer in
+relational structure. The first move is a **short interpreter note** in system
+or project instructions; relation heads on the task prompt appear only where a
+named fact addresses a concrete failure mode. Relation names stay concrete
+(who/when/what) rather than vague validators—see
+[content/rpl/rpl.md](../../content/rpl/rpl.md) on arity and subject–value facts.
+They are not a substitute for the specifications.
 
 ---
 
@@ -121,60 +124,55 @@ a serve time, a recipe **locks** ingredient lines.
 
 ---
 
-## Add A Bootstrap
+## Bootstrap The Interpreter
 
-Do not jump straight to maximal formalization. First add a small amount of RPL
-to the **same** prompt (typically the system or project instructions) so a few
-soft failures go away.
+**Bootstrapping** means extending **system or project instructions** with a
+compact note on how to read RPL. It is not the same as decorating the task
+prompt with relation heads; those belong on the workflow document when a
+specific ambiguity needs a named fact.
 
-The bootstrap below only: (1) names the workflow phases as a closed vocabulary,
-(2) makes “current phase” and “candidate dish labels” explicit facts, and (3)
-states a modest root goal so the session is not an infinite chat.
+A typical interpreter note covers **shell turns** (a user message whose last
+non-empty line starts with `%` is evaluated as an RPL goal for that reply only;
+lines above stay context) and **surface syntax** (signatures after headings,
+facts and rules in fenced `rpl` code blocks). The teaching document
+[content/rpl/rpl.md](../../content/rpl/rpl.md) spells out shell mode and the
+`$json` trace contract in full.
+
+````markdown
+## RPL (interpreter)
+
+When the user’s message ends with a non-empty line whose first non-whitespace
+character is `%`, use **RPL shell mode** for that assistant turn only: treat
+**only that final line** as an RPL **goal** to evaluate; everything above is
+context (prose, facts, protocol).
+
+Markdown headings may end with ` - relation(...) ` signatures. Prose bodies and
+` ```rpl ` blocks supply facts and rules. Read relations and rules as
+declarative claims and constraints, not imperative scripts.
+````
+
+With that in place, the recipe prompt below can stay plain Markdown until you
+decide which parts need relational backing.
+
+---
+
+## Add Relation Heads For Specific Failures
+
+Introduce a signature on a heading—or a small fenced `rpl` block—when the prose
+alone keeps misfiring on something you can name. Skip headings that are already
+stable; empty ceremony makes the surface noisier without improving behavior.
+
+### Example: phase drift
+
+If the model **jumps phases** or loses track of which stage applies, anchor
+**workflow phase** first. Leave “Explore”, “Refine”, and the rest as ordinary
+headings until you need more structure there.
 
 ````markdown
 # Collaborative Recipe Session - % <- recipe-session(?phase)
 
-You are helping a home cook plan and execute a meal in this single chat. The
-cook may need clear steps, small chunks of information, and explicit checkpoints
-rather than long unstructured paragraphs.
-
-## Explore Before Committing - proposed-candidate-dish($label)
-
-Offer a small set of candidate dishes that fit what they have said so far (time,
-effort, diet, vibe). Do not behave as if a recipe is chosen until they pick one.
-
-## Refine With Equipment And Process - equipment-note($text)
-
-Ask what equipment and techniques they are willing to use. Adjust the leading
-candidates; drop ones that clash with their kitchen or patience level.
-
-## Lock Ingredients Before The Recipe Card - locked-ingredient-line($ingredient, $qtyNote)
-
-Agree the ingredient list with approximate quantities before you write the full
-recipe. Flag substitutions only after they confirm the list.
-
-## Recipe Card Overview
-
-Produce a classical recipe shape: yield, ingredients, numbered steps with times
-and sensory cues where it helps. Warn before steps that are easy to get wrong
-or hard to undo.
-
-## Cook Mode Only When They Ask
-
-When they explicitly enter cook mode, go one step at a time. Passive reminders
-(oven preheating while something rests) are fine; do not start two hands-on steps
-at once. If they interrupt with a question, answer in the context of the
-**current** step without restarting the whole plan.
-
-## Scheduling
-
-If they give a target serve time or pacing constraint, respect it. Work backward
-for long waits, marinades, or multi-stage prep.
-
-## Tone
-
-Be neutral, precise, and instructional. Avoid dumping everything at once.
-Group related tasks. Prefer a short warning over silently “fixing” a risky move.
+You are helping a home cook plan and execute a meal in this single chat.
+…
 
 ## Where we are - current-workflow-phase($phase)
 
@@ -193,28 +191,37 @@ recipe-session(?phase) <- current-workflow-phase(?phase)
 ```
 ````
 
-That small bootstrap already helps:
+Closed phase labels plus an explicit **current** phase give the model a single
+place to look before it acts—without yet turning every section into a relation.
 
-- `names-workflow-phase(...)` is a crisp closed vocabulary (compare ad hoc prose
-  labels the model can blur together).
-- `current-workflow-phase($phase)` makes “where we are in the staged flow” a
-  named fact instead of vibe.
-- `proposed-candidate-dish($label)` and `locked-ingredient-line($ingredient, $qtyNote)` are
-  **binary-shaped** records about real kitchen things, not a generic “state”
-  marker.
-- `recipe-session(?phase)` gives the interaction a modest satisfaction shape:
-  the session should be able to say which phase it is in.
+### Example: ingredient list drift
 
-The point of a bootstrap is not to finish the job. It is to remove obvious
-ambiguities first.
+If the model **skips lock-in** or silently rewrites quantities while drafting
+steps, attach a collection-shaped head **only** on the ingredient-lock section
+when that failure shows up in traces.
+
+````markdown
+## Lock Ingredients Before The Recipe Card - locked-ingredient-line($ingredient, $qtyNote)
+
+Agree the ingredient list with approximate quantities before you write the full
+recipe. Flag substitutions only after they confirm the list.
+
+```rpl
+ingredient-lines([& ?i ?q]) <- locked-ingredient-line(?i, ?q)
+```
+````
+
+`locked-ingredient-line($ingredient, $qtyNote)` is a **binary-shaped** record per
+line; the rule lifts many rows into one `ingredient-lines` value when you need
+“the whole list” in later queries or summaries.
 
 ---
 
 ## Then Tighten The Same Prompt
 
-Once the bootstrap reveals where interpretation is still weak, tighten the same
-artifact. Do not add new sections or invent a different workflow. Add anchors to
-the prose that is already there.
+When more headings still blur together, align them the same way: one signature
+or rule at a time, driven by what still misreads. Do not add new sections or
+invent a different workflow—only make the existing prose easier to audit.
 
 ### Naming Facts
 

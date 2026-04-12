@@ -31,6 +31,11 @@ derivation; `<$label(…)>` applies both mechanisms.
 Academic grounding (Bloom, CALM, monotonic vs non-monotonic points) —
 [theory.md](../theory.md).
 
+**Extension** — [meta-programming.md](meta-programming.md) defines
+meta-variables (`#m-…`), `$language`, `$read`, and an additional second-argument
+form for `$index`. Core LRPL grammar and `STDLIB` in this document are unchanged;
+hosts that implement the extension add the productions and tools described there.
+
 ### 1.1 Extended Variable Space
 
 Adds to rpl.md §3:

@@ -22,6 +22,7 @@ This matrix maps current prompt fixtures to the `docs/rpl` specification surface
 | LRPL `$index` inline data | `fixtures/lrpl-index-inline-data.json` | LRPL section 5.1 (`$index`) with inline data forms | Missing |
 | Parser robustness (local) | `fixtures/parser-robustness.json` | `assertGoalBindings` fallback parsing and extraction behavior | Missing |
 | Prose quality judgement | `fixtures/prose-quality-judgement.json` | Free/lite markdown quality labels (`all good`, `some good`, `none good`) for relation/program/protocol | Missing |
+| MRPL meta-programming extension | `fixtures/mrpl-meta-programming.json` | [meta-programming.md](../../../docs/rpl/specification/meta-programming.md): `#m-…`, `$language`, `$read`, `$index` second-arg language ref | Missing |
 
 ## Explicit Out Of Scope
 

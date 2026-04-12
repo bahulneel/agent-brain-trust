@@ -1,270 +1,332 @@
-# RPL Meta-Programming Extension — Formal Specification
+# RPL Meta-Programming Extension (MRPL) — Formal Specification
 
 ## 1. Status
 
-This document is an **extension** to RPL ([rpl.md](rpl.md)) and LRPL
-([lrpl.md](lrpl.md)). Extensions are **not** part of core RPL/LRPL conformance;
-this one is **normative only** for hosts that declare support (for example
-**“RPL + Meta-Programming Extension”** or **MRPL**).
+This document defines an **extension** to RPL ([rpl.md](rpl.md)) and LRPL
+([lrpl.md](lrpl.md)).
 
-- **Core-conformant** RPL/LRPL hosts **need not** implement any construct defined
-  here.
-- A host that accepts programs using this extension **must** implement the
-  semantics and grammar deltas below in full for the features it claims.
+- Core RPL/LRPL hosts are **not required** to implement this extension.
+- Hosts that claim support for this extension (for example, **RPL + Meta** or
+  **MRPL**) **must** implement the grammar and semantics in this document for
+  the features they expose.
 
-Programs that use **only** core RPL/LRPL are unchanged; this document adds
-nonterminals, tools, and rules that apply when the extension is enabled.
+Programs that use only core RPL/LRPL remain unchanged.
 
 ---
 
-## 2. Relationship to base specifications
+## 2. Why this extension exists
+
+RPL can represent knowledge relationally, but not all useful knowledge needs to
+be fully expanded into live RPL clauses.
+
+This extension introduces **meta-variables** (`@name`) as references to
+agent-known meaning that is:
+
+- already structured,
+- already interpretable,
+- and often already specified in another formalism.
+
+A meta-variable works as a **proxy belief**:
+
+- it can participate in reasoning,
+- it can be passed through tools,
+- but it does not force full reification of its full source into the active
+  program or chat context.
+
+Primary goal: avoid context and state explosion when source material is already
+well-specified elsewhere.
+
+---
+
+## 3. Relationship to base specs
 
 All definitions in [rpl.md](rpl.md) and [lrpl.md](lrpl.md) apply unless this
-document explicitly **extends** or **specializes** them.
+document explicitly extends or specializes them.
 
-- **Lazy tool dispatch** — Extension tools (`$language`, `$read`) follow LRPL §5.0
-  ([lrpl.md](lrpl.md)): a `$label(…)` invocation does not run until forward
-  progress requires a result only that call can supply.
-- **`$index`** — Core forms remain as in LRPL §5.1; this extension adds an
-  **additional** second-argument form (§6). Hosts without the extension keep the
-  core grammar and behavior only.
-
----
-
-## 3. Meta-variables
-
-### 3.1 Syntax
-
-A **meta-variable** is written `#m-` followed by a **name** using the same
-`NAME` nonterminal as lvars ([rpl.md](rpl.md) §3):
-
-```
-META-LVAR = '#m-' NAME
-NAME      = [a-z] [ a-z0-9\- ]*    -- as in rpl.md Appendix
-```
-
-**Lexical disambiguation** — **`#?x`** is **expansion** (rpl.md §3, §5.7;
-`EXPANSION = '#' LVAR`). A token `#m-` … is **not** an expansion: the character
-after `#` is `m`, not `?`.
-
-**Invalid spellings** — The tool name is **`$language`**. **`$lanuage`** and
-similar misspellings are **not** defined and have no reading.
-
-### 3.2 Meaning
-
-A meta-variable denotes an **opaque capsule** maintained by the agent/runtime: a
-**handle** to a large or structured **virtual** artifact, not a normal
-EDN-grounded value that participates in ordinary value unification the way
-`?x` does.
-
-Typical use: a **virtual statement set** — for example the agent’s understanding
-of a **language** or **program** **as if** it were specified in RPL (a
-**meta program**), **without** asserting every clause into the live relation
-extension or expanding the full content into the chat context.
-
-**Unification** — Two meta-variables **unify** only when they denote the **same**
-capsule identity according to the host (alias rules are host-defined but must be
-explicit in implementation documentation). A meta-variable **must not** unify with
-an arbitrary literal, list, map, or ordinary lvar binding unless the host defines
-a dedicated conversion (out of scope for portable programs).
-
-**Occurrence restrictions** — `META-LVAR` **must not** appear as an **element** of
-a list, set, or map (rpl.md §4 `ELEMENT` / `COLLECTION`). It is **ill-formed**
-inside collection syntax. Allowed sites are:
-
-- Arguments of a **relation call** (extension `ARG`, §8).
-- The second argument of **`$read`** and **`$index`** (when used as language
-  reference, §§5–6).
-- The target of **`^:result`** on **`$language`** and **`$read`** when that
-  target is specified as a meta-variable (§§4–5).
-
-### 3.3 Trace, chat, and `$json`
-
-- The **trace** records completion and a **stable handle** (or digest reference)
-  for capsule operations — not necessarily the full virtual program text.
-- **`$json(?x)`** (rpl.md §14.2) applies to **lvars**. Meta-variables are **not**
-  lvars; hosts **must not** treat `$json(#m-x)` as well-formed unless they define
-  an explicit extension (not part of this specification). For debugging,
-  implementations may offer a **bounded summary** string in the trace only.
-
-### 3.4 Capsule identity
-
-Whether two invocations of **`$language`** with the same `?source` and `?preamble`
-**must** yield the same capsule is **host-defined**. Portable programs should not
-rely on deduplication unless the host documents it.
+- **Lazy tool dispatch** — Extension tools (`$language`, `$read`) follow LRPL
+  lazy dispatch rules. A tool call does not execute until forward progress
+  requires its result.
+- **`$index`** — Core forms in LRPL remain valid. This extension adds a
+  second-argument form where the second argument is a meta-variable.
 
 ---
 
-## 4. `$language`
+## 4. Meta-variables
 
-Builds a **language capsule**: the agent’s relational reading of a language
-description anchored in external material, as a virtual RPL-level relation set
-(not asserted as live rules).
+### 4.1 Syntax
+
+A meta-variable is `@` immediately followed by `NAME`:
 
 ```
-$language(?source, ?preamble) ^:result #m-lang
+META-VAR = '@' NAME
+NAME     = [a-z] [ a-z0-9\- ]*    -- as in rpl.md Appendix
 ```
 
-**Arguments**
+### 4.2 Common `@` semantics across core and meta forms
 
-- **`?source`** — String literal or lvar bound to a string: path, URL, and/or
-  fragment (e.g. `'my-lang.md#specification'`) locating where the language is
-  described.
-- **`?preamble`** — String literal or lvar bound to string: agent-facing guidance
-  (e.g. that a diagram or section defines the language).
+Core RPL already uses `@` for abductive activation forms (`@when`, `@choose`,
+`@distinct`, `@each`, `@for`). MRPL keeps that same meta-level intent for `@*`
+forms: these refer to formally meaningful behavior without requiring full clause
+materialization in the current program.
 
-Both arguments participate in unification like ordinary tool arguments. If the
-extension defines optional omission of arguments, hosts **may** support
-defaults (e.g. empty preamble); portable programs should supply both.
+In other words:
 
-**Result** — `^:result #m-lang` binds the meta-variable `#m-lang` to the
-language capsule. The capsule is **model-defined**: prose, diagram, or formal
-fragment may inform it; it must be **relational in character** or refer to a
-well-known relational formalism, but the internal representation is opaque.
+- `@when(...)` and related abductive forms constrain when ordinary rules fire.
+- `@lang`, `@rels`, and related `@*` handles refer to agent-known relational
+  meaning that may remain virtual.
+- Hosts may define additional `@*` meta-relational forms (for example
+  `@rels(...)`) with explicit semantics, but those semantics are not required to
+  be expanded into complete RPL clauses unless a downstream step demands it.
 
-**Dispatch** — Lazy per LRPL §5.0. The call runs when progress requires the
-capsule.
+### 4.3 Meaning
+
+A meta-variable denotes an **opaque, agent-managed handle** to a meaning-bearing
+artifact. It is not an ordinary lvar binding and not a normal EDN value.
+
+Think of it as:
+
+- a handle to "what the agent understands this thing to mean",
+- treated as relationally usable,
+- without requiring the full source to be asserted as live RPL.
+
+This allows reasoning over external or large artifacts as if they were RPL-like
+knowledge, while keeping execution and context bounded.
+
+This rule is stronger than "lazy expansion": for `@*` meta forms, non-reification
+is the default and preferred mode, enabling references to artifacts that are not
+compactly representable in RPL or are better kept in their native notation.
+
+### 4.4 External formalisms and already-specified artifacts
+
+Meta-variables are specifically useful when the source is already formal or
+semi-formal and does not need immediate re-expression in RPL. Typical examples:
+
+- SQL queries or schemas.
+- Mermaid ERDs.
+- RFC/specification documents.
+- Markdown tables with explicit structure.
+- JSON-LD and other self-describing relational formats.
+- Large RPL or LRPL files that are known but not needed inline.
+- Stable model-ground/domain knowledge that the host treats as structured.
+
+These artifacts may be treated as **RPL-compatible referents** through
+meta-variables without mandatory full grounding into active rules.
+
+### 4.5 Unification and identity
+
+Meta-variable unification is by **capsule identity**:
+
+- Two meta-variables unify only if they refer to the same host-defined capsule.
+- Alias and dedup rules are host-defined and must be documented by the host.
+- A meta-variable does **not** unify with arbitrary literal/list/map/lvar values
+  unless a host defines an explicit conversion extension.
+
+### 4.6 Placement restrictions
+
+`META-VAR` is valid only in specific positions:
+
+- relation-call arguments (extension `ARG`),
+- second argument of `$read`,
+- second argument of `$index` when used as language reference,
+- `^:result` target for `$language` and `$read`.
+
+`META-VAR` is **not valid** as a collection element (list/set/map element).
+
+### 4.7 Trace, chat, and `$json`
+
+- Trace output should record completion plus a stable handle/digest reference,
+  not full virtual artifact content.
+- `$json(?x)` remains lvar-only per core semantics.
+- `$json(@capsule)` is not defined by this extension unless a host adds a
+  separate explicit extension.
+
+### 4.8 Non-goals
+
+This extension does not require:
+
+- universal conversion of all external notations into explicit RPL clauses,
+- materialization of all capsule internals into chat context,
+- exposing full capsule internals in trace or tool output.
 
 ---
 
-## 5. `$read`
+## 5. `$language`
 
-Reads a **program** (or program-shaped source) at a **location** under a
-**language capsule**, yielding a **virtual** relation set — the agent’s reading
-**as if** the source were an RPL specification — **without** installing those
-relations into the current program extension.
+`$language` creates a **language capsule**: a meta-level relational reading of a
+language definition sourced from external material.
 
 ```
-$read(LOCATION, #m-lang) ^:result #m-rels
+$language(?source, ?preamble) ^:result @lang
 ```
 
-**`LOCATION`** — As in LRPL §5.1 **`$index`**: string path, URL, or relation call
-with a `$`-marked collection argument (`INDEX-LOC` in [lrpl.md](lrpl.md)
-Appendix).
+Arguments:
 
-**`#m-lang`** — Meta-variable bound to a language capsule from **`$language`**
-(§4).
+- `?source`: string (or lvar bound to string) identifying source location
+  (path/URL/fragment).
+- `?preamble`: string (or lvar bound to string) supplying guidance to the
+  language-reading process.
 
-**Result** — `#m-rels` names a capsule for that **virtual** set of relations (meta
-program). It is **not** the same as facts asserted by **`$index`** into open
-relation heads in the current stratum.
+Result:
 
-**Dispatch** — Lazy per LRPL §5.0.
+- `^:result @lang` binds `@lang` to the resulting language capsule.
+
+Semantics:
+
+- The capsule is opaque.
+- The host/model may derive it from prose, diagrams, formal fragments, or a mix.
+- Portable programs should pass both arguments explicitly even if a host offers
+  defaults.
+
+Dispatch:
+
+- Lazy, per LRPL rules.
 
 ---
 
-## 6. `$index` (extended second argument)
+## 6. `$read`
 
-LRPL §5.1 defines:
-
-```
-$index(LOCATION)
-$index(LOCATION, "projection hint")
-$index(SOURCE-RELATION(?a, $collection), "projection hint"?)
-```
-
-This extension adds:
+`$read` interprets a source artifact at `LOCATION` under a language capsule and
+produces a virtual relation set handle.
 
 ```
-$index(LOCATION, #m-lang)
-$index(SOURCE-RELATION(?a, $collection), #m-lang)
+$read(LOCATION, @lang) ^:result @rels
 ```
 
-**Disambiguation** — The second argument is either:
+Where:
 
-- A **string literal** — **projection hint** only (core semantics; not unifiable).
-- A **`META-LVAR`** — **language reference**: external data at `LOCATION` is
-  interpreted and mapped into relation argument positions **in the frame of** the
-  language capsule `#m-lang`, then behavior matches core **`$index`** for
-  filtering, collection `$`-marked args, and nesting.
+- `LOCATION` follows LRPL `$index` location rules (string path/URL/relation
+  location form).
+- `@lang` is a language capsule from `$language`.
 
-**Effect** — As core **`$index`**: mapping into the surrounding relational
-context. This extension does **not** add **`^:result`** to **`$index`**; optional
-summary handles for `$index` are **not** specified here.
+Result:
 
-**Third argument** — Not introduced. If both a language reference and a projection
-hint are needed, hosts **may** extend further; portable programs should encode
-hints in the language capsule or location convention until a future spec unifies
-that pattern.
+- `@rels` names a capsule for the virtual relational reading.
+- This is not equivalent to asserting live facts/rules into the current
+  program.
+
+Dispatch:
+
+- Lazy, per LRPL rules.
 
 ---
 
-## 7. Examples
+## 7. `$index` extension (second argument = `META-VAR`)
 
-**Language capsule and reuse**
+Core LRPL `$index` forms remain unchanged. MRPL adds:
+
+```
+$index(LOCATION, @lang)
+$index(SOURCE-RELATION(?a, $collection), @lang)
+```
+
+Second-argument disambiguation:
+
+- String => core projection hint behavior.
+- Meta-variable => language reference behavior.
+
+With `@lang`:
+
+- external data at `LOCATION` is interpreted in the frame of `@lang`,
+- then core `$index` behavior applies for mapping/filtering/collection handling.
+
+This extension does **not** add `^:result` to `$index`.
+
+---
+
+## 8. Usage guidance
+
+Use meta-variables when:
+
+- the source meaning is already reliable and structured,
+- you need reasoning leverage, not full textual expansion,
+- reification cost is high and inference needs are narrow.
+
+Avoid meta-variables when:
+
+- portable exactness requires explicit clause-level grounding now,
+- host-specific capsule behavior would create unacceptable ambiguity.
+
+Practical rule:
+
+- treat meta-vars as semantic handles first,
+- materialize only when downstream inference needs explicit clause-level detail.
+
+---
+
+## 9. Examples
+
+Language capsule:
 
 ```rpl
-my-lang(#m-lang) <- $language('my-lang.md#specification', 'The Mermaid diagram specifies the language') ^:result #m-lang
+my-lang(@lang) <- $language('my-lang.md#specification', 'The Mermaid diagram defines the language') ^:result @lang
 ```
 
-**Virtual program reading (lazy goal)**
+Virtual reading under that language:
 
 ```rpl
-% <- my-lang(#m-lang), $read('my-program.my-lang', #m-lang) ^:result #m-rels
+% <- my-lang(@lang), $read('my-program.my-lang', @lang) ^:result @rels
 ```
 
-**Indexed facts under the same language**
+Direct indexing under that language frame:
 
 ```rpl
-% <- my-lang(#m-lang), $index('my-program.my-lang', #m-lang)
+% <- my-lang(@lang), $index('my-program.my-lang', @lang)
 ```
 
 ---
 
-## 8. Appendix. Grammar extensions
+## 10. Grammar extensions
 
-For hosts implementing this extension. Nonterminals not listed are as in
-[rpl.md](rpl.md) and [lrpl.md](lrpl.md).
+For extension hosts only. Unlisted nonterminals are inherited from base specs.
 
-**`ARG`** (extends rpl.md Appendix `ARG`)
+### 10.1 `ARG` extension
 
 ```
-ARG             = VAR | LITERAL | COLLECTION | '_' | RELATION | META-LVAR
-META-LVAR       = '#m-' NAME
+ARG             = VAR | LITERAL | COLLECTION | '_' | RELATION | META-VAR
+META-VAR        = '@' NAME
 ```
 
-**Restriction** — `META-LVAR` is **not** a valid `ELEMENT`; collections remain as in
-rpl.md §4 (prose §3.2).
+Restriction:
 
-**`$index` call** (extends / replaces LRPL `INDEX-CALL` for extension hosts)
+- `META-VAR` is not a valid collection `ELEMENT`.
+
+### 10.2 `$index` extension
 
 ```
 INDEX-CALL         = '$index' '(' INDEX-LOC ')'
                    | '$index' '(' INDEX-LOC ',' STRING ')'
-                   | '$index' '(' INDEX-LOC ',' META-LVAR ')'
+                   | '$index' '(' INDEX-LOC ',' META-VAR ')'
 INDEX-LOC          = STRING | RELATION-WITH-AVAR
 RELATION-WITH-AVAR = LABEL '(' [ INDEX-ARG [ ',' INDEX-ARG ]* ]? ')'
 INDEX-ARG          = LVAR | ASYNC-VAR | LITERAL | '_'
 ```
 
-**`$read` call**
+### 10.3 `$read`
 
 ```
-READ-CALL        = '$read' '(' INDEX-LOC ',' META-LVAR ')'
+READ-CALL          = '$read' '(' INDEX-LOC ',' META-VAR ')'
 ```
 
-**`$language` call**
+### 10.4 `$language`
 
 ```
-LANGUAGE-CALL    = '$language' '(' [ LANG-ARG [ ',' LANG-ARG ]? ]? ')'
-LANG-ARG         = LVAR | STRING
+LANGUAGE-CALL      = '$language' '(' [ LANG-ARG [ ',' LANG-ARG ]? ]? ')'
+LANG-ARG           = LVAR | STRING
 ```
 
-**`TOOL`** — Tool calls use `READ-CALL` and `LANGUAGE-CALL` as instances of
-`'$' LABEL '(' … ')'` with labels `read` and `language`.
-
-**`STDLIB`** (extension hosts: core LRPL names plus the following)
+### 10.5 `STDLIB`
 
 ```
 STDLIB = '$index' | '$generate' | '$write' | '$json' | '$copy'
        | '$transform' | '$language' | '$read'
 ```
 
-As in LRPL, **`STDLIB` names may not be used as user-defined relation names.**
+As in LRPL, `STDLIB` identifiers are reserved and cannot be user-defined
+relation names.
 
 ---
 
-## 9. Summary diagram
+## 11. Summary diagram
 
 ```mermaid
 flowchart LR
@@ -273,16 +335,20 @@ flowchart LR
     PRE[preamble string]
     LOC[LOCATION]
   end
+
   subgraph meta [Meta layer]
-    MLang[m-lang capsule]
-    MRels[m-rels virtual rel set]
+    MLang[language capsule]
+    MRels[virtual relation set capsule]
   end
+
   SRC --> LangTool[language tool]
   PRE --> LangTool
   LangTool --> MLang
+
   LOC --> ReadTool[read tool]
   MLang --> ReadTool
   ReadTool --> MRels
+
   LOC --> IndexTool[index tool]
   MLang --> IndexTool
 ```

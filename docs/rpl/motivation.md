@@ -43,10 +43,11 @@ long-running orchestration substrate for mission-critical control loops. It is
 a way to move prompt behavior out of black-box prose and into inspectable
 structure.
 
-Extensions (for example [meta-programming](specification/meta-programming.md))
-let authors name **virtual** large artifacts (such as a language understood as an
-RPL-level program) via opaque handles, reducing pressure to materialize entire
-specifications in a single bounded context when that is not needed for the task.
+Some problems are easier if the language can be extended; those extensions are
+specified in standalone documents (for example
+[meta-programming](specification/meta-programming.md), where meta-vars are
+defined as virtual semantic handles), not in this motivation text—read the
+linked spec when you need that surface.
 
 Each step in a protocol can be read as a named relation with arguments.
 Relations compose via implication into a dependency graph. Goals mark what

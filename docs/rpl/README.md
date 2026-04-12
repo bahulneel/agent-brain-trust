@@ -16,7 +16,7 @@ reasoning state is easier to inspect, question, and improve.
 | [vision.md](vision.md) | Central ideas, trace, lazy extension summary, design principles |
 | [specification/rpl.md](specification/rpl.md) | Normative base spec: syntax, semantics, runtime, grammar |
 | [specification/lrpl.md](specification/lrpl.md) | Normative LRPL delta (lazy expressions, memos, stdlib) |
-| [specification/meta-programming.md](specification/meta-programming.md) | MRPL extension (meta-vars, `$language`, `$read`, `$index` + language) |
+| [specification/meta-programming.md](specification/meta-programming.md) | MRPL extension: meta-vars as virtual semantic handles (`$language`, `$read`, `$index(..., @lang)`), normative there only |
 | [specification/logics.md](specification/logics.md) | Supplemental logic layer concepts (existential/modal composition) |
 | [tutorial/](tutorial/) | Continuations of the worked example (cook mode, kitchen context, scheduling, handoff) |
 

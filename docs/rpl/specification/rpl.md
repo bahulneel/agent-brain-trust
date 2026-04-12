@@ -12,10 +12,9 @@ Language (RPL): syntax, semantics, runtime operating model, and grammar.
 - **Vision** (central ideas, trace, lazy extension summary, design principles) —
   [vision.md](../vision.md).
 - **LRPL** (lazy extension delta) — [lrpl.md](lrpl.md).
-- **Meta-Programming Extension** (meta-variables, `$language`, `$read`, extended
-  `$index`) — [meta-programming.md](meta-programming.md). Core RPL does not
-  include these forms; hosts that do not implement the extension should reject or
-  diagnose programs that use them.
+- **Extensions** — Optional surface area is defined only in separate specifications (for example [meta-programming.md](meta-programming.md), which defines meta-vars and meta-relational handles). This
+  document does not restate extension syntax or tools; core-conformant RPL is
+  exactly what is specified here and in LRPL where you adopt it.
 
 Three namespaces partition the language when you use explicit syntax:
 

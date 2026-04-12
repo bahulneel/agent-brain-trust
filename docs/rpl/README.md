@@ -150,7 +150,7 @@ If the model **jumps phases** or loses track of which stage applies, anchor
 headings until you need more structure there.
 
 ````markdown
-# Collaborative Recipe Session - % <- recipe-session(?phase)
+# Collaborative Recipe Session - %satisfy-recipe-session(?phase) <- recipe-session(?phase)
 
 You are helping a home cook plan and execute a meal in this single chat.
 …
@@ -207,7 +207,7 @@ derivable—see [scope.md](scope.md) and the base spec.
 
 Start with [tutorial/00-recipe-protocol.md](tutorial/00-recipe-protocol.md) for
 the rest of the **same** recipe document: full signatures, collections,
-`meal-prep-brief`, `recipe-artifact`, `%planning` / `%cookMode`, the assembled
+`meal-prep-brief`, `recipe-artifact`, named branch goals `%planning` / `%cookMode`, the assembled
 protocol block, shell queries, and trace hooks. After that, each tutorial adds
 one capability.
 

@@ -3,7 +3,8 @@
 Continue the [README](../README.md) worked example: you already have a plain
 Markdown prompt and two **targeted** RPL slices (phase drift, ingredient lock).
 This chapter carries the **same document** to a fuller relational reading—more
-signatures, collections, a prep summary, root goals, `%planning` / `%cookMode`,
+signatures, collections, a prep summary, named root and branch goals (`%planning`,
+`%cookMode`),
 and one assembled protocol block—before the focused tutorials refine cook mode,
 files, scheduling, and handoff.
 
@@ -109,7 +110,7 @@ The goal is not just "done". It yields useful values you might inspect, log, or
 hand off:
 
 ```markdown
-# Collaborative Recipe Session - % <- recipe-artifact(?candidates, ?title, ?steps, ?parked)
+# Collaborative Recipe Session - %deliver-recipe-artifact(?candidates, ?title, ?steps, ?parked) <- recipe-artifact(?candidates, ?title, ?steps, ?parked)
 ```
 
 That says the protocol is working toward an output relation whose pieces matter:
@@ -121,7 +122,7 @@ numbered steps, and anything parked for later.
 Different phases justify different immediate sub-goals:
 
 ```markdown
-# Collaborative Recipe Session - % <- %planning | %cookMode
+# Collaborative Recipe Session - %recipe-session-flow <- %planning | %cookMode
 
 # Planning track - %planning
   <- current-workflow-phase("explore")
@@ -194,7 +195,7 @@ notes, steps, serve target, parked questions). Each name is meant to pass a
 “table test”: if this were a row, would the columns mean what they say?
 
 ````markdown
-# Collaborative Recipe Session - % <- %planning | %cookMode
+# Collaborative Recipe Session - %recipe-session-flow <- %planning | %cookMode
 
 You are helping a home cook plan and execute a meal in this single chat. The
 cook may need clear steps, small chunks of information, and explicit checkpoints

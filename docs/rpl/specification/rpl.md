@@ -12,6 +12,10 @@ Language (RPL): syntax, semantics, runtime operating model, and grammar.
 - **Vision** (central ideas, trace, lazy extension summary, design principles) —
   [vision.md](../vision.md).
 - **LRPL** (lazy extension delta) — [lrpl.md](lrpl.md).
+- **Meta-Programming Extension** (meta-variables, `$language`, `$read`, extended
+  `$index`) — [meta-programming.md](meta-programming.md). Core RPL does not
+  include these forms; hosts that do not implement the extension should reject or
+  diagnose programs that use them.
 
 Three namespaces partition the language when you use explicit syntax:
 
@@ -329,7 +333,7 @@ of the outer pattern shape:
 [?a ?b]                      -- single value: positional tuple
 ```
 
-So `{:bindings {s "critical"}}` applies directly for metadata and traces — a map
+So `{:bindings {g "clarity"}}` applies directly for metadata and traces — a map
 is one value; a set wrapper is only needed to assert several values each matching
 the same pattern.
 
@@ -362,7 +366,7 @@ or `#` `{` … `}` in the tail. This is a **grammar-level** requirement for that
 pattern, **not** a stylistic mandate for every rule head:
 
 ```
-severity-options([& ?v]) <- valid-severity(?v)
+goal-options([& ?v]) <- valid-editing-goal(?v)
 active-ids(#{& ?id}) <- user(?id, ?status), ?status = "active"
 ```
 
@@ -384,7 +388,7 @@ typically a variable, literal, collection, `_`, or a nested relation call.
 
 ```
 name(?first, ?last)          -- correct
-severity(?s)                 -- correct
+editing-goal(?g)             -- correct
 collect-name(?first, ?last)  -- incorrect: imperative
 ```
 
@@ -461,7 +465,7 @@ below are only for clarity.
 
 - **Keyword key** — `^:KEY VAR` (e.g. `^:scope ?s`, `^:result ?r`).
 - **Symbol key** — `^` *name* `VAR` with no colon: *name* is a bare **symbol** (same
-  role as a map key in `^ ~ {name ?v}`), e.g. `^doc ?x`, `^patient-id ?p`.
+  role as a map key in `^ ~ {name ?v}`), e.g. `^doc ?x`, `^draft-id ?d`.
 
 ```rpl
 clause ^:scope ?s     -- same reading as: clause ^ ~ {:scope ?s}
@@ -478,7 +482,7 @@ readings**; pick any. **No** required expansion of `^^` into `^:bindings` or int
 - **`^^ {…}`** — map literal (typical in **traces**, §12).
 - **`^:bindings {…}`** — explicit keyword key on the outer metadata map.
 - **Single binding slot** — `^^` *name* `VAR` with bare symbol *name*, same
-  reading as `^^ ~ {name VAR}` (e.g. `^^a ?a`, `^^patient-id ?patient-id`).
+  reading as `^^ ~ {name VAR}` (e.g. `^^a ?a`, `^^draft-id ?draft-id`).
 
 ```rpl
 clause ^^ ~ {a ?b, c ?d}
@@ -509,11 +513,11 @@ display”, not as a required step):
 **Provenance** — typical metadata keys:
 
 ```
-:file      "triage.md"
+:file      "editing-session.md"
 :heading   "Section 2.1"
-:relation  severity(?s)
+:relation  editing-goal(?g)
 :user      "alice"
-:doc       "user selected severity during triage"
+:doc       "user selected editing goal during collaborative edit"
 ```
 
 The agent may mint additional keys as needed.
@@ -536,9 +540,9 @@ $tool ^ ~ {result ?x}      -- :result is the primary key
 **right-hand** side must hold (or the stated truth value). Examples:
 
 ```
-triage(?p, ?s), severity(?s) -> valid-severity(?s)
-triage(?p, ?s), severity(?s), valid-severity(?s) -> true
-triage(?p, ?s), severity(?s), valid-severity(?s)
+edit-brief(?d, ?g), editing-goal(?g) -> valid-editing-goal(?g)
+edit-brief(?d, ?g), editing-goal(?g), valid-editing-goal(?g) -> true
+edit-brief(?d, ?g), editing-goal(?g), valid-editing-goal(?g)
 ```
 
 Exclusion invariant:
@@ -550,7 +554,7 @@ rel1(?x, ?y), rel2(?y) -> false
 Conditional invariant via metadata matching:
 
 ```
-triage(?p, ?s, ?notes) ^ ~ {:s "critical"} -> valid-severity(?s), ?notes != ""
+edit-brief(?d, ?g, ?notes) ^ ~ {:g "publish"} -> valid-editing-goal(?g), ?notes != ""
 ```
 
 ### 12.2 Constraint Grounding
@@ -577,9 +581,9 @@ Traces are fully grounded constraints. Each trace carries the binding context in
 scope at grounding, using **`^^`** (§11):
 
 ```
-severity(?s) ^^ {s "critical", p "patient-0"} -> true
-%critical ^^ {p "patient-0", tel "+44 7700 900000"} -> true
-%low ^ false
+editing-goal(?g) ^^ {g "publish", d "draft-0"} -> true
+%needs-edit ^^ {d "draft-0", mode "line-edit"} -> true
+%needs-discovery ^ false
 ```
 
 Ordering in the trace log is **significant** — each trace holds from introduction
@@ -590,7 +594,7 @@ onward; later traces build on earlier ones.
 Retract by asserting the same constraint with `-> false`:
 
 ```
-severity(?s) ^^ {s "critical", p "patient-0"} -> false
+editing-goal(?g) ^^ {g "publish", d "draft-0"} -> false
 ```
 
 Retraction is recorded in the trace log.
@@ -652,7 +656,7 @@ When an avar resolves, **async novelty** (phase 1 of §18) is a **fully grounded
 constraint — a **trace** (§12.2). Example with `^^` (§11):
 
 ```
-$query-db("select * from patients") ^ ~ {:result "[{id: 1}]"} ^^ {query "select * from patients"} -> true
+$query-db("select * from issues where state = 'open'") ^ ~ {:result "[{id: 1}]"} ^^ {query "select * from issues where state = 'open'"} -> true
 ```
 
 Bare avar:
@@ -711,8 +715,8 @@ $choose(?desc, ?options) ^ ~ {:result ?choice}
 Wrap in relations for goals:
 
 ```
-ask(?prompt, ?answer) <- $ask(?prompt) ^ ~ {:result ?answer}
-choose(?desc, ?options, ?choice) <- $choose(?desc, ?options) ^ ~ {:result ?choice}
+$ask(?prompt, ?answer) <- $ask(?prompt) ^ ~ {:result ?answer}
+$choose(?desc, ?options, ?choice) <- $choose(?desc, ?options) ^ ~ {:result ?choice}
 ```
 
 **If** a tool such as `$choose` needs a **list value** built from every answer
@@ -720,8 +724,8 @@ of another relation, build that list via a separate rule **head** (§8)—becaus
 the literal list in the tail cannot embed the relation call:
 
 ```
-severity-options([& ?v]) <- valid-severity(?v)
-severity(?s) <- severity-options(?options), choose("Select severity", ?options, ?s)
+goal-options([& ?v]) <- valid-editing-goal(?v)
+editing-goal(?g) <- goal-options(?options), choose("Select editing goal", ?options, ?g)
 ```
 
 **`$json`** — **built-in** observability tool: writes the **raw binding** of an
@@ -898,7 +902,7 @@ The unnamed **`%`** is the root goal — first candidate when present. Multiple 
 rules **disjoin**:
 
 ```
-% <- %low | %warning | %critical
+% <- %needs-discovery | %needs-edit
 ```
 
 ### 15.3 Named Goals and Agent Choice
@@ -911,9 +915,8 @@ ease of satisfaction.
 Exclusive strategies may use **constraints** (§12):
 
 ```
-% <- %low -> !%
-% <- %warning -> !%
-% <- %critical -> !%
+% <- %needs-discovery -> !%
+% <- %needs-edit -> !%
 ```
 
 Alternatively **`@when`** on the activation clause (§16.1).
@@ -934,10 +937,10 @@ termination (§18.5).
 ### 15.7 Goal Headings
 
 ```markdown
-# Critical Triage - %critical(?p, ?tel) <- triage(?p, ?s), ?s = "critical", name(?p, ?n), contact-info(?p, :tel, ?tel)
+# Needs Edit - %needs-edit(?d) <- edit-brief(?d, ?g), ?g != "unknown"
 
-Present as a call sheet ordered by arrival time.
-On completion suggest trying %warning for remaining patients.
+Produce one revision pass for __d__ and summarize changes.
+On completion suggest trying %needs-discovery only if context is still missing.
 ```
 
 ### 15.8 RPL shell mode (user message convention)
@@ -1009,9 +1012,8 @@ Activated when `tail` holds; bindings flow into the body.
 **Mutual exclusion** — e.g.:
 
 ```
-% <- %low ; @when(!%)
-% <- %warning ; @when(!%)
-% <- %critical ; @when(!%)
+% <- %needs-discovery ; @when(!%)
+% <- %needs-edit ; @when(!%)
 ```
 
 ### 16.2 @choose
@@ -1242,68 +1244,65 @@ User declines arg                Unbound; agent checks continuable
 
 ---
 
-## 19. Example — Medical Triage
+## 19. Example — Collaborative Editing Session
 
 ```markdown
-% <- %critical(?p, _) | %warning(?p, _) | %low(?p)
+% <- %needs-discovery(?d) | %needs-edit(?d)
 
-# Critical Triage - %critical(?p, ?tel) <- triage(?p, $s), $s = "critical", name(?p, ?n), contact-info(?p, :tel, ?tel), patient(?p)
+# Needs Discovery - %needs-discovery(?d) <- edit-brief(?d, $focus), $focus = "unknown", draft(?d)
 
-Present as a call sheet ordered by arrival time.
-On completion suggest trying %warning for remaining patients.
+Ask one follow-up question to identify missing context for __d__.
+Then suggest `%needs-edit`.
 
-# Warning Triage - %warning(?p, ?tel) <- triage(?p, $s), $s = "warning", name(?p, ?n), contact-info(?p, :tel, ?tel)
+# Needs Edit - %needs-edit(?d) <- edit-brief(?d, $focus), $focus != "unknown", draft(?d)
 
-Present as a follow-up list.
+Produce one revision pass for __d__ and summarize the edits.
 
-# Low Triage - %low(?p) <- triage(?p, $s), $s = "low", patient(?p)
+# Edit Brief - edit-brief(?d, ?focus) <- draft(?d), focus(?focus)
 
-Log only, no immediate action required.
+## Draft - draft(?draft-id)
 
-# Triage - triage(?p, ?s) <- history(?p, ?symptoms), severity(?s)
+Confirm the document identifier to edit.
 
-## History - history(?patient-id, $symptoms)
+## Focus - focus($focus)
 
-Confirm the patient's __patient-id__ and record their __symptoms__.
-
-## Severity - severity($s)
-
-Ask the user to choose a __s__ from __valid-severity__.
+Ask the user for one focus value from __valid-focus__.
 ```
 
 ```rpl
-valid-severity("critical")
-valid-severity("warning")
-valid-severity("low")
+valid-focus("unknown")
+valid-focus("clarity")
+valid-focus("structure")
+valid-focus("tone")
 ```
 
 Key structural points:
 
-- **`patient(?p)` provides `?p`** — the patient must come from somewhere;
-  `history` confirms a known patient.
+- **`draft(?d)` provides `?d`** — the draft id must come from somewhere;
+  `draft` confirms the active document context.
 
-- **Nesting** — `history` and `severity` under `# Triage` share scope so
-  `severity($s)` links to the triage context for `?p`.
+- **Nesting** — `draft` and `focus` under `# Edit Brief` share scope so
+  `focus($focus)` links to the same editing context for `?d`.
 
-- **Avars in heads** — `severity($s)`, `history(?patient-id, $symptoms)` signal
-  async collection; goal bodies use `triage(?p, $s)`.
+- **Avars in heads** — `focus($focus)` signals async collection from the user;
+  goal bodies use `edit-brief(?d, $focus)`.
 
-- **`$s = "critical"`** — post-condition after `$s` resolves.
+- **`$focus = "unknown"`** — post-condition after `$focus` resolves.
 
 Trace sketch:
 
 ```
-(triage(?p, ?s) <-
-  (history(?patient-id, $symptoms) <- ...) ^^ {patient-id "patient-0", symptoms "chest pain"},
-  (severity($s) <- ...) ^^ {s "critical"}
-) ^^ {p "patient-0", s "critical"} -> true
-%critical ^^ {p "patient-0", tel "+44 7700 900000"} -> true
+(edit-brief(?d, ?focus) <-
+  (draft(?draft-id) <- ...) ^^ {draft-id "doc-42"},
+  (focus($focus) <- ...) ^^ {focus "unknown"}
+) ^^ {d "doc-42", focus "unknown"} -> true
+%needs-discovery ^^ {d "doc-42"} -> true
 
-(triage(?p, ?s) <-
-  (history(?patient-id, $symptoms) <- ...) ^^ {patient-id "patient-1", symptoms "headache"},
-  (severity($s) <- ...) ^^ {s "low"}
-) ^^ {p "patient-1", s "low"} -> true
-%low ^ false
+(edit-brief(?d, ?focus) <-
+  (draft(?draft-id) <- ...) ^^ {draft-id "doc-42"},
+  (focus($focus) <- ...) ^^ {focus "clarity"}
+) ^^ {d "doc-42", focus "clarity"} -> true
+%needs-edit ^^ {d "doc-42"} -> true
 ```
 
 ---

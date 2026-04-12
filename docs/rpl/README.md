@@ -16,319 +16,547 @@ reasoning state is easier to inspect, question, and improve.
 | [vision.md](vision.md) | Central ideas, trace, lazy extension summary, design principles |
 | [specification/rpl.md](specification/rpl.md) | Normative base spec: syntax, semantics, runtime, grammar |
 | [specification/lrpl.md](specification/lrpl.md) | Normative LRPL delta (lazy expressions, memos, stdlib) |
+| [specification/meta-programming.md](specification/meta-programming.md) | MRPL extension (meta-vars, `$language`, `$read`, `$index` + language) |
 | [specification/logics.md](specification/logics.md) | Supplemental logic layer concepts (existential/modal composition) |
+| [tutorial/](tutorial/) | Continuations of the worked example (cook mode, kitchen context, scheduling, handoff) |
 
-The sections below walk through one **worked example** (bug report intake) to show
-how signatures and goals compose. They are not a substitute for the
-specifications.
+The sections below walk through one **worked example**: a single-chat
+**recipe-building and cooking** prompt that starts as ordinary Markdown, gets
+misread in predictable ways, then becomes more reliable as RPL structure is
+added. Relation names are kept concrete (who/when/what) rather than vague
+validators—see [content/rpl/rpl.md](../../content/rpl/rpl.md) on arity and
+subject–value facts. They are not a substitute for the specifications.
 
 ---
 
-## Start With a Bootstrap
+## Start From A Plain Prompt
 
-Do not start by formalizing everything. Start with a tiny RPL bootstrap at the
-point in the conversation where ambiguity or drift is causing trouble.
+Start with a complete prompt for a real task, not an isolated line item.
 
-Add one relation or constraint, observe behavior, then ask the agent what it
-believed was true and why it took an action. Use that feedback to harden prose
-and structure iteratively.
-
-Minimal bootstrap:
+Here is a plausible system prompt for helping a home cook **plan and execute**
+a meal in one conversation: explore options, refine for their kitchen, lock
+ingredients, publish a readable recipe card, then optionally enter stepwise cook
+mode.
 
 ````markdown
-## Severity - severity($level)
+# Collaborative Recipe Session
 
-Ask the user for severity.
+You are helping a home cook plan and execute a meal in this single chat. The
+cook may need clear steps, small chunks of information, and explicit checkpoints
+rather than long unstructured paragraphs.
+
+## Explore Before Committing
+
+Before you commit them to a dish or a final ingredient list, be explicit about
+which stage of this workflow you are using.
+
+Offer a small set of candidate dishes that fit what they have said so far (time,
+effort, diet, vibe). Do not behave as if a recipe is chosen until they pick one.
+
+## Refine With Equipment And Process
+
+Ask what equipment and techniques they are willing to use. Adjust the leading
+candidates; drop ones that clash with their kitchen or patience level.
+
+## Lock Ingredients Before The Recipe Card
+
+Agree the ingredient list with approximate quantities before you write the full
+recipe. Flag substitutions only after they confirm the list.
+
+## Recipe Card Overview
+
+Produce a classical recipe shape: yield, ingredients, numbered steps with times
+and sensory cues where it helps. Warn before steps that are easy to get wrong
+or hard to undo.
+
+## Cook Mode Only When They Ask
+
+When they explicitly enter cook mode, go one step at a time. Passive reminders
+(oven preheating while something rests) are fine; do not start two hands-on steps
+at once. If they interrupt with a question, answer in the context of the
+**current** step without restarting the whole plan.
+
+## Scheduling
+
+If they give a target serve time or pacing constraint, respect it. Work backward
+for long waits, marinades, or multi-stage prep.
+
+## Tone
+
+Be neutral, precise, and instructional. Avoid dumping everything at once.
+Group related tasks. Prefer a short warning over silently “fixing” a risky move.
+````
+
+This is already a meaningful process. It names workflow stages, requires
+turn-taking, and commits to specific output shapes (candidates, locked
+ingredients, numbered steps).
+
+---
+
+## How The Model Can Misread It
+
+A model can still abuse or misread that prompt in ways that show up in real
+cooks’ chats:
+
+- It may **jump to a full recipe** during “explore” and tacitly treat a
+  candidate as chosen—**recipe identity drifts** from what the user thinks is
+  locked in.
+- It may **collapse several candidates into one “best” dish** without a clear
+  selection event.
+- It may **skip or compress ingredient lockdown** and “helpfully” rewrite the
+  list while drafting steps.
+- In cook mode it may **ignore the numbered-step format**, paste the whole
+  recipe again, or **lose track of the current step** while answering a sidebar
+  question.
+- It may **forget pantry, equipment, or serve-time constraints** unless the
+  user repeats them—there is no stable **kitchen context** or **schedule
+  anchor** in the reasoning surface.
+- If the user switches to a fresh chat later, it may **lose where this session
+  sits** inside a longer feast prep—**handoff** context vanishes.
+
+This is where RPL starts to help. It does not replace the prose. It gives the
+model an inspectable reading of what the prose is already trying to say—phases,
+commitments, collections, and outputs—using relations that sound like rows you
+could put in tables: a step **has** an ordinal and text, a session **targets**
+a serve time, a recipe **locks** ingredient lines.
+
+---
+
+## Add A Bootstrap
+
+Do not jump straight to maximal formalization. First add a small amount of RPL
+to the **same** prompt (typically the system or project instructions) so a few
+soft failures go away.
+
+The bootstrap below only: (1) names the workflow phases as a closed vocabulary,
+(2) makes “current phase” and “candidate dish labels” explicit facts, and (3)
+states a modest root goal so the session is not an infinite chat.
+
+````markdown
+# Collaborative Recipe Session - % <- recipe-session(?phase)
+
+You are helping a home cook plan and execute a meal in this single chat. The
+cook may need clear steps, small chunks of information, and explicit checkpoints
+rather than long unstructured paragraphs.
+
+## Explore Before Committing - proposed-candidate-dish($label)
+
+Offer a small set of candidate dishes that fit what they have said so far (time,
+effort, diet, vibe). Do not behave as if a recipe is chosen until they pick one.
+
+## Refine With Equipment And Process - equipment-note($text)
+
+Ask what equipment and techniques they are willing to use. Adjust the leading
+candidates; drop ones that clash with their kitchen or patience level.
+
+## Lock Ingredients Before The Recipe Card - locked-ingredient-line($ingredient, $qtyNote)
+
+Agree the ingredient list with approximate quantities before you write the full
+recipe. Flag substitutions only after they confirm the list.
+
+## Recipe Card Overview
+
+Produce a classical recipe shape: yield, ingredients, numbered steps with times
+and sensory cues where it helps. Warn before steps that are easy to get wrong
+or hard to undo.
+
+## Cook Mode Only When They Ask
+
+When they explicitly enter cook mode, go one step at a time. Passive reminders
+(oven preheating while something rests) are fine; do not start two hands-on steps
+at once. If they interrupt with a question, answer in the context of the
+**current** step without restarting the whole plan.
+
+## Scheduling
+
+If they give a target serve time or pacing constraint, respect it. Work backward
+for long waits, marinades, or multi-stage prep.
+
+## Tone
+
+Be neutral, precise, and instructional. Avoid dumping everything at once.
+Group related tasks. Prefer a short warning over silently “fixing” a risky move.
+
+## Where we are - current-workflow-phase($phase)
+
+Before actions that commit the user (locking ingredients, writing the recipe
+card, advancing cook-mode steps), state which workflow phase applies.
 
 ```rpl
-valid-severity("low")
-valid-severity("medium")
-valid-severity("high")
-valid-severity("critical")
+names-workflow-phase("explore")
+names-workflow-phase("refine")
+names-workflow-phase("lock")
+names-workflow-phase("overview")
+names-workflow-phase("cook")
+
+current-workflow-phase($phase)
+recipe-session(?phase) <- current-workflow-phase(?phase)
 ```
 ````
 
-Hardening iteration:
+That small bootstrap already helps:
+
+- `names-workflow-phase(...)` is a crisp closed vocabulary (compare ad hoc prose
+  labels the model can blur together).
+- `current-workflow-phase($phase)` makes “where we are in the staged flow” a
+  named fact instead of vibe.
+- `proposed-candidate-dish($label)` and `locked-ingredient-line($ingredient, $qtyNote)` are
+  **binary-shaped** records about real kitchen things, not a generic “state”
+  marker.
+- `recipe-session(?phase)` gives the interaction a modest satisfaction shape:
+  the session should be able to say which phase it is in.
+
+The point of a bootstrap is not to finish the job. It is to remove obvious
+ambiguities first.
+
+---
+
+## Then Tighten The Same Prompt
+
+Once the bootstrap reveals where interpretation is still weak, tighten the same
+artifact. Do not add new sections or invent a different workflow. Add anchors to
+the prose that is already there.
+
+### Naming Facts
+
+Give headings signatures so the model has named facts rather than just vibes:
+
+```markdown
+## Where we are - current-workflow-phase($phase)
+
+## Explore Before Committing - proposed-candidate-dish($label)
+
+## Refine With Equipment And Process - equipment-note($text)
+
+## Lock Ingredients Before The Recipe Card - locked-ingredient-line($ingredient, $qtyNote)
+
+## Recipe Card Overview - committed-recipe-title($title)
+
+## Cook Mode Only When They Ask - recipe-step($ordinal, $instruction)
+
+## Scheduling - serve-target-time($isoOrHumanLabel)
+```
+
+The prose is still the instruction surface. The signatures make its semantics
+inspectable.
+
+> **`$`** means "this value must be collected or supplied from outside the
+> current deduction." **`?`** means "this value is already available or can be
+> derived."
+
+### Declaring The Phase Vocabulary
+
+Closed vocabularies belong in RPL, not buried only in prose:
 
 ````markdown
-## Accepted Severity - accepted-severity(?level) <- severity(?level), valid-severity(?level)
-
-Ask for severity, derive accepted-severity only for allowed values, and reject
-everything else.
-If unclear, explain accepted values and ask again.
-````
-
-This is the intended authoring loop: bootstrap, observe, interrogate, refine.
-
----
-
-## A Plain Markdown Prompt
-
-Here is a system prompt for bug report intake, written the way most people
-write one today:
-
-```markdown
-# Bug Report
-
-When a user reports a bug, walk them through these steps.
-
-## Describe the Problem
-
-Ask the user to describe what went wrong, including what they
-expected and what actually happened.
-
-## Identify the Component
-
-Ask which part of the system is affected. Valid components are:
-frontend, backend, database, and infrastructure.
-
-## Assess Severity
-
-Ask how severe the issue is. Valid levels: critical, high,
-medium, and low.
-```
-
-This works. An agent reads it top to bottom, asks the questions, and wraps up.
-But the structure is entirely implicit. The agent has to *infer* that the
-sections are steps, that severity is a closed list, and that the protocol is
-done when all three are collected. As the prompt grows, that implicit
-understanding becomes black-box behavior that is hard to inspect and repair.
-
-RPL makes that structure explicit, one piece at a time.
-
----
-
-## Naming Facts
-
-The first addition: give each heading a **relation signature**. A relation
-names a fact that the section establishes.
-
-```markdown
-## Describe the Problem - description($text)
-
-## Identify the Component - component($name)
-
-## Assess Severity - severity($level)
-```
-
-The prose under each heading is unchanged. What changes is the dash and the
-signature after the human-readable title.
-
-`description($text)` says: "this section establishes a fact called
-`description`, and its value is `$text`." The **`$`** sigil marks an **async
-variable** — a value that comes from outside the protocol. The user types it,
-a tool returns it, an event provides it. The agent knows it must pause and
-collect this value before moving on.
-
-> **`$`** means "goes out to get it." **`?`** means "already have it or can
-> derive it."
-
-We will see `?` variables shortly. For now, the point is that each section has
-a name and declares what it produces.
-
----
-
-## Stating the Goal
-
-The agent knows what facts each section produces, but not what it is working
-*toward*. Add a **goal** to the top-level heading:
-
-```markdown
-# Bug Report - % <- description($text), component($name), severity($level)
-
-Summarize the report and confirm with the user before filing.
-```
-
-**`%`** marks a **goal** — the thing the agent is trying to satisfy. **`<-`**
-reads as "is satisfied when." So this says: *the bug report goal is satisfied
-when description, component, and severity are all established.*
-
-Now the agent works backward from the goal. It sees that `%` needs three
-facts, checks which are missing, and goes to establish them — reading the prose
-under each relation's heading to learn how. The order of sections in the
-document no longer matters; dependency structure drives conversational
-progression.
-
-The prose on the goal heading ("Summarize the report…") tells the agent what
-to do once the goal is satisfied. Prose is always instruction; the signature
-is the structure.
-
----
-
-## Declaring Valid Options
-
-"Valid components are: frontend, backend, database, and infrastructure" is
-buried in a sentence. If someone adds a fifth component, they have to find and
-update prose. RPL lets you state these as formal facts in a fenced block:
-
-````markdown
-## Identify the Component - component($name)
-
-Ask which part of the system is affected.
+## Phase vocabulary
 
 ```rpl
-valid-component("frontend")
-valid-component("backend")
-valid-component("database")
-valid-component("infrastructure")
+names-workflow-phase("explore")
+names-workflow-phase("refine")
+names-workflow-phase("lock")
+names-workflow-phase("overview")
+names-workflow-phase("cook")
+
+current-workflow-phase($phase)
 ```
 ````
 
-String literals in these blocks may use `"…"` or `'…'` interchangeably (same meaning); pick the form that keeps each line easiest to read.
+### Collecting More Than One Thing
 
-A fenced block tagged **`rpl`** adds formal expressions to the current
-heading's scope. Here, four `valid-component` facts declare the closed set of
-options. The agent can present these as a structured choice rather than parsing
-them from a sentence.
+The prose asks for **several** candidates, **many** ingredient lines, **many**
+steps, and possibly **several** parked questions. That is collection, not a
+single value.
 
-Same for severity:
-
-````markdown
-## Assess Severity - severity($level)
-
-Ask how severe the issue is.
+Make the collections explicit:
 
 ```rpl
-valid-severity("critical")
-valid-severity("high")
-valid-severity("medium")
-valid-severity("low")
+candidate-dishes([& ?d]) <- proposed-candidate-dish(?d)
+ingredient-lines([& ?i ?q]) <- locked-ingredient-line(?i, ?q)
+recipe-steps([& ?o ?t]) <- recipe-step(?o, ?t)
+parked-cook-questions([& ?q]) <- parked-cook-question(?q)
 ```
-````
 
-The prose becomes cleaner — it provides the instruction ("ask how severe")
-while the `rpl` block provides the data. Adding a new option is one line, not
-a prose edit.
+Now the model has a concrete reading for “more than one thing collected here”
+instead of guessing whether one example is enough.
 
----
+### Composing Facts
 
-## Composing Facts
-
-So far each relation stands alone. But a real protocol often needs to group
-several facts into a composite — "the report" is the description, the
-component, and the severity taken together. Make this explicit with a **rule**:
+The protocol is not only gathering independent facts. It is assembling a state
+from which the next phase can run honestly:
 
 ````markdown
-## Report - report(?text, ?name, ?level) <- description(?text), component(?name), severity(?level)
+## Prep brief - meal-prep-brief(?phase, ?candidates, ?locks, ?title, ?serve)
+  <- current-workflow-phase(?phase),
+     candidate-dishes(?candidates),
+     ingredient-lines(?locks),
+     committed-recipe-title(?title),
+     serve-target-time(?serve)
 
-Present the complete report: __text__, __name__, and __level__.
-Confirm with the user before filing.
+Before cook mode or before rewriting the recipe card, summarize phase, candidate
+set, locked ingredient lines, committed title, and serve-time target.
 ````
 
-**`<-`** on a non-goal heading creates a **rule**: `report` is established
-when `description`, `component`, and `severity` are all known. The shared
-variable names wire them together — `?text` in `report` binds to whatever
-value `description` collected as `$text`.
+This is where the prompt stops being a pile of headings and becomes an explicit
+model of what the cooking flow depends on.
 
-The **`__text__`** emphasis in the prose marks the same variable. It tells the
-agent which values to weave into its response. The heading declares the data
-flow; the prose describes the presentation.
+### Stating A Goal With Values
 
-Now the goal can reference the composite instead of listing every piece:
+The goal is not just "done". It yields useful values you might inspect, log, or
+hand off:
 
 ```markdown
-# Bug Report - % <- report(?text, ?name, ?level)
+# Collaborative Recipe Session - % <- recipe-artifact(?candidates, ?title, ?steps, ?parked)
 ```
 
-The agent sees that `%` depends on `report`, and `report` depends on the three
-intake relations. It walks the dependency graph — the protocol's skeleton —
-and the prose under each heading is the skin.
+That says the protocol is working toward an output relation whose pieces matter:
+what was on the table during ideation, what recipe title was committed, the
+numbered steps, and anything parked for later.
+
+### Branching On Outcome
+
+Different phases justify different immediate sub-goals:
+
+```markdown
+# Collaborative Recipe Session - % <- %planning | %cookMode
+
+# Planning track - %planning
+  <- current-workflow-phase("explore")
+  | current-workflow-phase("refine")
+  | current-workflow-phase("lock")
+  | current-workflow-phase("overview")
+
+Keep candidates, constraints, and locks explicit before cook mode.
+
+# Cook mode track - %cookMode <- current-workflow-phase("cook")
+
+One numbered step at a time; answer questions against the active step only.
+```
+
+This is still one chat session. The difference is that the branching is now
+declared instead of left to vibes.
 
 ---
 
-## Branching on Outcome
+## Query The Model About The Prompt
 
-Every bug report collects the same information. But what happens next should
-depend on severity. Instead of writing "if critical then… else if high
-then…" in prose, express this as **multiple goals** joined by disjunction:
+RPL also makes the prompt debuggable.
 
+After a run, you can ask the model what it thinks is true, what remains
+unresolved, and why it acted the way it did. That helps find bugs in the prose.
+
+Useful questions:
+
+- Which workflow phase do you think we are in?
+- Which candidate dishes have been proposed?
+- What ingredient lines are locked?
+- What do you think the current recipe step is (ordinal and text)?
+- Which sentence made you think the user had already chosen a dish?
+
+In shell-style querying, that can become explicit:
+
+USER:
 ```markdown
-# Bug Report - % <- %urgent | %normal | %backlog
+What workflow phase do you think is active?
+%phase(?p) <- current-workflow-phase(?p)
 ```
 
-**`|`** means **or** — the root goal succeeds when any one of the named goals
-succeeds. Each named goal defines its own conditions:
-
-```markdown
-# Urgent - %urgent <- report(_, _, "critical")
-
-Page the on-call engineer immediately. Include the full report.
-
-# Normal - %normal <- report(_, ?name, ?level), ?level != "critical", ?level != "low"
-
-Create a ticket in the __name__ component's queue.
-
-# Backlog - %backlog <- report(_, _, "low")
-
-Add to the backlog. No immediate action required.
+AGENT:
+```text
+lock
 ```
 
-**`_`** is the **anonymous variable** — it matches any value and discards it.
-`%urgent` only cares that the third argument is `"critical"`; it does not need
-the description or component to decide whether it is eligible.
+Or:
 
-The agent collects the report (same intake relations, shared across all
-branches), then picks the first eligible sub-goal based on the severity that
-was collected. No duplication, no prose conditionals.
+USER:
+```markdown
+What ingredient lines are locked?
+%locks(?lines) <- ingredient-lines(?lines)
+```
+
+If the answer surprises you, the bug may be in the prose rather than the model.
 
 ---
 
 ## The Complete Protocol
 
-Here is the full document with every feature applied. Treat this as a bounded
-conversational reasoning aid, not a template for full software execution logic:
+Here is the same document with a fuller RPL reading. It is still the same
+workflow, only more explicit. Advanced pieces that deserve more room—**stable
+step identity in cook mode**, **kitchen context from files**, **serve-time
+decomposition**, **trace handoff**—are continued in the [tutorial/](tutorial/)
+docs; those concerns are acknowledged here so the design pressure does not
+disappear.
+
+The relations below are a small **catalog derived from the cooking-oriented
+model** (phases, candidates, a committed recipe, ingredient lines, equipment
+notes, steps, serve target, parked questions). Each name is meant to pass a
+“table test”: if this were a row, would the columns mean what they say?
 
 ````markdown
-# Bug Report - % <- %urgent | %normal | %backlog
+# Collaborative Recipe Session - % <- %planning | %cookMode
 
-## Describe the Problem - description($text)
+You are helping a home cook plan and execute a meal in this single chat. The
+cook may need clear steps, small chunks of information, and explicit checkpoints
+rather than long unstructured paragraphs.
 
-Ask the user to describe what went wrong, including what they
-expected and what actually happened.
+## Where we are - current-workflow-phase($phase)
 
-## Identify the Component - component($name)
+Before actions that commit the user, state which workflow phase applies.
 
-Ask which part of the system is affected.
+## Explore Before Committing - proposed-candidate-dish($label)
+
+Offer a small set of candidate dishes that fit what they have said so far (time,
+effort, diet, vibe). Do not behave as if a recipe is chosen until they pick one.
+
+## Refine With Equipment And Process - equipment-note($text)
+
+Ask what equipment and techniques they are willing to use. Adjust the leading
+candidates; drop ones that clash with their kitchen or patience level.
+
+## Lock Ingredients Before The Recipe Card - locked-ingredient-line($ingredient, $qtyNote)
+
+Agree the ingredient list with approximate quantities before you write the full
+recipe. Flag substitutions only after they confirm the list.
+
+## Recipe Card Overview - committed-recipe-title($title)
+
+Produce a classical recipe shape: yield, ingredients, numbered steps with times
+and sensory cues where it helps. Warn before steps that are easy to get wrong
+or hard to undo.
+
+## Cook Mode Only When They Ask - recipe-step($ordinal, $instruction)
+
+When they explicitly enter cook mode, go one step at a time. Passive reminders
+(oven preheating while something rests) are fine; do not start two hands-on steps
+at once. If they interrupt with a question, answer in the context of the
+**current** step without restarting the whole plan.
+
+## Scheduling - serve-target-time($isoOrHumanLabel)
+
+If they give a target serve time or pacing constraint, respect it. Work backward
+for long waits, marinades, or multi-stage prep.
+
+## Tone
+
+Be neutral, precise, and instructional. Avoid dumping everything at once.
+Group related tasks. Prefer a short warning over silently “fixing” a risky move.
+
+## Parked questions - parked-cook-question($text)
+
+When something should be remembered but should not block the current phase,
+park it here.
 
 ```rpl
-valid-component("frontend")
-valid-component("backend")
-valid-component("database")
-valid-component("infrastructure")
+names-workflow-phase("explore")
+names-workflow-phase("refine")
+names-workflow-phase("lock")
+names-workflow-phase("overview")
+names-workflow-phase("cook")
+
+current-workflow-phase($phase)
+
+candidate-dishes([& ?d]) <- proposed-candidate-dish(?d)
+ingredient-lines([& ?i ?q]) <- locked-ingredient-line(?i, ?q)
+recipe-steps([& ?o ?t]) <- recipe-step(?o, ?t)
+parked-cook-questions([& ?q]) <- parked-cook-question(?q)
+
+meal-prep-brief(?phase, ?candidates, ?locks, ?title, ?serve)
+  <- current-workflow-phase(?phase),
+     candidate-dishes(?candidates),
+     ingredient-lines(?locks),
+     committed-recipe-title(?title),
+     serve-target-time(?serve)
+
+recipe-artifact(?candidates, ?title, ?steps, ?parked)
+  <- candidate-dishes(?candidates),
+     committed-recipe-title(?title),
+     recipe-steps(?steps),
+     parked-cook-questions(?parked)
 ```
 
-## Assess Severity - severity($level)
+# Planning track - %planning
+  <- current-workflow-phase("explore")
+  | current-workflow-phase("refine")
+  | current-workflow-phase("lock")
+  | current-workflow-phase("overview")
 
-Ask how severe the issue is.
+Keep candidates, constraints, and locks explicit before cook mode.
 
-```rpl
-valid-severity("critical")
-valid-severity("high")
-valid-severity("medium")
-valid-severity("low")
-```
+# Cook mode track - %cookMode <- current-workflow-phase("cook")
 
-## Report - report(?text, ?name, ?level) <- description(?text), component(?name), severity(?level)
-
-Present the complete report: __text__, __name__, and __level__.
-Confirm with the user before filing.
-
-# Urgent - %urgent <- report(_, _, "critical")
-
-Page the on-call engineer immediately. Include the full report.
-
-# Normal - %normal <- report(_, ?name, ?level), ?level != "critical", ?level != "low"
-
-Create a ticket in the __name__ component's queue.
-
-# Backlog - %backlog <- report(_, _, "low")
-
-Add to the backlog. No immediate action required.
+One numbered step at a time; answer questions against the active step only.
 ````
 
-Roughly forty lines of Markdown — all of it readable as documentation — and
-the agent has: named facts, a declared goal, typed inputs, closed option sets,
-a composition rule, and severity-based branching.
+The result is still Markdown. But now the model has explicit facts, collections,
+goal values, branch conditions, and an auditable interpretation surface—while
+still facing the same staged cooking workflow the plain prompt described.
+
+---
+
+## Go Further
+
+Once the core prompt is working in one chat session, LRPL and the additional
+logics open up more advanced patterns. **Continue the same recipe prompt** in
+small focused branches:
+
+| Tutorial | Capability |
+|----------|-------------|
+| [tutorial/01-cook-mode.md](tutorial/01-cook-mode.md) | Current step, questions without losing recipe identity |
+| [tutorial/02-kitchen-context.md](tutorial/02-kitchen-context.md) | Pantry/equipment context via `$index(...)` |
+| [tutorial/03-scheduling.md](tutorial/03-scheduling.md) | Serve-time targets and stage-shaped prep |
+| [tutorial/04-handoff.md](tutorial/04-handoff.md) | Trace parking and continuation in a new session |
+
+### Park Progress In A Trace
+
+If you want a user-visible record of current bindings, `$json(?x)` emits NDJSON
+to chat:
+
+```rpl
+% <- recipe-artifact(?candidates, ?title, ?steps, ?parked) ^^ ?trace, $json(?trace)
+```
+
+This is grounded in [specification/lrpl.md](specification/lrpl.md), where
+`$json` is a built-in chat-facing observability tool.
+
+### Move That Trace Between Sessions
+
+LRPL also gives you persistence primitives. A trace stratum written via
+`$write` is a valid `$index` source for a future stratum:
+
+```rpl
+$write(?trace, "supper-trace.json")
+$index("supper-trace.json")
+```
+
+That makes it possible to park progress in a trace file or frontmatter-like
+block, then reintroduce it in a later session without pretending one giant live
+runtime is still in flight. Step-by-step cook mode and **handoff slices** are
+worked examples in the tutorials.
+
+### Connect External Kitchen Notes To The Session
+
+Because `$index(...)` maps external sources into relation positions, you can tie
+a pantry list or equipment inventory file back to the session instead of
+restating everything in every message. See
+[tutorial/02-kitchen-context.md](tutorial/02-kitchen-context.md).
+
+### Model Narrative Flow Explicitly
+
+The additional logics in [specification/logics.md](specification/logics.md) let
+you separate durable trace from transient impulses, and content from narrative
+mode.
+
+Examples:
+
+```rpl
+true <% recipe-choice(?d)
+candidate-dish(?d) <% true
+recipe-step(?o, ?t) ~> :hands-on
+recipe-step(?o, ?t) ~> :passive
+```
+
+Use those tools when lifecycle or narrative context genuinely matters. Do not
+add them just because they exist.
 
 ---
 
@@ -345,14 +573,19 @@ mid-conversation.
 
 **In a project system prompt** — place it in your project's rules or
 instructions file. Every conversation in that project inherits the protocol.
-Useful for recurring workflows: code reviews, onboarding, bug triage. The
-agent activates the protocol whenever the context matches.
+Useful for recurring workflows: code reviews, onboarding, **standing recipe
+assistants**.
 
 **As an agent skill** — wrap the protocol in a skill manifest (YAML
 frontmatter with `name` and `description`) and package it as a `SKILL.md`.
 Skill-aware clients (Cursor, Claude Code) load it on demand when a user's
 request matches the description. The protocol is portable because it is just
 Markdown with structure.
+
+**For multi-phase handoff** — keep each execution bounded to one chat session,
+then embed selected trace facts in issue comments or third-party systems for the
+next session. Example: park `recipe-artifact` slices and `current-recipe-step`
+bindings so a later session does not hallucinate a new menu.
 
 For enterprise boundary guidance, see [enterprise.md](enterprise.md).
 
@@ -380,5 +613,6 @@ RPL is a protocol language, not a programming language:
 - [specification/rpl.md](specification/rpl.md) — Base specification: syntax, semantics, execution model, grammar.
 - [specification/lrpl.md](specification/lrpl.md) — LRPL delta: lazy evaluation, memos, satisfactory quiescence, stdlib.
 - [specification/logics.md](specification/logics.md) — Additional logic frameworks: existential and modal operators.
+- [tutorial/](tutorial/) — Cook mode, kitchen context, scheduling, handoff.
 - [scope.md](scope.md) — Scope, boundaries, and document map.
 - [enterprise.md](enterprise.md) — Enterprise boundary: non-fit for long-running systems, fit as HCI with business artifacts.

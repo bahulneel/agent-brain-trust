@@ -7,9 +7,9 @@ context that holds the logic together runs out.
 
 A large language model operates within a bounded context window. Within that
 window, it can reason, derive, compose, and conclude with considerable
-sophistication. But real tasks — a phased design review, a multi-stage approval
-process, a collaborative workshop, a long-running system reconciliation — exceed
-what any single context can hold. When the boundary is crossed, continuity
+sophistication. But even practical tasks — revising a document, clarifying one
+decision, or resolving one issue with constrained tool use — can exceed what any
+single context can hold over time. When the boundary is crossed, continuity
 breaks. State is lost. The agent cannot verify what was established, by whom, or
 why. The next step has no reliable ground to stand on.
 
@@ -42,6 +42,11 @@ RPL is also not a substitute for enterprise runtime infrastructure. It is not a
 long-running orchestration substrate for mission-critical control loops. It is
 a way to move prompt behavior out of black-box prose and into inspectable
 structure.
+
+Extensions (for example [meta-programming](specification/meta-programming.md))
+let authors name **virtual** large artifacts (such as a language understood as an
+RPL-level program) via opaque handles, reducing pressure to materialize entire
+specifications in a single bounded context when that is not needed for the task.
 
 Each step in a protocol can be read as a named relation with arguments.
 Relations compose via implication into a dependency graph. Goals mark what

@@ -13,9 +13,9 @@ possible in collaborative LLM conversations.
 
 By *stratified* we mean reasoning that proceeds in layers, where each layer's
 conclusions become the ground facts for the next. A single conversation turn is
-one stratum. A phase in a workshop is another. A handoff between agents, or
-between sessions, or between human and automated participants, is a stratum
-boundary. The task as a whole is the full conversational stack.
+one stratum. A follow-up pass in a later session is another. A trace handoff
+through a document or issue comment is a stratum boundary. The task as a whole
+is the full conversational stack.
 
 By *relational* we mean that the content of each stratum — the facts established,
 the goals pursued, the dependencies between them — is expressed as named
@@ -54,7 +54,7 @@ RPL, as specified, derives facts eagerly within each timestep — working toward
 quiescence, then activating goals, then dispatching async operations. This is
 correct and sufficient for many conversational reasoning tasks.
 
-But stratified reasoning over large or external fact sets introduces a different
+But stratified reasoning over external fact sets introduces a different
 requirement: the ability to reason *about* a set of facts without enumerating them,
 to accumulate constraints against a binding before committing to it, and to defer
 evaluation until progress genuinely requires it.

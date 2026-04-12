@@ -189,7 +189,7 @@ $index(SOURCE-RELATION(?a, $collection), "projection hint"?)
 **Location** — string path, URL, or relation call.
 
 **Projection hint** — string, not unifiable. Omit when mapping is self-evident.
-When the string names an **interpretive lens** (see [logics.md](logics.md) §4),
+When the string names an **interpretive language** (see [logics.md](logics.md) §4.1),
 hosts apply the projection / reading rules associated with that label; otherwise
 the string is an opaque host-defined hint.
 

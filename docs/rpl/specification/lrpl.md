@@ -32,7 +32,8 @@ Academic grounding (Bloom, CALM, monotonic vs non-monotonic points) —
 [theory.md](../theory.md).
 
 **Extensions** — Separate specifications may add tools and grammar on top of
-LRPL. One example is [meta-programming.md](meta-programming.md). Extension details
+LRPL. One example is [meta-programming.md](meta-programming.md), which adds
+meta-vars as virtual semantic handles and related tool forms. Extension details
 are **not** duplicated in this document; normative text for an extension lives
 only in its own spec.
 

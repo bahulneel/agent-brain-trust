@@ -12,7 +12,7 @@ Language (RPL): syntax, semantics, runtime operating model, and grammar.
 - **Vision** (central ideas, trace, lazy extension summary, design principles) —
   [vision.md](../vision.md).
 - **LRPL** (lazy extension delta) — [lrpl.md](lrpl.md).
-- **Extensions** — Optional surface area is defined only in separate specifications (for example [meta-programming.md](meta-programming.md)). This
+- **Extensions** — Optional surface area is defined only in separate specifications (for example [meta-programming.md](meta-programming.md), which defines meta-vars and meta-relational handles). This
   document does not restate extension syntax or tools; core-conformant RPL is
   exactly what is specified here and in LRPL where you adopt it.
 

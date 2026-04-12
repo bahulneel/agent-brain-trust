@@ -35,17 +35,30 @@ document explicitly **extends** or **specializes** them.
 
 ### 3.1 Syntax
 
-A **meta-variable** is written `#m-` followed by a **name** using the same
-`NAME` nonterminal as lvars ([rpl.md](rpl.md) §3):
+A **meta-variable** is written **`@`** immediately followed by a **`NAME`**, using
+the same `NAME` nonterminal as in the base grammar ([rpl.md](rpl.md) Appendix):
 
 ```
-META-LVAR = '#m-' NAME
-NAME      = [a-z] [ a-z0-9\- ]*    -- as in rpl.md Appendix
+META-VAR = '@' NAME
+NAME     = [a-z] [ a-z0-9\- ]*    -- as in rpl.md Appendix
 ```
 
-**Lexical disambiguation** — **`#?x`** is **expansion** (rpl.md §3, §5.7;
-`EXPANSION = '#' LVAR`). A token `#m-` … is **not** an expansion: the character
-after `#` is `m`, not `?`.
+**Sigil family** — Core RPL uses **`@`** for **abductive** activation forms (rpl.md
+§16): `@when(…)`, `@choose(…)`, `@distinct(…)`, `@each(…)`, `@for(…)`. Those
+constructs qualify **when** a rule’s body is eligible. Meta-variables reuse the
+same **`@`** prefix to denote a **meta-level value**: an **agent-known** opaque
+capsule (§3.2), not an ordinary lvar binding. The parallel is intentional:
+**`@when`** et al. shape evaluation from the **activation** side; **`@lang`**
+etc. name data on the **meta-value** side.
+
+**Disambiguation** — Abductives appear only after **`;`** and match exactly the
+five productions in rpl.md Appendix (`WHEN-ACT`, …): **`@`** + **`when` |
+`choose` | `distinct` | `each` | `for`** + **`(`** … **`)`**. A **meta-variable**
+is **`@` + `NAME`** in **argument**, **`^:result`**, or other **ATOM** positions
+allowed by §3.2. There is no collision with **`#?x`** expansion (rpl.md §3). For
+example **`@lang`**, **`@rels`**, and **`@m-lang`** are meta-variables; hyphens
+and mnemonic segments like **`m-`** are just part of the **`NAME`**, like writing
+“l-var” in prose for an lvar.
 
 **Invalid spellings** — The tool name is **`$language`**. **`$lanuage`** and
 similar misspellings are **not** defined and have no reading.
@@ -68,7 +81,7 @@ explicit in implementation documentation). A meta-variable **must not** unify wi
 an arbitrary literal, list, map, or ordinary lvar binding unless the host defines
 a dedicated conversion (out of scope for portable programs).
 
-**Occurrence restrictions** — `META-LVAR` **must not** appear as an **element** of
+**Occurrence restrictions** — `META-VAR` **must not** appear as an **element** of
 a list, set, or map (rpl.md §4 `ELEMENT` / `COLLECTION`). It is **ill-formed**
 inside collection syntax. Allowed sites are:
 
@@ -83,7 +96,8 @@ inside collection syntax. Allowed sites are:
 - The **trace** records completion and a **stable handle** (or digest reference)
   for capsule operations — not necessarily the full virtual program text.
 - **`$json(?x)`** (rpl.md §14.2) applies to **lvars**. Meta-variables are **not**
-  lvars; hosts **must not** treat `$json(#m-x)` as well-formed unless they define
+  lvars; hosts **must not** treat `$json(@capsule)` (meta-variable argument) as
+  well-formed unless they define
   an explicit extension (not part of this specification). For debugging,
   implementations may offer a **bounded summary** string in the trace only.
 
@@ -102,7 +116,7 @@ description anchored in external material, as a virtual RPL-level relation set
 (not asserted as live rules).
 
 ```
-$language(?source, ?preamble) ^:result #m-lang
+$language(?source, ?preamble) ^:result @lang
 ```
 
 **Arguments**
@@ -117,7 +131,7 @@ Both arguments participate in unification like ordinary tool arguments. If the
 extension defines optional omission of arguments, hosts **may** support
 defaults (e.g. empty preamble); portable programs should supply both.
 
-**Result** — `^:result #m-lang` binds the meta-variable `#m-lang` to the
+**Result** — `^:result @lang` binds the meta-variable `@lang` to the
 language capsule. The capsule is **model-defined**: prose, diagram, or formal
 fragment may inform it; it must be **relational in character** or refer to a
 well-known relational formalism, but the internal representation is opaque.
@@ -135,17 +149,17 @@ Reads a **program** (or program-shaped source) at a **location** under a
 relations into the current program extension.
 
 ```
-$read(LOCATION, #m-lang) ^:result #m-rels
+$read(LOCATION, @lang) ^:result @rels
 ```
 
 **`LOCATION`** — As in LRPL §5.1 **`$index`**: string path, URL, or relation call
 with a `$`-marked collection argument (`INDEX-LOC` in [lrpl.md](lrpl.md)
 Appendix).
 
-**`#m-lang`** — Meta-variable bound to a language capsule from **`$language`**
+**`@lang`** — Meta-variable bound to a language capsule from **`$language`**
 (§4).
 
-**Result** — `#m-rels` names a capsule for that **virtual** set of relations (meta
+**Result** — `@rels` names a capsule for that **virtual** set of relations (meta
 program). It is **not** the same as facts asserted by **`$index`** into open
 relation heads in the current stratum.
 
@@ -166,16 +180,16 @@ $index(SOURCE-RELATION(?a, $collection), "projection hint"?)
 This extension adds:
 
 ```
-$index(LOCATION, #m-lang)
-$index(SOURCE-RELATION(?a, $collection), #m-lang)
+$index(LOCATION, @lang)
+$index(SOURCE-RELATION(?a, $collection), @lang)
 ```
 
 **Disambiguation** — The second argument is either:
 
 - A **string literal** — **projection hint** only (core semantics; not unifiable).
-- A **`META-LVAR`** — **language reference**: external data at `LOCATION` is
+- A **`META-VAR`** — **language reference**: external data at `LOCATION` is
   interpreted and mapped into relation argument positions **in the frame of** the
-  language capsule `#m-lang`, then behavior matches core **`$index`** for
+  language capsule `@lang`, then behavior matches core **`$index`** for
   filtering, collection `$`-marked args, and nesting.
 
 **Effect** — As core **`$index`**: mapping into the surrounding relational
@@ -194,19 +208,19 @@ that pattern.
 **Language capsule and reuse**
 
 ```rpl
-my-lang(#m-lang) <- $language('my-lang.md#specification', 'The Mermaid diagram specifies the language') ^:result #m-lang
+my-lang(@lang) <- $language('my-lang.md#specification', 'The Mermaid diagram specifies the language') ^:result @lang
 ```
 
 **Virtual program reading (lazy goal)**
 
 ```rpl
-% <- my-lang(#m-lang), $read('my-program.my-lang', #m-lang) ^:result #m-rels
+% <- my-lang(@lang), $read('my-program.my-lang', @lang) ^:result @rels
 ```
 
 **Indexed facts under the same language**
 
 ```rpl
-% <- my-lang(#m-lang), $index('my-program.my-lang', #m-lang)
+% <- my-lang(@lang), $index('my-program.my-lang', @lang)
 ```
 
 ---
@@ -219,11 +233,11 @@ For hosts implementing this extension. Nonterminals not listed are as in
 **`ARG`** (extends rpl.md Appendix `ARG`)
 
 ```
-ARG             = VAR | LITERAL | COLLECTION | '_' | RELATION | META-LVAR
-META-LVAR       = '#m-' NAME
+ARG             = VAR | LITERAL | COLLECTION | '_' | RELATION | META-VAR
+META-VAR        = '@' NAME
 ```
 
-**Restriction** — `META-LVAR` is **not** a valid `ELEMENT`; collections remain as in
+**Restriction** — `META-VAR` is **not** a valid `ELEMENT`; collections remain as in
 rpl.md §4 (prose §3.2).
 
 **`$index` call** (extends / replaces LRPL `INDEX-CALL` for extension hosts)
@@ -231,7 +245,7 @@ rpl.md §4 (prose §3.2).
 ```
 INDEX-CALL         = '$index' '(' INDEX-LOC ')'
                    | '$index' '(' INDEX-LOC ',' STRING ')'
-                   | '$index' '(' INDEX-LOC ',' META-LVAR ')'
+                   | '$index' '(' INDEX-LOC ',' META-VAR ')'
 INDEX-LOC          = STRING | RELATION-WITH-AVAR
 RELATION-WITH-AVAR = LABEL '(' [ INDEX-ARG [ ',' INDEX-ARG ]* ]? ')'
 INDEX-ARG          = LVAR | ASYNC-VAR | LITERAL | '_'
@@ -240,7 +254,7 @@ INDEX-ARG          = LVAR | ASYNC-VAR | LITERAL | '_'
 **`$read` call**
 
 ```
-READ-CALL        = '$read' '(' INDEX-LOC ',' META-LVAR ')'
+READ-CALL        = '$read' '(' INDEX-LOC ',' META-VAR ')'
 ```
 
 **`$language` call**
@@ -274,8 +288,8 @@ flowchart LR
     LOC[LOCATION]
   end
   subgraph meta [Meta layer]
-    MLang[m-lang capsule]
-    MRels[m-rels virtual rel set]
+    MLang[lang capsule]
+    MRels[rels virtual rel set]
   end
   SRC --> LangTool[language tool]
   PRE --> LangTool

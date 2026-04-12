@@ -110,12 +110,9 @@ example is the baseline, not the ceiling.
 ## Language extensions
 
 The base and LRPL specifications stay small on purpose. **Extensions** live in
-separate normative documents so hosts can support richer features without every
-implementation carrying the same surface area. For example, the
-**meta-programming** extension introduces meta-variables (`#m-…`) and tools such
-as `$language` and `$read` so agents can hold **virtual** RPL-shaped readings of
-languages and programs as opaque capsules instead of grounding huge definitions in
-every context. See [specification/meta-programming.md](specification/meta-programming.md).
+separate normative documents; each extension is defined **only** in its own file,
+so other RPL docs stay stable pointers. Example:
+[specification/meta-programming.md](specification/meta-programming.md).
 
 ---
 
@@ -129,4 +126,4 @@ every context. See [specification/meta-programming.md](specification/meta-progra
 - [enterprise.md](enterprise.md) — enterprise boundaries and HCI fit.
 - [specification/rpl.md](specification/rpl.md) — base normative specification.
 - [specification/lrpl.md](specification/lrpl.md) — LRPL delta specification.
-- [specification/meta-programming.md](specification/meta-programming.md) — MRPL extension (meta-vars, `$language`, `$read`, `$index` + language).
+- [specification/meta-programming.md](specification/meta-programming.md) — MRPL / meta-programming extension (see that document for all details).

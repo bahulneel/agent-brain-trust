@@ -22,9 +22,10 @@ reasoning state is easier to inspect, question, and improve.
 The sections below walk through one **worked example**: a single-chat
 **recipe-building and cooking** prompt that starts as ordinary Markdown, gets
 misread in predictable ways, then becomes more reliable as you layer in
-relational structure. The first move is a **short interpreter note** in system
-or project instructions; relation heads on the task prompt appear only where a
-named fact addresses a concrete failure mode. Relation names stay concrete
+relational structure. **Bootstrapping** is turning RPL on in **system or
+project** instructions so Markdown in scope **materialises** as RPL; relation
+heads on the task prompt appear only where a named fact addresses a concrete
+failure mode. Relation names stay concrete
 (who/when/what) rather than vague validators—see
 [content/rpl/rpl.md](../../content/rpl/rpl.md) on arity and subject–value facts.
 They are not a substitute for the specifications.
@@ -124,35 +125,19 @@ a serve time, a recipe **locks** ingredient lines.
 
 ---
 
-## Bootstrap The Interpreter
+## Bootstrap RPL
 
-**Bootstrapping** means extending **system or project instructions** with a
-compact note on how to read RPL. It is not the same as decorating the task
-prompt with relation heads; those belong on the workflow document when a
-specific ambiguity needs a named fact.
+**Bootstrapping** means turning RPL on in **system or project** instructions.
+That is enough for the agent to treat Markdown in scope as the RPL surface:
+structure and prose **materialise** into relations as they are encountered (see
+[motivation.md](motivation.md) on prose-first authoring). Shell turns, signatures
+on headings, and fenced `rpl` blocks then behave as specified without an extra
+“how to read this” layer. For normative detail and examples such as **RPL shell
+mode** and `$json`, see [content/rpl/rpl.md](../../content/rpl/rpl.md).
 
-A typical interpreter note covers **shell turns** (a user message whose last
-non-empty line starts with `%` is evaluated as an RPL goal for that reply only;
-lines above stay context) and **surface syntax** (signatures after headings,
-facts and rules in fenced `rpl` code blocks). The teaching document
-[content/rpl/rpl.md](../../content/rpl/rpl.md) spells out shell mode and the
-`$json` trace contract in full.
-
-````markdown
-## RPL (interpreter)
-
-When the user’s message ends with a non-empty line whose first non-whitespace
-character is `%`, use **RPL shell mode** for that assistant turn only: treat
-**only that final line** as an RPL **goal** to evaluate; everything above is
-context (prose, facts, protocol).
-
-Markdown headings may end with ` - relation(...) ` signatures. Prose bodies and
-` ```rpl ` blocks supply facts and rules. Read relations and rules as
-declarative claims and constraints, not imperative scripts.
-````
-
-With that in place, the recipe prompt below can stay plain Markdown until you
-decide which parts need relational backing.
+Bootstrapping is not the same as filling the workflow document with relation
+heads on day one. Keep the task prompt mostly plain until a section still
+misreads; add signatures and rules there first.
 
 ---
 
@@ -573,9 +558,9 @@ how it runs. All three patterns below use exactly the same RPL; what varies is
 scope and triggering.
 
 **In a single prompt** — paste the protocol into a conversation when you need
-structured intake for a one-off task. Prefix with "You understand RPL" so the
-agent knows to interpret the signatures. Useful for ad-hoc workflows
-mid-conversation.
+structured intake for a one-off task. With RPL enabled for the session, the same
+Markdown is read relationally without extra preamble. Useful for ad-hoc
+workflows mid-conversation.
 
 **In a project system prompt** — place it in your project's rules or
 instructions file. Every conversation in that project inherits the protocol.

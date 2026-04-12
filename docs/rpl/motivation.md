@@ -71,8 +71,8 @@ string literals with single or double quotes, §2), authors should choose what
 reads best; the intended review experience is **clarity first**.
 
 **Iterative authoring** — RPL authoring is collaborative and iterative in
-practice: establish how the agent should read RPL (typically in system or
-project instructions), add relation heads where the task prompt still drifts,
+practice: enable RPL where the agent should read Markdown as RPL (typically
+system or project scope), add relation heads where the task prompt still drifts,
 observe behavior, ask the agent to explain how it interpreted the protocol,
 then harden prose and constraints where drift appears.
 

@@ -58,8 +58,8 @@ become explicit structure that the model can reason over, inspect, and discuss.
 
 Authoring should be iterative:
 
-1. Add a short RPL interpreter note to system or project instructions, then
-   attach relation heads on the task prompt only where ambiguity or drift appears.
+1. Enable RPL in system or project instructions, then attach relation heads on
+   the task prompt only where ambiguity or drift appears.
 2. Run the conversation and observe behavior.
 3. Ask the agent to explain current state and reasoning path.
 4. Repair or harden prose and constraints.

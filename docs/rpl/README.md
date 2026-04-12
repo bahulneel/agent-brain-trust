@@ -135,10 +135,6 @@ on headings, and fenced `rpl` blocks then behave as specified without an extra
 “how to read this” layer. For normative detail and examples such as **RPL shell
 mode** and `$json`, see [content/rpl/rpl.md](../../content/rpl/rpl.md).
 
-Bootstrapping is not the same as filling the workflow document with relation
-heads on day one. Keep the task prompt mostly plain until a section still
-misreads; add signatures and rules there first.
-
 ---
 
 ## Add Relation Heads For Specific Failures

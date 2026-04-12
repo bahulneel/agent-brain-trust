@@ -21,8 +21,8 @@ Where `?x` goes in, `$x` comes out.
 This is most visible in relation signatures:
 
 ```rpl
-severity(?s)      -- ?s must already be known; this matches a known severity
-severity($s)      -- $s will be deduced; this relation produces a severity
+editing-goal(?g)  -- ?g must already be known; this matches a known goal
+editing-goal($g)  -- $g will be deduced; this relation produces a goal
 ```
 
 The `$` sigil marks the produced positions — the values that come out of
@@ -65,28 +65,21 @@ RPL is for any goal-directed conversation process that:
 
 This covers more ground than it might first appear.
 
-**Structured intake and triage** — the introductory example in the README. A
-multi-step process for collecting facts, validating them, and routing to an
-outcome. Simple enough to introduce the language; not representative of its
-range.
+**Single-session recipe planning and cooking** — the introductory example in the
+README. A staged flow (explore, refine, lock, overview, cook mode) that stays in
+one chat while naming explicit facts, collections, and outputs.
 
-**Phased reviews and approvals** — a code review, a design critique, a regulatory
-sign-off. Each phase has entry conditions, exit conditions, and a declared set of
-facts that must be established before the next phase can proceed. The trace is the
-audit trail.
+**Turn taking and discovery in one chat** — the user and agent alternate turns,
+collect missing context, and converge on one or two immediate goals with explicit
+facts.
 
-**Collaborative workshops** — multiple participants, multiple perspectives, a
-shared goal. The relational structure ensures that each participant's contribution
-is a named fact with declared provenance, not a voice in an undifferentiated
-stream.
+**Lightweight tool orchestration** — a bounded sequence (for example, one search
+and one summarization step) to support a single chat decision, not a large
+multi-goal automation pipeline.
 
-**Automated pipelines with human checkpoints** — a process that is mostly
-automated but requires human judgment at specific decision points. RPL declares
-where those points are and what must be true before and after each one.
-
-**Cross-session and cross-agent continuity** — a task that spans multiple context
-windows, multiple model instances, or multiple sessions. The trace from one
-stratum is the ground facts for the next. Continuity is structural, not assumed.
+**Trace handoff between phases** — for multi-phase collaboration, persist traces
+into documents or third-party systems (for example issue comments) and treat each
+later phase as a new bounded session that reads prior trace facts.
 
 **HCI over business artifacts** — RPL can sit between colleagues and business
 systems/artifacts (process docs, siloed data, training material, org charts,
@@ -101,24 +94,39 @@ together across boundaries that would otherwise break it.
 
 ## A note on scope
 
-The README introduces RPL through a bug report intake — a familiar, bounded
-example that makes the language mechanics easy to follow. It is deliberately
-simple.
+The README introduces RPL through a recipe-building prompt — a familiar,
+goal-rich example that makes the language mechanics easy to follow.
+Continuations in [tutorial/](tutorial/) add cook-mode anchors, kitchen context,
+scheduling, and handoff. Core README flow stays deliberately small.
 
-The examples above suggest a wider range. The formal machinery that makes a bug
-report work — named relations, goal-driven execution, async collection,
-dependency-driven ordering, a queryable trace — is the same machinery that makes
-a multi-phase workshop, a cross-session pipeline, or a distributed approval
-process work. The bug report is one instance. It is not the intended ceiling.
+The examples above suggest a wider range. The formal machinery that makes a
+single editing session work — named relations, goal-driven execution, async
+collection, dependency-driven ordering, a queryable trace — is the same
+machinery that supports trace handoff across later phases. The single-session
+example is the baseline, not the ceiling.
+
+---
+
+## Language extensions
+
+The base and LRPL specifications stay small on purpose. **Extensions** live in
+separate normative documents so hosts can support richer features without every
+implementation carrying the same surface area. For example, the
+**meta-programming** extension introduces meta-variables (`#m-…`) and tools such
+as `$language` and `$read` so agents can hold **virtual** RPL-shaped readings of
+languages and programs as opaque capsules instead of grounding huge definitions in
+every context. See [specification/meta-programming.md](specification/meta-programming.md).
 
 ---
 
 ## Document map
 
 - [README.md](README.md) — entry point and worked example.
+- [tutorial/](tutorial/) — README continuations (cook mode, kitchen context, scheduling, handoff).
 - [motivation.md](motivation.md) — problem framing and language overview.
 - [theory.md](theory.md) — Bloom, CALM, layers.
 - [vision.md](vision.md) — central ideas, trace, lazy extension summary, design principles.
 - [enterprise.md](enterprise.md) — enterprise boundaries and HCI fit.
 - [specification/rpl.md](specification/rpl.md) — base normative specification.
 - [specification/lrpl.md](specification/lrpl.md) — LRPL delta specification.
+- [specification/meta-programming.md](specification/meta-programming.md) — MRPL extension (meta-vars, `$language`, `$read`, `$index` + language).

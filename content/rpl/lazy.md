@@ -44,6 +44,8 @@ LRPL replaces full fixpoint quiescence with goal-relative quiescence.
 - **`$write(?content, ?location, ?options)`**: Writes content. A trace stratum written via `$write` is a valid `$index` source.
 - **`$json(?x)`** (built-in, RPL core): Appends to the **chat** one NDJSON line per possible binding instance of `?x` at that point in evaluation (line payload is the bound value encoded as JSON). No external API—lazy dispatch still applies until the emission is needed for progress.
 
+**Meta-programming extension** (not part of core LRPL): meta-variables (`#m-…`), **`$language`**, **`$read`**, and **`$index`** with a language capsule as the second argument are specified in [docs/rpl/specification/meta-programming.md](../../docs/rpl/specification/meta-programming.md). Core LRPL hosts need not implement them.
+
 ## 5. Extended Timestep
 Phases 3, 7, and 8 of the eager timestep are modified:
 - **Phase 3 & 7 (Quiesce + propagate memos)**: Apply constraints to memos, retract unsatisfiable disjuncts, realise lvars with one disjunct, surface conflicts.

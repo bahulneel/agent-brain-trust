@@ -109,12 +109,10 @@ example is the baseline, not the ceiling.
 
 ## Language extensions
 
-The base and LRPL specifications stay small on purpose. **Extensions** live in
-separate normative documents; each extension is defined **only** in its own file,
-so other RPL docs stay stable pointers. Example:
-[specification/meta-programming.md](specification/meta-programming.md), which
-defines meta-vars as virtual semantic handles rather than mandatory full RPL
-materialization.
+The base and LRPL specifications stay small on purpose. **Additional logics**
+(existential, modal, interpretive) are defined in
+[specification/logics.md](specification/logics.md); optional host-specific
+tooling may still be specified in separate normative documents when needed.
 
 ---
 
@@ -128,4 +126,4 @@ materialization.
 - [enterprise.md](enterprise.md) — enterprise boundaries and HCI fit.
 - [specification/rpl.md](specification/rpl.md) — base normative specification.
 - [specification/lrpl.md](specification/lrpl.md) — LRPL delta specification.
-- [specification/meta-programming.md](specification/meta-programming.md) — MRPL extension for meta-vars and meta-relational handles (see that document for all details).
+- [specification/logics.md](specification/logics.md) — additional logics (existential, modal, interpretive).

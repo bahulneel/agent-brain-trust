@@ -19,6 +19,7 @@ LRPL adds three capabilities to RPL:
 And standard library additions:
 
 - **`$index`** — external data mapped into relation positions
+- **`$read`** — external content read into a binding (optionally spliced into heads via expansion)
 - **`$generate`**, **`$write`** — generation and persistence
 - **`$json`** — built-in chat emission of an lvar’s binding as NDJSON (see rpl.md §14.2)
 
@@ -31,11 +32,9 @@ derivation; `<$label(…)>` applies both mechanisms.
 Academic grounding (Bloom, CALM, monotonic vs non-monotonic points) —
 [theory.md](../theory.md).
 
-**Extensions** — Separate specifications may add tools and grammar on top of
-LRPL. One example is [meta-programming.md](meta-programming.md), which adds
-meta-vars as virtual semantic handles and related tool forms. Extension details
-are **not** duplicated in this document; normative text for an extension lives
-only in its own spec.
+**Additional logics** — Existential, modal, and interpretive operators are specified in
+[logics.md](logics.md). Hosts may also add tools and grammar in separate specs;
+normative text for such an extension lives only in its own document.
 
 ### 1.1 Extended Variable Space
 
@@ -190,6 +189,9 @@ $index(SOURCE-RELATION(?a, $collection), "projection hint"?)
 **Location** — string path, URL, or relation call.
 
 **Projection hint** — string, not unifiable. Omit when mapping is self-evident.
+When the string names an **interpretive lens** (see [logics.md](logics.md) §4),
+hosts apply the projection / reading rules associated with that label; otherwise
+the string is an opaque host-defined hint.
 
 **Collection avar** — the `$`-marked argument in a source relation identifies
 the collection to enumerate. One `$`-marked arg per call. Nesting is unwound
@@ -197,7 +199,35 @@ by repeated application, each level carrying parent bindings forward.
 
 Accumulated constraints filter the scan before entry.
 
-### 5.2 `$generate`
+### 5.2 `$read`
+
+Reads external content at a location into an lvar. Lazy dispatch (§5.0) applies.
+
+```
+$read(?location, ?options) ^:result ?content
+```
+
+**Location** — string path, URL, or other host-defined locator (same broad family
+as `$index` locations where applicable).
+
+**Options** — map of read hints (encoding, format, range, etc.); does not
+participate in unification unless the host defines otherwise.
+
+**Result** — `^:result ?content` binds the read payload (opaque to this spec except
+that it is the tool’s value reading for `?content`).
+
+**Asserting read content as rule heads** — When `?rels` is bound to an expression
+whose **syntax** reading is valid at a **head-compatible** position, the author
+may splice it with expansion (rpl.md §5.7):
+
+```rpl
+#?rels <- $read(?location, ?options) ^:result ?rels
+```
+
+Head-position validity for `#?rels` is as in rpl.md §5.7: every expanded result
+must be valid for that head grammar site.
+
+### 5.3 `$generate`
 
 ```
 $generate(?prompt) ^:result ?content
@@ -208,7 +238,7 @@ $generate(?prompt, ?options) ^:result ?content
 
 Generated values carry `:generated true` provenance in the trace.
 
-### 5.3 `$write`
+### 5.4 `$write`
 
 ```
 $write(?content, ?location)
@@ -218,7 +248,7 @@ $write(?content, ?location, ?options)
 A trace stratum written via `$write` is a valid `$index` source for a future
 stratum.
 
-### 5.4 `$json`
+### 5.5 `$json`
 
 Same semantics as rpl.md §14.2. **`$json`** is a **built-in** tool (no external
 capability URL): it **only** serializes an lvar’s **value reading** to **JSON**
@@ -282,10 +312,14 @@ INDEX-LOC          = STRING | RELATION-WITH-AVAR
 RELATION-WITH-AVAR = LABEL '(' [ INDEX-ARG [ ',' INDEX-ARG ]* ]? ')'
 INDEX-ARG          = LVAR | ASYNC-VAR | LITERAL | '_'
 
-STDLIB = '$index' | '$generate' | '$write' | '$json' | '$copy'
+READ-CALL          = '$read' '(' READ-ARG ',' READ-ARG ')'
+READ-ARG           = LVAR | STRING
+
+STDLIB = '$index' | '$read' | '$generate' | '$write' | '$json' | '$copy'
        | '$transform'
 ```
 
 `:memo` is a reserved metadata key; its value must be `DNF-EXPR`.
 One `$`-marked arg per `$index` call.
+`READ-CALL` is the surface form for the `$read` tool (label `read`).
 `STDLIB` names may not be used as user-defined relation names.

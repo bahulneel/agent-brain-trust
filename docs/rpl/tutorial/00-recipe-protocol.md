@@ -3,8 +3,8 @@
 Continue the [README](../README.md) worked example: you already have a plain
 Markdown prompt and two **targeted** RPL slices (phase drift, ingredient lock).
 This chapter carries the **same document** to a fuller relational reading—more
-signatures, collections, a prep summary, named root and branch goals (`%planning`,
-`%cookMode`),
+signatures, collections, a prep summary, named root and branch goals
+(`%active-recipe-session`, `%recipe-session-planning`, `%recipe-session-cook`),
 and one assembled protocol block—before the focused tutorials refine cook mode,
 files, scheduling, and handoff.
 
@@ -110,7 +110,7 @@ The goal is not just "done". It yields useful values you might inspect, log, or
 hand off:
 
 ```markdown
-# Collaborative Recipe Session - %deliver-recipe-artifact(?candidates, ?title, ?steps, ?parked) <- recipe-artifact(?candidates, ?title, ?steps, ?parked)
+# Collaborative Recipe Session - %recipe-artifact(?candidates, ?title, ?steps, ?parked) <- recipe-artifact(?candidates, ?title, ?steps, ?parked)
 ```
 
 That says the protocol is working toward an output relation whose pieces matter:
@@ -122,9 +122,9 @@ numbered steps, and anything parked for later.
 Different phases justify different immediate sub-goals:
 
 ```markdown
-# Collaborative Recipe Session - %recipe-session-flow <- %planning | %cookMode
+# Collaborative Recipe Session - %active-recipe-session <- %recipe-session-planning | %recipe-session-cook
 
-# Planning track - %planning
+# Planning track - %recipe-session-planning
   <- current-workflow-phase("explore")
   | current-workflow-phase("refine")
   | current-workflow-phase("lock")
@@ -132,7 +132,7 @@ Different phases justify different immediate sub-goals:
 
 Keep candidates, constraints, and locks explicit before cook mode.
 
-# Cook mode track - %cookMode <- current-workflow-phase("cook")
+# Cook mode track - %recipe-session-cook <- current-workflow-phase("cook")
 
 One numbered step at a time; answer questions against the active step only.
 ```
@@ -195,7 +195,7 @@ notes, steps, serve target, parked questions). Each name is meant to pass a
 “table test”: if this were a row, would the columns mean what they say?
 
 ````markdown
-# Collaborative Recipe Session - %recipe-session-flow <- %planning | %cookMode
+# Collaborative Recipe Session - %active-recipe-session <- %recipe-session-planning | %recipe-session-cook
 
 You are helping a home cook plan and execute a meal in this single chat. The
 cook may need clear steps, small chunks of information, and explicit checkpoints
@@ -276,7 +276,7 @@ recipe-artifact(?candidates, ?title, ?steps, ?parked)
      parked-cook-questions(?parked)
 ```
 
-# Planning track - %planning
+# Planning track - %recipe-session-planning
   <- current-workflow-phase("explore")
   | current-workflow-phase("refine")
   | current-workflow-phase("lock")
@@ -284,7 +284,7 @@ recipe-artifact(?candidates, ?title, ?steps, ?parked)
 
 Keep candidates, constraints, and locks explicit before cook mode.
 
-# Cook mode track - %cookMode <- current-workflow-phase("cook")
+# Cook mode track - %recipe-session-cook <- current-workflow-phase("cook")
 
 One numbered step at a time; answer questions against the active step only.
 ````

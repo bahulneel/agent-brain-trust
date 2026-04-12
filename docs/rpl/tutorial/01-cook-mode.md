@@ -3,7 +3,8 @@
 ## Required reading
 
 Read [00-recipe-protocol.md](00-recipe-protocol.md) through **The complete
-protocol**, including the branch between `%planning` and `%cookMode`. You should
+protocol**, including the branch between `%recipe-session-planning` and
+`%recipe-session-cook`. You should
 already understand `current-workflow-phase`, `recipe-step`, and how collections
 like `recipe-steps` aggregate step facts.
 

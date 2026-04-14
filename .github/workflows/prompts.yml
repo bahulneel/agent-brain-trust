@@ -40,6 +40,12 @@ jobs:
           node-version: "20"
           cache: npm
 
+      - name: Init prompt failure log
+        run: mkdir -p .meta && touch .meta/prompt-test-failures.ndjson
+
+      - id: model_slug
+        run: echo "slug=$(echo '${{ matrix.model }}' | tr '/.' '-')" >> "$GITHUB_OUTPUT"
+
       - name: Require LLM API key
         env:
           PROMPTS_LLM_API_KEY: ${{ secrets.PROMPTS_LLM_API_KEY }}
@@ -58,4 +64,77 @@ jobs:
           NVIDIA_NIM_API_KEY: ${{ secrets.NVIDIA_NIM_API_KEY }}
           PROMPTS_LLM_MODEL: ${{ matrix.model }}
           PROMPTS_LLM_REQUESTS_PER_SECOND: "40"
+          PROMPT_TEST_FAILURE_LOG: "1"
         run: npm run test:prompts
+
+      - name: Upload prompt failure log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prompt-failures-${{ steps.model_slug.outputs.slug }}
+          path: .meta/prompt-test-failures.ndjson
+          if-no-files-found: ignore
+
+  triage:
+    name: Classify failures (LLM triage)
+    needs: prompts
+    if: always() && !cancelled()
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - run: npm ci
+
+      - name: Download matrix failure logs
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          pattern: prompt-failures-*
+          merge-multiple: true
+          path: .meta-artifacts
+
+      - name: Merge failure logs
+        run: |
+          mkdir -p .meta
+          : > .meta/prompt-test-failures-merged.ndjson
+          if [ -d .meta-artifacts ]; then
+            find .meta-artifacts -name 'prompt-test-failures.ndjson' -print0 | sort -z | xargs -0 -r cat >> .meta/prompt-test-failures-merged.ndjson
+          fi
+
+      - name: LLM triage of failures
+        continue-on-error: true
+        env:
+          PROMPTS_LLM_API_KEY: ${{ secrets.PROMPTS_LLM_API_KEY }}
+          NVIDIA_NIM_API_KEY: ${{ secrets.NVIDIA_NIM_API_KEY }}
+          PROMPTS_LLM_MODEL: meta/llama3-70b-instruct
+        run: npm run test:prompts:triage
+
+      - name: Upload triage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prompt-test-triage
+          path: |
+            .meta/prompt-test-failures-merged.ndjson
+            .meta/prompt-test-triage.json
+          if-no-files-found: ignore
+
+  prompts_result:
+    name: Prompt tests — required status
+    needs: [prompts, triage]
+    if: always() && !cancelled()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if prompt tests failed
+        run: |
+          if [ "${{ needs.prompts.result }}" != "success" ]; then
+            echo "::error::One or more prompt matrix jobs failed."
+            exit 1
+          fi
+          echo "Prompt matrix and triage completed."

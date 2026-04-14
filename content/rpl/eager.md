@@ -27,9 +27,9 @@ Goals (`%goal`) drive execution.
 A constraint (`->`) is an invariant.
 - **Ungrounded**: `rel(?x) -> valid(?x)` (live check during quiescence).
 - **Fully Grounded (Trace)**: When all variables are bound, it becomes a trace.
-  - `rel(?x) ^^ {x "value"} -> true` (holds from introduction onward). The map key is **`x`**, not `?x`—**binding records drop the `?` / `$` sigils**; see Level 1 in the RPL primer.
+  - `rel(?x) ^^ {?x "value"} -> true` (holds from introduction onward). The map key is **`?x`**; see Level 1 in the RPL primer.
   - Traces carry the binding context (`^^`).
 - **Retraction**: Asserting `-> false` retracts a trace.
-  - `rel(?x) ^^ {x "value"} -> false` (again: key `x`, not `?x`)
+  - `rel(?x) ^^ {?x "value"} -> false`
 - **Async Resolution**: When an avar resolves, it creates a trace.
-  - `$tool(?args) ^ ~ {:result "res"} ^^ {args "val"} -> true`
+  - `$tool(?args) ^ ~ {:result "res"} ^^ {?args "val"} -> true`

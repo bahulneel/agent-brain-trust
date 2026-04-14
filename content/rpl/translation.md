@@ -113,9 +113,9 @@ A query has results from the database.
 # Query Result - query-result(?query, ?results) <- $query-db(?query) ^ ~ {:result ?results}
 ```
 
-## 7. Binding keys and traces (no `?` or `$` in maps)
+## 7. Binding keys and traces
 
-When you write **traces**, `^^ {…}` blocks, `:bindings`, or any **structured record** of what a variable is bound to, use the **bare name** as each key (`query`, `results`, `patient`, `customer-details`), never `?query`, `$query`, etc. In **RPL source**, `?` and `$` mark the role of that **occurrence**; in **binding data**, those characters are **omitted**—the stored identifier is always the plain name after the sigil.
+When you write **traces**, `^^ {…}` blocks, `:bindings`, or any **structured record** of what a variable is bound to, **keys are the lvars** (`?query`, `?results`, …). **Avars** `$x` line up with the same **`?x`** slot in those maps. Serialisation to JSON uses a stable encoding for lvar keys (see the `$json` examples in `content/rpl/rpl.md`).
 
 ## 8. `$json` reminder
 

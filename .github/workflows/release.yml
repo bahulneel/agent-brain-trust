@@ -20,12 +20,12 @@ jobs:
         if: github.event_name != 'release'
       - uses: actions/setup-node@v4
         with:
-          # Trusted publishing needs Node 22.14+ and npm 11.5.1+ (see npm docs).
+          # Trusted publishing needs Node 22.14+ and npm 11.5.1+ for the publish step (see npm docs).
           node-version: "22"
           registry-url: https://registry.npmjs.org
           cache: npm
-      - name: npm version for trusted publishing
-        run: npm install -g npm@^11.5.1
+      # Do not `npm install -g npm@…` here: it can leave a broken global npm on GHA (e.g. missing promise-retry).
+      # CI uses the Node-bundled npm for install/build; publish uses a pinned npm via npx below.
       - run: npm ci
       # Workspace builds (includes repo-tooling → dist-tooling/; Turbo orders deps + caches).
       - run: npm run build:packages
@@ -79,4 +79,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Publish MCP to npm (OIDC trusted publisher)
         if: github.event_name == 'release'
-        run: npm publish -w @bahulneel/brain-trust-mcp --access public
+        run: npx --yes npm@11.6.2 publish -w @bahulneel/brain-trust-mcp --access public

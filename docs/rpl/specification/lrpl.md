@@ -23,6 +23,12 @@ And standard library additions:
 - **`$generate`**, **`$write`** — generation and persistence
 - **`$json`** — built-in chat emission of an lvar’s binding as NDJSON (see rpl.md §14.2)
 
+**Session store (optional host)** — When the runtime can **write files** (via **`$write`**
+or an equivalent capability), it **should** persist **ground truth** and **intermediate
+constraint state** under a **`.rpl`** working directory and read **`.rplrc`** at session
+start (§7). This delta does not require a filesystem; it specifies how conforming hosts
+layer long- and short-term memory on top of one.
+
 **Lazy tool dispatch** — LRPL’s delta on rpl.md §14: a tool invocation **`$label(…)`**
 does not run its external capability until forward progress needs a result only
 that call can supply (normative detail §5.0). That is independent of **`<expr>`**
@@ -291,6 +297,88 @@ Memo conflict (no disjuncts remain)    agent surfaces; user decides
 Lazy expr never entered                silent; goal may be unsatisfiable
 Realisation forced prematurely         agent warns; records in trace
 ```
+
+---
+
+## 7. Session persistence: `.rpl` memory files and `.rplrc`
+
+This section applies to **hosts** that give the agent **durable file output** (at
+minimum **`$write`**, rpl.md §14 / §5.4 here). It does not require a filesystem for
+core LRPL; it normatively describes how such hosts **separate** long-lived fact
+accumulation from ephemeral constraint work.
+
+### 7.1 Long-term vs short-term memory
+
+**Long-term memory** is an **append-only** record of **ground truths** — facts and
+constraints that are already **fully grounded** in the sense of rpl.md §12 (traces,
+stable conclusions the agent is willing to treat as durable). Each committed line is
+one **append** to a single **tail-only log** file; earlier lines are never rewritten
+in place.
+
+**Short-term memory** holds **intermediate** material: open **constraint** checks,
+partial memo state (§3), candidate worlds not yet realised, scratch derivations, and
+other **non-final** structures the host needs between timesteps or goals but does not
+treat as permanent ground. Hosts **may** split this across **one or more** files (for
+example by goal, topic, or stratum) and **may** truncate or rotate these files between
+sessions or tasks without contradicting long-term memory.
+
+### 7.2 The `.rpl` directory
+
+Conforming hosts that implement file-backed memory **should** place these artifacts
+under a directory named **`.rpl`** at the **workspace root** (or the host’s
+nearest equivalent: the single project-scoped folder the user treats as the programme’s
+home). Typical layout:
+
+| Role | Convention (non-normative names) |
+| --- | --- |
+| Long-term ground log | e.g. `.rpl/long-term.log` or `.rpl/ground.ndjson` — **one append-only file** |
+| Short-term scratch | e.g. `.rpl/short-term/` with one or more files, or `.rpl/constraints-*.ndjson` |
+
+Exact paths and suffixes are **host-defined**; the **normative** requirements are:
+append-only long-term log, separate short-term store(s), both under **`.rpl`**.
+
+### 7.3 Committing ground truth (long-term)
+
+When the agent **can** write files, it **should** **append** newly established ground
+truths to the long-term log as they become traces (rpl.md §12.2–12.3). Encoding is
+**host-defined** (NDJSON lines, EDN, or canonical RPL sentence per line) but **must**
+be stable enough for **`$index`** or **`$read`** to reload in a later session if the
+host advertises that workflow (§5.1–5.2).
+
+**Must not** place intermediate or unrealised memo-only state in the long-term log;
+those belong in short-term memory (§7.4).
+
+### 7.4 Committing intermediate results (short-term)
+
+When the agent **can** write files, it **should** persist **constraint** and memo
+**intermediate results** — including DNF memos (§3), open invariants, and partial
+bindings — to **short-term** files under **`.rpl`**, not to the long-term append log.
+Hosts **may** merge or discard short-term files when a task completes, a session ends,
+or satisfactory quiescence (§4) settles the relevant bindings into ground form; at that
+point the **ground** outcomes **should** be appended to long-term memory (§7.3).
+
+### 7.5 `.rplrc` (session bootstrap)
+
+Hosts **should** read a file named **`.rplrc`** at the **start of every session**
+(before user messages are applied, after programme load). Search order is
+**host-defined**; a common rule is: **`.rplrc`** in the workspace root, then optional
+fallbacks (user home, etc.) if the host documents them.
+
+**Purpose** — propagate **preferences** (tone, defaults, tool choices) and **background
+knowledge** (stable facts the user wants treated as always-on context) **between**
+sessions without duplicating them in the long-term trace log.
+
+**Format** — not fixed by this spec: plain prose, markdown, EDN/RPL fragments, or a
+small structured block are all acceptable if the host defines how it merges **`.rplrc`**
+content into the initial store or metadata. **Conflict** with facts asserted later in
+the session is resolved by normal RPL semantics (later traces and user assertions
+win unless the host defines a different policy and documents it).
+
+### 7.6 Interaction with `$write`
+
+**`$write`** (§5.4) is the natural surface for these commits. Hosts **may** map
+`$write` targets under **`.rpl`** automatically or expose explicit paths; either way,
+behaviour in §7.1–7.5 **should** hold when file output is available.
 
 ---
 

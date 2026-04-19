@@ -299,7 +299,8 @@ For regex patterns, named captures bind directly to lvars. Unnamed groups are
 discards.
 
 **Metadata** — `clause ^ ~ {:doc ?x}` uses the same `~ PATTERN` mechanism on the
-preceding form’s metadata (§11).
+preceding form’s metadata (§11). Map **keys** in that position are **literal** (§11
+**Literal keys**).
 
 **Sets** — unification involving a set and a non-set pattern distributes into
 **instances**; unifying with a set pattern treats the set as one value (§7).
@@ -339,7 +340,7 @@ of the outer pattern shape:
 [?a ?b]                      -- single value: positional tuple
 ```
 
-So `{:bindings {g "clarity"}}` applies directly for metadata and traces — a map
+So `{:bindings {?g "clarity"}}` applies directly for metadata and traces — a map
 is one value; a set wrapper is only needed to assert several values each matching
 the same pattern.
 
@@ -426,7 +427,9 @@ TAIL       = CLAUSE | CLAUSE ',' TAIL | '(' TAIL ')' [ '^' VAR ]?
 ```
 
 **Conjunction** is `,`; **disjunction** is `|`; parentheses group. A **clause**
-is an atom optionally annotated with `^` / `^^` (§11).
+is an atom optionally annotated with `^` / `^^` (§11), **`LVAR '=' ASYNC-ATOM`**
+with the same optional annotations (async bind sugar, §13), or a parenthesised
+expression with optional metadata (see Appendix `CLAUSE`).
 
 **Double implication** — `HEAD <- HEAD <- TAIL` is **allowed**. It can express
 **nested** or **method-shaped** decompositions (sometimes compared to HTN). That
@@ -457,13 +460,31 @@ clause ^ ~ {:doc ?x}        -- match :doc, bind ?x
 clause ^ ~ {:key ?v, ...}   -- destructure several fields
 ```
 
-The full EDN literal set is valid as map keys inside `~ PATTERN`:
+The full EDN literal set is valid as map keys inside `~ PATTERN` **on metadata**
+(see **literal keys** below).
 
 ```
 clause ^ ~ {:status ?s}     -- keyword key
 clause ^ ~ {foo ?v}         -- symbol key
 clause ^ ~ {"key" ?v}       -- string key
 ```
+
+**Literal keys (metadata maps)** — In **metadata** map patterns attached **directly**
+to a clause — `clause ^ ~ {…}`, `clause ^^ ~ {…}`, `clause ^^ {…}`, `clause
+^:bindings {…}`, and `clause ^ ~ {:bindings {…}}` — **every map key at every
+nesting level must be a literal** (`KEYWORD`, `STRING`, `SYMBOL`, `NUMBER`,
+`BOOLEAN`, or `NIL`). An **lvar** or **avar** **must not** appear in **key**
+position. This restriction applies only to these **clause-metadata** map forms, not
+to `~ PATTERN` on an lvar that already holds a map (§6).
+
+**Variable keys** — To match or enumerate by a **dynamic** key, **bind** the whole
+metadata or bindings map, then match it as an ordinary value:
+
+```rpl
+expr ^^ ?b, ?b ~ [?key, ?value]
+```
+
+(Or use multiset / rest forms as needed; `~` on `?b` follows §4 / §6.)
 
 **Single metadata key** — these are **alternative spellings** with the **same
 reading** (one field of metadata). None is the mandated normal form; rewrites
@@ -483,24 +504,25 @@ metadata (often written as its own map). These surface forms are **equivalent
 readings**; pick any. **No** required expansion of `^^` into `^:bindings` or into
 `^ ~ {:bindings …}` — each is an acceptable **terminal** form.
 
-- **`^^ ~ {…}`** — pattern over the binding map (keys = lvar **names** without
-  `?`, values = `VAR`s).
-- **`^^ {…}`** — map literal (typical in **traces**, §12).
+- **`^^ ~ {…}`** — pattern over the binding map (**literal keys only**, see above;
+  values = `VAR`s).
+- **`^^ {…}`** — map literal (typical in **traces**, §12; **literal keys only**).
 - **`^:bindings {…}`** — explicit keyword key on the outer metadata map.
-- **Single binding slot** — `^^` *name* `VAR` with bare symbol *name*, same
-  reading as `^^ ~ {name VAR}` (e.g. `^^a ?a`, `^^draft-id ?draft-id`).
+- **Single binding slot** — `^^` *lvar* `VAR`: the **lvar** is the map key and
+  *VAR* is the value, same reading as `^^ ~ {lvar VAR}` (e.g. `^^ ?a ?a`,
+  `^^ ?draft-id ?draft-id`).
 
 ```rpl
-clause ^^ ~ {a ?b, c ?d}
-clause ^:bindings {a ?b, c ?d}
-clause ^ ~ {:bindings {a ?b, c ?d}}
+clause ^^ ~ {?a ?b, ?c ?d}
+clause ^:bindings {?a ?b, ?c ?d}
+clause ^ ~ {:bindings {?a ?b, ?c ?d}}
 -- the three lines above are the same meaning (illustrative equivalence)
 
-clause ^^ {a "val1", c "val2"}           -- ground bindings (trace-shaped)
-clause ^:bindings {a "val1", c "val2"}  -- same reading
+clause ^^ {?a "val1", ?c "val2"}           -- ground bindings (trace-shaped)
+clause ^:bindings {?a "val1", ?c "val2"}  -- same reading
 
-^^a ?a
-^^ ~ {a ?a}
+^^ ?a ?a
+^^ ~ {?a ?a}
 -- same reading (single-slot binding pattern)
 ```
 
@@ -587,9 +609,15 @@ Traces are fully grounded constraints. Each trace carries the binding context in
 scope at grounding, using **`^^`** (§11):
 
 ```
-editing-goal(?g) ^^ {g "publish", d "draft-0"} -> true
-%needs-edit ^^ {d "draft-0", mode "line-edit"} -> true
+editing-goal(?g) ^^ {?g "publish", ?d "draft-0"} -> true
+%needs-edit ^^ {?d "draft-0", mode "line-edit"} -> true
 %needs-discovery ^ false
+```
+
+To relate trace keys to lvars (e.g. `?g` / `?d`), bind the map and match it (§6):
+
+```rpl
+editing-goal(?g) ^^ ?b, ?b ~ {g ?g, d ?d} -> true
 ```
 
 Ordering in the trace log is **significant** — each trace holds from introduction
@@ -600,8 +628,11 @@ onward; later traces build on earlier ones.
 Retract by asserting the same constraint with `-> false`:
 
 ```
-editing-goal(?g) ^^ {g "publish", d "draft-0"} -> false
+editing-goal(?g) ^^ {?g "publish", ?d "draft-0"} -> false
 ```
+
+(Same **literal-key** rule for `^^ {…}` as §11; use `^^ ?b` and `~` on `?b` when keys
+must be correlated with lvars.)
 
 Retraction is recorded in the trace log.
 
@@ -662,7 +693,7 @@ When an avar resolves, **async novelty** (phase 1 of §18) is a **fully grounded
 constraint — a **trace** (§12.2). Example with `^^` (§11):
 
 ```
-$query-db("select * from issues where state = 'open'") ^ ~ {:result "[{id: 1}]"} ^^ {query "select * from issues where state = 'open'"} -> true
+$query-db("select * from issues where state = 'open'") ^ ~ {:result "[{id: 1}]"} ^^ {?query "select * from issues where state = 'open'"} -> true
 ```
 
 Bare avar:
@@ -683,6 +714,24 @@ ask(?prompt, ?answer) <- $ask(?prompt) ^ ~ {:result ?answer}
 ```
 
 The tool is implementation detail; the relation is the interface.
+
+**Async bind sugar** — In a **clause** whose atom is **only** an **equality**
+between an **lvar** and an **async relation** (a **tool** call `$…` or a bare
+**avar** `$x`, §13–§14), the surface form:
+
+```rpl
+?var = ASYNC_RELATION
+```
+
+is **sugar** for:
+
+```rpl
+ASYNC_RELATION ^ :result ?var
+```
+
+That is the same metadata reading as `ASYNC_RELATION ^ ~ {:result ?var}` (§11).
+**`ASYNC_RELATION`** stands for any such atom on the right-hand side of `=`
+(including nested grouping if the grammar permits).
 
 ---
 
@@ -768,10 +817,10 @@ $json(?x) ^ ~ {:tool :json} -> true
 **Example (goal tail)** — emit the captured binding after a choice is fixed:
 
 ```rpl
-% <- pending-choice(?value) ^^choice ?x, $json(?x)
+% <- pending-choice(?value) ^^ choice ?x, $json(?x)
 ```
 
-Here `^^choice ?x` (§11) attaches the bare key `choice` to `?x` on that clause;
+Here `^^ choice ?x` (§11) attaches the symbol key `choice` to `?x` on that clause;
 `$json(?x)` then prints the binding of `?x` to chat when the goal is pursued.
 
 #### 14.2.1 User contract examples (closed pure-RPL programs)
@@ -803,7 +852,7 @@ user('foo')
 
 AGENT:
 ```ndjson
-{"u":"foo"}
+{"?u":"foo"}
 ```
 
 **C. Multiple value instances**
@@ -832,8 +881,8 @@ user('bar')
 
 AGENT:
 ```ndjson
-{"u":"foo"}
-{"u":"bar"}
+{"?u":"foo"}
+{"?u":"bar"}
 ```
 
 **E. Metadata projection (single instance)**
@@ -846,7 +895,7 @@ user('foo')
 
 AGENT:
 ```ndjson
-{":bindings":[{"u":"foo"}]}
+{":bindings":[{"?u":"foo"}]}
 ```
 
 **F. Metadata projection (multiple instances)**
@@ -860,7 +909,7 @@ user('bar')
 
 AGENT:
 ```ndjson
-{":bindings":[{"u":"foo"},{"u":"bar"}]}
+{":bindings":[{"?u":"foo"},{"?u":"bar"}]}
 ```
 
 Completion trace (illustrative):
@@ -897,9 +946,9 @@ e.g.:
 ```
 %name(?a, ?b) <- tail
 -- same reading, e.g.:
-%name <- (tail) ^^ ~ {a ?a, b ?b}
-%name <- (tail) ^:bindings {a ?a, b ?b}
-%name <- (tail) ^ ~ {:bindings {a ?a, b ?b}}
+%name <- (tail) ^^ ~ {?a ?a, ?b ?b}
+%name <- (tail) ^:bindings {?a ?a, ?b ?b}
+%name <- (tail) ^ ~ {:bindings {?a ?a, ?b ?b}}
 ```
 
 ### 15.2 Root Goal
@@ -1320,17 +1369,19 @@ Trace sketch:
 
 ```
 (edit-brief(?d, ?focus) <-
-  (draft(?draft-id) <- ...) ^^ {draft-id "doc-42"},
-  (focus($focus) <- ...) ^^ {focus "unknown"}
-) ^^ {d "doc-42", focus "unknown"} -> true
-%needs-discovery ^^ {d "doc-42"} -> true
+  (draft(?draft-id) <- ...) ^^ {?draft-id "doc-42"},
+  (focus($focus) <- ...) ^^ {?focus "unknown"}
+) ^^ {?d "doc-42", ?focus "unknown"} -> true
+%needs-discovery ^^ {?d "doc-42"} -> true
 
 (edit-brief(?d, ?focus) <-
-  (draft(?draft-id) <- ...) ^^ {draft-id "doc-42"},
-  (focus($focus) <- ...) ^^ {focus "clarity"}
-) ^^ {d "doc-42", focus "clarity"} -> true
-%needs-edit ^^ {d "doc-42"} -> true
+  (draft(?draft-id) <- ...) ^^ {?draft-id "doc-42"},
+  (focus($focus) <- ...) ^^ {?focus "clarity"}
+) ^^ {?d "doc-42", ?focus "clarity"} -> true
+%needs-edit ^^ {?d "doc-42"} -> true
 ```
+
+Keys `d`, `focus`, `draft-id` in these maps are **literal** symbols (§11), not lvars.
 
 ---
 
@@ -1366,8 +1417,10 @@ TAIL            = CLAUSE
                 | CLAUSE ',' TAIL
                 | '(' TAIL ')' [ '^' VAR ]?
 CLAUSE          = ATOM [ '^' VAR ]? [ '^^' VAR ]?
+                | LVAR '=' ASYNC-ATOM [ '^' VAR ]? [ '^^' VAR ]?
 ATOM            = RELATION | GOAL | TOOL | VAR | LITERAL | EXPANSION
                 | '(' EXPR ')'
+ASYNC-ATOM      = TOOL | ASYNC-VAR
 BINDING         = CLAUSE | CLAUSE ',' BINDING
 STEP            = CLAUSE | CLAUSE ',' STEP
 
@@ -1396,6 +1449,13 @@ MAP-EXPR        = MAP-ENTRY [ ',' MAP-ENTRY ]*
                 | MAP-ENTRY '.' MAP-EXPR
                 | MAP-ENTRY '&' VAR
 MAP-ENTRY       = ELEMENT ELEMENT
+
+METADATA-MAP    = '{' METADATA-ENTRY [ ',' METADATA-ENTRY ]* '}'
+METADATA-ENTRY  = METADATA-KEY ELEMENT
+METADATA-KEY    = LITERAL
+-- METADATA-MAP is the map form in clause ^ ~ {…}, clause ^^ ~ {…}, clause ^^ {…},
+-- clause ^:bindings {…}, and clause ^ ~ {:bindings {…}} (§11). Keys must be
+-- METADATA-KEY (literal only); use EXPR ^^ ?b then match ?b for variable keys.
 
 LITERAL         = STRING | NUMBER | KEYWORD | BOOLEAN | NIL | SYMBOL
 BOOLEAN         = 'true' | 'false'

@@ -2,10 +2,10 @@
 
 ## Required reading
 
-Read [../README.md](../README.md) through **Go Further**, so you have seen the
-core collections (`candidate-dishes`, `ingredient-lines`, `recipe-steps`) and
-the mention of `$index(...)` as a way to pull external material into relation
-positions.
+Read [00-recipe-protocol.md](00-recipe-protocol.md) through **The complete
+protocol**, so you have the core collections (`candidate-dishes`,
+`ingredient-lines`, `recipe-steps`). Skim **Trace hooks for handoff** for
+`$index(...)` as external material mapped into relation positions.
 
 LRPL normative text for `$index`: [../specification/lrpl.md](../specification/lrpl.md).
 

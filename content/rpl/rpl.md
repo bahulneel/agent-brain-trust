@@ -21,14 +21,20 @@ Normative detail: formal spec **§15.8** (`docs/rpl/specification/rpl.md`).
 - **Line payload**: each line is the JSON encoding of one possible **binding instance** of `?x` at that point in evaluation.
 - **Multiple bindings**: if `?x` has multiple active ground bindings, emit **one NDJSON line per binding instance**.
 
-**Binding forms and trace forms (same bare-key rule):**
+**Binding forms and trace forms (literal keys on metadata maps, spec §11):**
 
 ```rpl
-pending-choice(?value) ^^choice ?x              -- single-slot binding shorthand
+pending-choice(?value) ^^ choice ?x              -- single-slot binding shorthand (space after ^^)
 pending-choice(?value) ^^ {choice ?x}           -- equivalent map form
 pending-choice(?value) ^:bindings {choice ?x}   -- equivalent explicit form
 
-pending-choice(?value) ^^ {choice "critical"} -> true
+pending-choice(?value) ^^ {?choice "critical"} -> true
+```
+
+**Variable key** — metadata maps may not use an lvar as a key. Bind the map, then match (tuple or map destructuring per §4 / §6):
+
+```rpl
+expr ^^ ?b, ?b ~ [?key, ?value]
 ```
 
 ### Closed script examples (`USER` / `AGENT`)
@@ -59,7 +65,7 @@ user('foo')
 
 AGENT:
 ```ndjson
-{"u":"foo"}
+{"?u":"foo"}
 ```
 
 **Example 3 — multiple value instances**
@@ -88,8 +94,8 @@ user('bar')
 
 AGENT:
 ```ndjson
-{"u":"foo"}
-{"u":"bar"}
+{"?u":"foo"}
+{"?u":"bar"}
 ```
 
 **Example 5 — metadata projection (single instance)**
@@ -102,7 +108,7 @@ user('foo')
 
 AGENT:
 ```ndjson
-{":bindings":[{"u":"foo"}]}
+{":bindings":[{"?u":"foo"}]}
 ```
 
 **Example 6 — metadata projection (multiple instances)**
@@ -116,7 +122,7 @@ user('bar')
 
 AGENT:
 ```ndjson
-{":bindings":[{"u":"foo"},{"u":"bar"}]}
+{":bindings":[{"?u":"foo"},{"?u":"bar"}]}
 ```
 
 ## Level 0: Primitives
@@ -135,7 +141,7 @@ RPL uses EDN literals for data:
 - **Logical Variable (lvar)**: `?name` (binds to a value)
 - **Anonymous Variable**: `_` (matches anything, binds nothing)
 
-**Stored binding keys (read this carefully)** — In RPL **source**, you write `?name` or `$name`. In **binding maps** (traces, `^^ {…}` metadata, `:bindings` shorthand, and any record of what a variable is bound to), the key is always the **bare identifier** `name` **only**. The **`?` and `$` never appear in those keys**; they are sigils for how that **occurrence** participates in inference or async, not part of the stored name. Example: `?x` and `$x` both correspond to binding key `x`, never `?x` or `$x`.
+**Metadata / trace map keys (clause `^` / `^^`)** — In maps written **on a clause** for metadata (`^ ~ {…}`, `^^ {…}`, `:bindings {…}`), **keys must be literals** (symbols, keywords, strings, etc.). **Lvars are not allowed in key position.** To match by a dynamic key, use `expr ^^ ?b` then `?b ~ …` (see **`$json` contract** above). Ordinary **data** maps in patterns (`?x = ~ {:key ?val}`) still allow `?key` where §4 / §6 apply.
 
 - **In-place Matching**: `~ PATTERN` performs structural matching.
   - `?x = ~ "foo {?bar}"`
@@ -185,10 +191,10 @@ Rules combine heads and tails using implication (`<-`).
 - **Disjunction**: `head <- rel1(?x) | rel2(?x)`
 
 **Metadata** (`^` and `^^`):
-Attaches provenance or bindings to clauses.
+Attaches provenance or bindings to clauses (map keys **literal** in `^ ~` / `^^` forms; spec §11).
 - `clause ^ ~ {:doc ?x}` (match metadata map)
 - `clause ^:scope ?s` (shorthand for `^ ~ {:scope ?s}`)
-- `clause ^^ {a ?a}` (shorthand for `:bindings` sub-map)
+- `clause ^^ {a ?a}` (shorthand for `:bindings` sub-map; key `a` is a symbol literal)
 
 **Constraints** (`->`):
 Expresses invariants.
@@ -196,8 +202,9 @@ Expresses invariants.
 - `rel1(?x), rel2(?x) -> false` (mutual exclusion)
 
 ## Level 6: Async & Control
-- **Async Variables (avar)**: `$x` (suspends until external value arrives; once resolved, the value is still keyed as **`x`** in binding maps—same rule as Level 1: **no `$` in the key**)
+- **Async Variables (avar)**: `$x` (suspends until external value arrives; once resolved, the value is recorded under **`?x`**; trace/bindings in `^^ {…}` use **literal** symbol keys per §11)
 - **Tool Calls**: `$tool(?args) ^ ~ {:result ?r}` (dispatches tool, binds result)
+- **Async bind sugar**: `?r = $tool(?args)` is sugar for `$tool(?args) ^ :result ?r` (same as `$tool(?args) ^ ~ {:result ?r}`); likewise `?v = $x` for a bare avar
 - **Built-in `$json(?x)`** — user-facing NDJSON contract for raw bindings (see **`$json` contract with the user** above). Use it when the user asked to see bound values in machine-readable form.
 
 **Abductives** (`;`):

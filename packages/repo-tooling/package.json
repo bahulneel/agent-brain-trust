@@ -1,6 +1,6 @@
 {
   "name": "repo-tooling",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "private": true,
   "type": "module",
   "description": "Compiled repo scripts (scripts/**/*.ts → ../../dist-tooling/). Wired into Turbo so ^build runs after workspace packages.",

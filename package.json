@@ -1,7 +1,7 @@
 {
   "name": "agent-brain-trust",
   "private": true,
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Agent Brain Trust: composable skills, Cursor plugin, MCP",
   "license": "MIT",
   "repository": {

@@ -28,7 +28,7 @@ pending-choice(?value) ^^ choice ?x              -- single-slot binding shorthan
 pending-choice(?value) ^^ {choice ?x}           -- equivalent map form
 pending-choice(?value) ^:bindings {choice ?x}   -- equivalent explicit form
 
-pending-choice(?value) ^^ {choice "critical"} -> true
+pending-choice(?value) ^^ {?choice "critical"} -> true
 ```
 
 **Variable key** — metadata maps may not use an lvar as a key. Bind the map, then match (tuple or map destructuring per §4 / §6):
@@ -65,7 +65,7 @@ user('foo')
 
 AGENT:
 ```ndjson
-{"u":"foo"}
+{"?u":"foo"}
 ```
 
 **Example 3 — multiple value instances**
@@ -94,8 +94,8 @@ user('bar')
 
 AGENT:
 ```ndjson
-{"u":"foo"}
-{"u":"bar"}
+{"?u":"foo"}
+{"?u":"bar"}
 ```
 
 **Example 5 — metadata projection (single instance)**
@@ -108,7 +108,7 @@ user('foo')
 
 AGENT:
 ```ndjson
-{":bindings":[{"u":"foo"}]}
+{":bindings":[{"?u":"foo"}]}
 ```
 
 **Example 6 — metadata projection (multiple instances)**
@@ -122,7 +122,7 @@ user('bar')
 
 AGENT:
 ```ndjson
-{":bindings":[{"u":"foo"},{"u":"bar"}]}
+{":bindings":[{"?u":"foo"},{"?u":"bar"}]}
 ```
 
 ## Level 0: Primitives
@@ -202,8 +202,9 @@ Expresses invariants.
 - `rel1(?x), rel2(?x) -> false` (mutual exclusion)
 
 ## Level 6: Async & Control
-- **Async Variables (avar)**: `$x` (suspends until external value arrives; trace/bindings use **literal** symbol keys in `^^ {…}` per §11)
+- **Async Variables (avar)**: `$x` (suspends until external value arrives; once resolved, the value is recorded under **`?x`**; trace/bindings in `^^ {…}` use **literal** symbol keys per §11)
 - **Tool Calls**: `$tool(?args) ^ ~ {:result ?r}` (dispatches tool, binds result)
+- **Async bind sugar**: `?r = $tool(?args)` is sugar for `$tool(?args) ^ :result ?r` (same as `$tool(?args) ^ ~ {:result ?r}`); likewise `?v = $x` for a bare avar
 - **Built-in `$json(?x)`** — user-facing NDJSON contract for raw bindings (see **`$json` contract with the user** above). Use it when the user asked to see bound values in machine-readable form.
 
 **Abductives** (`;`):

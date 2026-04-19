@@ -115,7 +115,7 @@ A query has results from the database.
 
 ## 7. Binding keys and traces
 
-When you write **traces**, `^^ {…}` blocks, `:bindings`, or any **structured record** of what a variable is bound to, **keys are the lvars** (`?query`, `?results`, …). **Avars** `$x` line up with the same **`?x`** slot in those maps. Serialisation to JSON uses a stable encoding for lvar keys (see the `$json` examples in `content/rpl/rpl.md`).
+In **clause metadata** maps (`^^ {…}`, `:bindings`, `^ ~ {:bindings …}`), **keys must be literals** (symbols like `query`, `results`, keywords, or strings)—**not** lvars. To correlate keys with variables, bind the map and match: `expr ^^ ?b, ?b ~ [query ?q, results ?r]` (see rpl.md §11).
 
 ## 8. `$json` reminder
 

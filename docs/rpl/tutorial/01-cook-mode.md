@@ -2,16 +2,17 @@
 
 ## Required reading
 
-Read [../README.md](../README.md) through **The Complete Protocol**, including the
-branch between `%planning` and `%cookMode`. You should already understand
-`current-workflow-phase`, `recipe-step`, and how collections like
-`recipe-steps` aggregate step facts.
+Read [00-recipe-protocol.md](00-recipe-protocol.md) through **The complete
+protocol**, including the branch between `%recipe-session-planning` and
+`%recipe-session-cook`. You should
+already understand `current-workflow-phase`, `recipe-step`, and how collections
+like `recipe-steps` aggregate step facts.
 
 Normative details for lazy tools and traces: [../specification/lrpl.md](../specification/lrpl.md).
 
 ## What this enhances in the recipe prompt
 
-The README protocol already says: in cook mode, go one step at a time and answer
+The recipe protocol already says: in cook mode, go one step at a time and answer
 questions in the context of the **current** step. In practice, models still:
 
 - lose **which ordinal** is “now”,

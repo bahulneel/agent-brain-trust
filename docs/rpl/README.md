@@ -14,6 +14,9 @@ reasoning state is easier to inspect, question, and improve.
 | [scope.md](scope.md) | Boundaries, `?` vs `$`, use cases, document index |
 | [theory.md](theory.md) | Bloom, CALM, monotonicity, formal vs agent layer |
 | [vision.md](vision.md) | Central ideas, trace, lazy extension summary, design principles |
+| [cognition.md](cognition.md) | Latent biasing, trace as ground, stratified reasoning, prose-first materialisation |
+| [bootstrapping.md](bootstrapping.md) | Pedagogical bootstrap for a reasoned agent (tables, canonical forms, intent) |
+| [agent-mck.md](agent-mck.md) | RPL as metacognitive kernel: intent tracking, context stack, invariants |
 | [specification/rpl.md](specification/rpl.md) | Normative base spec: syntax, semantics, runtime, grammar |
 | [specification/lrpl.md](specification/lrpl.md) | Normative LRPL delta (lazy expressions, memos, stdlib) |
 | [specification/logics.md](specification/logics.md) | Additional logics: existential, modal, interpretive (`<@`, `@>`) |
@@ -281,3 +284,6 @@ RPL is a protocol language, not a programming language:
 - [tutorial/](tutorial/) — Full recipe protocol, cook mode, kitchen context, scheduling, handoff.
 - [scope.md](scope.md) — Scope, boundaries, and document map.
 - [enterprise.md](enterprise.md) — Enterprise boundary: non-fit for long-running systems, fit as HCI with business artifacts.
+- [cognition.md](cognition.md) — How RPL biases the latent model and keeps reasoning continuous across context boundaries.
+- [bootstrapping.md](bootstrapping.md) — Table-driven bootstrap format for instilling relational habits in an agent.
+- [agent-mck.md](agent-mck.md) — RPL as an internal metacognitive layer for stable, principled agent behaviour.

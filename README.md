@@ -21,9 +21,9 @@ Open **[Releases](https://github.com/bahulneel/agent-brain-trust/releases)** and
 
 Step-by-step install (copy or `npm run install:*`, `installed_plugins.json`, `--plugin-dir`, etc.): **[docs/install-prebuilt.md](docs/install-prebuilt.md)**.
 
-### GitHub Actions (CI or manual runs)
+### GitHub Actions (push to `develop` / `main` when `package.json` changes)
 
-From **[Actions → Release](https://github.com/bahulneel/agent-brain-trust/actions/workflows/release.yml)**, open a run and download the artifact you want:
+The Release workflow runs on pushes to **`develop`** or **`main`** that modify the **root** `package.json` (and on **published** GitHub Releases; see below). From **[Actions → Release](https://github.com/bahulneel/agent-brain-trust/actions/workflows/release.yml)**, open a run and download the artifact you want:
 
 | Artifact | What you get |
 | -------- | ------------- |
@@ -32,7 +32,7 @@ From **[Actions → Release](https://github.com/bahulneel/agent-brain-trust/acti
 | `brain-trust-skill-zips` | All skill zips from that run (inside the artifact) |
 | `brain-trust-prompts` | `RPL.md` and `LRPL.md` from that run |
 
-**Manual “Run workflow”** builds these artifacts only—it does **not** add files to the Releases page. Prefer **Releases** for a single skill zip or a stable download. Workflow artifacts can expire; see GitHub’s retention settings.
+Those push runs only produce **Actions artifacts**—they do **not** add files to the Releases page or publish npm. Prefer **Releases** for a single skill zip or a stable download. Workflow artifacts can expire; see GitHub’s retention settings.
 
 ### Skill CLI
 

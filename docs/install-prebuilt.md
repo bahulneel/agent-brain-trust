@@ -15,7 +15,7 @@ You do **not** need Node, npm, or a clone of this repository. Download **only** 
 
 **Standalone MCP** is distributed only via **[npm](https://www.npmjs.com/package/@bahulneel/brain-trust-mcp)** (see [Standalone MCP](#standalone-mcp-no-plugin) below)—not as a GitHub Release zip.
 
-**CI builds:** [Actions → Release workflow](https://github.com/bahulneel/agent-brain-trust/actions/workflows/release.yml). Pick a run and download **only** the artifact you need:
+**CI builds:** [Actions → Release workflow](https://github.com/bahulneel/agent-brain-trust/actions/workflows/release.yml) (runs when **`develop`** or **`main`** receives a push that changes the root **`package.json`**). Pick a run and download **only** the artifact you need:
 
 | Artifact name | Contents |
 | ------------- | -------- |

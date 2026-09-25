@@ -38,16 +38,6 @@ async function readAndAssertMcpPackageMatchesRoot() {
     }
     return mcp;
 }
-function publishMcpPackageName(pkgName) {
-    return process.env.NPM_MCP_PACKAGE_NAME ?? pkgName;
-}
-function resolveMcpNpxSpec(version, publishName) {
-    const override = process.env.BRAIN_TRUST_MCP_NPX_SPEC;
-    if (override !== undefined && override.length > 0) {
-        return override;
-    }
-    return `${publishName}@${version}`;
-}
 async function readPkgVersion() {
     const p = join(ROOT, "package.json");
     const j = JSON.parse(await readFile(p, "utf8"));
@@ -211,19 +201,20 @@ async function writeClaudePluginManifest(version) {
     await writeFile(join(dir, "plugin.json"), JSON.stringify(manifest, null, 2), "utf8");
 }
 /**
- * Shipped plugin MCP config: stdio via npx and a pinned package spec (npm publish).
- * Override at build time: BRAIN_TRUST_MCP_NPX_SPEC, NPM_MCP_PACKAGE_NAME (npx spec only).
+ * Shipped plugin MCP config: stdio via system `node` + bundled `scripts/mcp-server.cjs`.
+ * Cursor expands `${CURSOR_PLUGIN_ROOT}`; Claude Code expands `${CLAUDE_PLUGIN_ROOT}`.
+ * Sets BRAIN_TRUST_RESOURCES so content loads from the plugin tree (not an npm fetch).
  */
-async function writeMcpConfigAt(pluginRoot) {
-    const mcp = await readAndAssertMcpPackageMatchesRoot();
-    const publishName = publishMcpPackageName(mcp.name);
-    const spec = resolveMcpNpxSpec(mcp.version, publishName);
+async function writeMcpConfigAt(pluginRoot, pluginRootVar) {
     const cfg = {
         mcpServers: {
             "brain-trust": {
                 type: "stdio",
-                command: "npx",
-                args: ["-y", spec],
+                command: "node",
+                args: [`${pluginRootVar}/scripts/mcp-server.cjs`],
+                env: {
+                    BRAIN_TRUST_RESOURCES: `${pluginRootVar}/resources`,
+                },
             },
         },
     };
@@ -256,7 +247,7 @@ async function bundleMcpServer() {
 async function copyMcpBundleToClaudePlugin() {
     await mkdir(join(CLAUDE_PLUGIN_OUT, "scripts"), { recursive: true });
     await copyTree(join(PLUGIN_OUT, "scripts"), join(CLAUDE_PLUGIN_OUT, "scripts"));
-    await writeMcpConfigAt(CLAUDE_PLUGIN_OUT);
+    await writeMcpConfigAt(CLAUDE_PLUGIN_OUT, "${CLAUDE_PLUGIN_ROOT}");
 }
 async function runSkillsRef(skillDir) {
     const bin = join(ROOT, "node_modules", ".bin", "skills-ref");
@@ -286,7 +277,7 @@ export async function cmdBuild() {
     await writePluginManifest(version);
     await writeClaudePluginManifest(version);
     await bundleMcpServer();
-    await writeMcpConfigAt(PLUGIN_OUT);
+    await writeMcpConfigAt(PLUGIN_OUT, "${CURSOR_PLUGIN_ROOT}");
     await copyMcpBundleToClaudePlugin();
     await buildZipSkills(stems);
     const readme = `# agent-brain-trust plugin (built)\n\nVersion ${version}\n`;

@@ -15,7 +15,8 @@ reasoning state is easier to inspect, question, and improve.
 | [theory.md](theory.md) | Bloom, CALM, monotonicity, formal vs agent layer |
 | [vision.md](vision.md) | Central ideas, trace, lazy extension summary, design principles |
 | [cognition.md](cognition.md) | Latent biasing, trace as ground, stratified reasoning, prose-first materialisation |
-| [bootstrapping.md](bootstrapping.md) | Pedagogical bootstrap for a reasoned agent (tables, canonical forms, intent) |
+| [language-bootstrap.md](language-bootstrap.md) | Language bootstrap: named layers (`fol`, `rpl`, `lrpl`, …) with explicit dependencies |
+| [bootstrapping.md](bootstrapping.md) | Incomplete agent-habit sketch — not a language source; see the status note there |
 | [agent-mck.md](agent-mck.md) | RPL as metacognitive kernel: intent tracking, context stack, invariants |
 | [specification/rpl.md](specification/rpl.md) | Normative base spec: syntax, semantics, runtime, grammar |
 | [specification/lrpl.md](specification/lrpl.md) | Normative LRPL delta (lazy expressions, memos, stdlib) |
@@ -30,7 +31,8 @@ project** instructions so Markdown in scope **materialises** as RPL; relation
 heads on the task prompt appear only where a named fact addresses a concrete
 failure mode. Relation names stay concrete
 (who/when/what) rather than vague validators—see
-[content/rpl/rpl.md](../../content/rpl/rpl.md) on arity and subject–value facts.
+[specification/rpl.md](specification/rpl.md#9-relations) and
+[bootstrap/rpl.md](bootstrap/rpl.md) (`rpl.1`).
 They are not a substitute for the specifications.
 
 ---
@@ -130,13 +132,13 @@ a serve time, a recipe **locks** ingredient lines.
 
 ## Bootstrap RPL
 
-**Bootstrapping** means turning RPL on in **system or project** instructions.
-That is enough for the agent to treat Markdown in scope as the RPL surface:
-structure and prose **materialise** into relations as they are encountered (see
-[motivation.md](motivation.md) on prose-first authoring). Shell turns, signatures
-on headings, and fenced `rpl` blocks then behave as specified without an extra
-“how to read this” layer. For normative detail and examples such as **RPL shell
-mode** and `$json`, see [content/rpl/rpl.md](../../content/rpl/rpl.md).
+Two different “bootstraps” appear in these docs. Do not mix them.
+
+**Language bootstrap** — named layers for what the notation means. Start at [language-bootstrap.md](language-bootstrap.md). Take the **RPL** closure for the base language, **LRPL** to add lazy evaluation, and `existential` / `modal` / `interpretive` as needed. Normative detail stays in [specification/rpl.md](specification/rpl.md) (shell mode is §15.9; `$json` is §14.2).
+
+**Session bootstrap** — turning RPL on in **system or project** instructions so Markdown in scope is the RPL surface: structure and prose **materialise** into relations as they are encountered (see [motivation.md](motivation.md) on prose-first authoring). Shell turns, signatures on headings, and fenced `rpl` blocks then behave as specified without an extra “how to read this” layer.
+
+Trees outside `docs/` may still ship composed prompt text. Treat that text as stale relative to these specifications.
 
 ---
 
@@ -285,5 +287,6 @@ RPL is a protocol language, not a programming language:
 - [scope.md](scope.md) — Scope, boundaries, and document map.
 - [enterprise.md](enterprise.md) — Enterprise boundary: non-fit for long-running systems, fit as HCI with business artifacts.
 - [cognition.md](cognition.md) — How RPL biases the latent model and keeps reasoning continuous across context boundaries.
-- [bootstrapping.md](bootstrapping.md) — Table-driven bootstrap format for instilling relational habits in an agent.
+- [language-bootstrap.md](language-bootstrap.md) — Layer catalog and closures (**RPL**, **LRPL**, additional logics).
+- [bootstrapping.md](bootstrapping.md) — Incomplete agent-habit sketch; do not use as language definition.
 - [agent-mck.md](agent-mck.md) — RPL as an internal metacognitive layer for stable, principled agent behaviour.

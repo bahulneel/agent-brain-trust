@@ -1,4 +1,10 @@
 # Bootstrapping the Reasoned Agent
+
+> **Status — incomplete, not a language source.**
+> This file is a sketch of *agent* pedagogy. It is probably incorrect or incomplete.
+> It must not be used to define RPL.
+> The language bootstrap is [language-bootstrap.md](language-bootstrap.md), derived from the specifications under `docs/`.
+
 ## The Pedagogical Tradition
 The bootstrap for a hardened agent is not a technical manual or a flat list of rules. Instead, it is inspired by the pedagogical tradition of the "Little" series (*The Little Lisper*, *The Reasoned Schemer*). This format uses a Socratic, table-driven approach to define logic through examples, isomorphisms, and intent.
 The goal of this format is to provide the agent with a "Reasoned" quality—a structural understanding of its own thought processes. By presenting logic as a series of commandments and laws, the bootstrap facilitates a deeper semantic alignment than traditional prose instructions.

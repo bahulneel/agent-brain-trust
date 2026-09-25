@@ -256,9 +256,9 @@ Direct (/bt-science-explanation-editorial):
 
 ## MCP
 
-**Published plugin zips** ship **`.mcp.json`** that runs the server via **`npx -y`** and a pinned package spec such as **`@bahulneel/brain-trust-mcp@x.y.z`** (see the generated `.mcp.json` in the zip). The process resolves **`resources/`** via **`BRAIN_TRUST_RESOURCES`** when set, or next to the npm-installed entry (see package README). Put the unpacked plugin at **`~/.cursor/plugins/local/agent-brain-trust`** as usual.
+**Published plugin zips** ship **`.mcp.json`** that runs the bundled server with **`node`** on **`scripts/mcp-server.cjs`**, and sets **`BRAIN_TRUST_RESOURCES`** to the plugin’s **`resources/`** directory via **`${CLAUDE_PLUGIN_ROOT}`** (expanded by Cursor and Claude Code). Put the unpacked plugin at **`~/.cursor/plugins/local/agent-brain-trust`** as usual.
 
-There is **no** checked-in Cursor project MCP config—use the **plugin’s** `.mcp.json` (after install or from the built zip), **`npx -y @bahulneel/brain-trust-mcp`**, or your own **user-level** MCP entry if you need a custom command ([docs/build.md](docs/build.md)).
+There is **no** checked-in Cursor project MCP config—use the **plugin’s** `.mcp.json` (after install or from the built zip), **`npx -y @bahulneel/brain-trust-mcp`** for the standalone npm package, or your own **user-level** MCP entry if you need a custom command ([docs/build.md](docs/build.md)).
 
 For MCP **without** a plugin, install from npm: **`@bahulneel/brain-trust-mcp`**, or run **`npm run build`** and run **`packages/brain-trust-mcp/dist/brain-trust-mcp.js`** locally ([docs/install-prebuilt.md](docs/install-prebuilt.md), [docs/build.md](docs/build.md)).
 

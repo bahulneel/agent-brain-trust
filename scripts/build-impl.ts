@@ -47,18 +47,6 @@ async function readAndAssertMcpPackageMatchesRoot(): Promise<McpWorkspacePackage
   return mcp;
 }
 
-function publishMcpPackageName(pkgName: string): string {
-  return process.env.NPM_MCP_PACKAGE_NAME ?? pkgName;
-}
-
-function resolveMcpNpxSpec(version: string, publishName: string): string {
-  const override = process.env.BRAIN_TRUST_MCP_NPX_SPEC;
-  if (override !== undefined && override.length > 0) {
-    return override;
-  }
-  return `${publishName}@${version}`;
-}
-
 async function readPkgVersion(): Promise<string> {
   const p = join(ROOT, "package.json");
   const j = JSON.parse(await readFile(p, "utf8")) as { version: string };
@@ -248,19 +236,20 @@ async function writeClaudePluginManifest(version: string): Promise<void> {
 }
 
 /**
- * Shipped plugin MCP config: stdio via npx and a pinned package spec (npm publish).
- * Override at build time: BRAIN_TRUST_MCP_NPX_SPEC, NPM_MCP_PACKAGE_NAME (npx spec only).
+ * Shipped plugin MCP config: stdio via system `node` + bundled `scripts/mcp-server.cjs`.
+ * `${CLAUDE_PLUGIN_ROOT}` is expanded by Cursor and Claude Code to the plugin install path.
+ * Sets BRAIN_TRUST_RESOURCES so content loads from the plugin tree (not an npm fetch).
  */
 async function writeMcpConfigAt(pluginRoot: string): Promise<void> {
-  const mcp = await readAndAssertMcpPackageMatchesRoot();
-  const publishName = publishMcpPackageName(mcp.name);
-  const spec = resolveMcpNpxSpec(mcp.version, publishName);
   const cfg = {
     mcpServers: {
       "brain-trust": {
         type: "stdio",
-        command: "npx",
-        args: ["-y", spec],
+        command: "node",
+        args: ["${CLAUDE_PLUGIN_ROOT}/scripts/mcp-server.cjs"],
+        env: {
+          BRAIN_TRUST_RESOURCES: "${CLAUDE_PLUGIN_ROOT}/resources",
+        },
       },
     },
   };

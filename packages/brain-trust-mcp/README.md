@@ -22,9 +22,9 @@ Or run with npx (no global install):
 npx -y @bahulneel/brain-trust-mcp
 ```
 
-## Cursor
+## Cursor (standalone package)
 
-Merge into `.mcp.json`:
+Merge into user/project `.mcp.json` when installing from npm (not the plugin zip):
 
 ```json
 {
@@ -39,6 +39,8 @@ Merge into `.mcp.json`:
 ```
 
 Replace `VERSION` with the release you want (or use a dist-tag).
+
+**Cursor/Claude plugin zips** do not use this npx path. Their generated `.mcp.json` runs **`node`** on the bundled **`scripts/mcp-server.cjs`** and sets **`BRAIN_TRUST_RESOURCES`** to the plugin **`resources/`** directory via **`${CLAUDE_PLUGIN_ROOT}`**.
 
 ## Resources
 

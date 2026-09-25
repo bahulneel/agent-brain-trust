@@ -1,9 +1,9 @@
 {
   "name": "repo-tooling",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "private": true,
   "type": "module",
-  "description": "Compiled repo scripts (scripts/**/*.ts → ../../dist-tooling/). Wired into Turbo so ^build runs after workspace packages.",
+  "description": "Compiled repo scripts (scripts/**/*.ts \u2192 ../../dist-tooling/). Wired into Turbo so ^build runs after workspace packages.",
   "scripts": {
     "build": "tsc -p tsconfig.json"
   },

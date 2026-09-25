@@ -235,20 +235,25 @@ async function writeClaudePluginManifest(version: string): Promise<void> {
   await writeFile(join(dir, "plugin.json"), JSON.stringify(manifest, null, 2), "utf8");
 }
 
+type PluginRootVar = "${CURSOR_PLUGIN_ROOT}" | "${CLAUDE_PLUGIN_ROOT}";
+
 /**
  * Shipped plugin MCP config: stdio via system `node` + bundled `scripts/mcp-server.cjs`.
- * `${CLAUDE_PLUGIN_ROOT}` is expanded by Cursor and Claude Code to the plugin install path.
+ * Cursor expands `${CURSOR_PLUGIN_ROOT}`; Claude Code expands `${CLAUDE_PLUGIN_ROOT}`.
  * Sets BRAIN_TRUST_RESOURCES so content loads from the plugin tree (not an npm fetch).
  */
-async function writeMcpConfigAt(pluginRoot: string): Promise<void> {
+async function writeMcpConfigAt(
+  pluginRoot: string,
+  pluginRootVar: PluginRootVar
+): Promise<void> {
   const cfg = {
     mcpServers: {
       "brain-trust": {
         type: "stdio",
         command: "node",
-        args: ["${CLAUDE_PLUGIN_ROOT}/scripts/mcp-server.cjs"],
+        args: [`${pluginRootVar}/scripts/mcp-server.cjs`],
         env: {
-          BRAIN_TRUST_RESOURCES: "${CLAUDE_PLUGIN_ROOT}/resources",
+          BRAIN_TRUST_RESOURCES: `${pluginRootVar}/resources`,
         },
       },
     },
@@ -286,7 +291,7 @@ async function bundleMcpServer(): Promise<void> {
 async function copyMcpBundleToClaudePlugin(): Promise<void> {
   await mkdir(join(CLAUDE_PLUGIN_OUT, "scripts"), { recursive: true });
   await copyTree(join(PLUGIN_OUT, "scripts"), join(CLAUDE_PLUGIN_OUT, "scripts"));
-  await writeMcpConfigAt(CLAUDE_PLUGIN_OUT);
+  await writeMcpConfigAt(CLAUDE_PLUGIN_OUT, "${CLAUDE_PLUGIN_ROOT}");
 }
 
 async function runSkillsRef(skillDir: string): Promise<void> {
@@ -319,7 +324,7 @@ export async function cmdBuild(): Promise<void> {
   await writePluginManifest(version);
   await writeClaudePluginManifest(version);
   await bundleMcpServer();
-  await writeMcpConfigAt(PLUGIN_OUT);
+  await writeMcpConfigAt(PLUGIN_OUT, "${CURSOR_PLUGIN_ROOT}");
   await copyMcpBundleToClaudePlugin();
 
   await buildZipSkills(stems);

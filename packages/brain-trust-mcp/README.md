@@ -40,7 +40,7 @@ Merge into user/project `.mcp.json` when installing from npm (not the plugin zip
 
 Replace `VERSION` with the release you want (or use a dist-tag).
 
-**Cursor/Claude plugin zips** do not use this npx path. Their generated `.mcp.json` runs **`node`** on the bundled **`scripts/mcp-server.cjs`** and sets **`BRAIN_TRUST_RESOURCES`** to the plugin **`resources/`** directory via **`${CLAUDE_PLUGIN_ROOT}`**.
+**Cursor/Claude plugin zips** do not use this npx path. Their generated `.mcp.json` runs **`node`** on the bundled **`scripts/mcp-server.cjs`** and sets **`BRAIN_TRUST_RESOURCES`** to the plugin **`resources/`** directory — via **`${CURSOR_PLUGIN_ROOT}`** (Cursor) or **`${CLAUDE_PLUGIN_ROOT}`** (Claude Code).
 
 ## Resources
 

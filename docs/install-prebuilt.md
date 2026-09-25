@@ -72,7 +72,7 @@ GitHub may expire workflow artifacts after a retention period; prefer Releases w
    }
    ```
 
-5. Restart Cursor or **Developer: Reload Window**. Enable the Brain Trust MCP server if you use MCP. The plugin’s **`.mcp.json`** starts the server with **`node`** on **`${CLAUDE_PLUGIN_ROOT}/scripts/mcp-server.cjs`** and sets **`BRAIN_TRUST_RESOURCES`** to **`${CLAUDE_PLUGIN_ROOT}/resources`** (see [Cursor MCP docs](https://cursor.com/docs/mcp)). The install folder name **`agent-brain-trust`** should match the path above. Node.js 20+ must be on your **`PATH`**.
+5. Restart Cursor or **Developer: Reload Window**. Enable the Brain Trust MCP server if you use MCP. The Cursor plugin’s **`.mcp.json`** starts the server with **`node`** on **`${CURSOR_PLUGIN_ROOT}/scripts/mcp-server.cjs`** and sets **`BRAIN_TRUST_RESOURCES`** to **`${CURSOR_PLUGIN_ROOT}/resources`** (see [Cursor MCP docs](https://cursor.com/docs/mcp)). The Claude Code plugin zip uses the same shape with **`${CLAUDE_PLUGIN_ROOT}`**. The install folder name **`agent-brain-trust`** should match the path above. Node.js 20+ must be on your **`PATH`**.
 
 ## Claude Code (full plugin)
 

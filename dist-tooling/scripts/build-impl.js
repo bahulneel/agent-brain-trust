@@ -202,18 +202,18 @@ async function writeClaudePluginManifest(version) {
 }
 /**
  * Shipped plugin MCP config: stdio via system `node` + bundled `scripts/mcp-server.cjs`.
- * `${CLAUDE_PLUGIN_ROOT}` is expanded by Cursor and Claude Code to the plugin install path.
+ * Cursor expands `${CURSOR_PLUGIN_ROOT}`; Claude Code expands `${CLAUDE_PLUGIN_ROOT}`.
  * Sets BRAIN_TRUST_RESOURCES so content loads from the plugin tree (not an npm fetch).
  */
-async function writeMcpConfigAt(pluginRoot) {
+async function writeMcpConfigAt(pluginRoot, pluginRootVar) {
     const cfg = {
         mcpServers: {
             "brain-trust": {
                 type: "stdio",
                 command: "node",
-                args: ["${CLAUDE_PLUGIN_ROOT}/scripts/mcp-server.cjs"],
+                args: [`${pluginRootVar}/scripts/mcp-server.cjs`],
                 env: {
-                    BRAIN_TRUST_RESOURCES: "${CLAUDE_PLUGIN_ROOT}/resources",
+                    BRAIN_TRUST_RESOURCES: `${pluginRootVar}/resources`,
                 },
             },
         },
@@ -247,7 +247,7 @@ async function bundleMcpServer() {
 async function copyMcpBundleToClaudePlugin() {
     await mkdir(join(CLAUDE_PLUGIN_OUT, "scripts"), { recursive: true });
     await copyTree(join(PLUGIN_OUT, "scripts"), join(CLAUDE_PLUGIN_OUT, "scripts"));
-    await writeMcpConfigAt(CLAUDE_PLUGIN_OUT);
+    await writeMcpConfigAt(CLAUDE_PLUGIN_OUT, "${CLAUDE_PLUGIN_ROOT}");
 }
 async function runSkillsRef(skillDir) {
     const bin = join(ROOT, "node_modules", ".bin", "skills-ref");
@@ -277,7 +277,7 @@ export async function cmdBuild() {
     await writePluginManifest(version);
     await writeClaudePluginManifest(version);
     await bundleMcpServer();
-    await writeMcpConfigAt(PLUGIN_OUT);
+    await writeMcpConfigAt(PLUGIN_OUT, "${CURSOR_PLUGIN_ROOT}");
     await copyMcpBundleToClaudePlugin();
     await buildZipSkills(stems);
     const readme = `# agent-brain-trust plugin (built)\n\nVersion ${version}\n`;

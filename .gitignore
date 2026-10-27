@@ -15,3 +15,8 @@ pnpm-debug.log*
 Thumbs.db
 .idea/
 .turbo/
+
+# Plans are not documentation. Never commit them under docs/ (Jekyll publishes that tree).
+# In-progress multi-session plans belong in /planning at the repo root, not in live docs.
+# Do not commit a plan once the work it describes is done.
+docs/plans/

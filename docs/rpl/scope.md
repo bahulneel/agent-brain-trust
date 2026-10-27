@@ -120,6 +120,8 @@ tooling may still be specified in separate normative documents when needed.
 ## Document map
 
 - [README.md](README.md) — entry point and worked example.
+- [language-bootstrap.md](language-bootstrap.md) — named language layers and their dependency closures.
+- [bootstrapping.md](bootstrapping.md) — incomplete agent-habit sketch; not language definition.
 - [tutorial/](tutorial/) — README continuations (full recipe protocol, cook mode, kitchen context, scheduling, handoff).
 - [motivation.md](motivation.md) — problem framing and language overview.
 - [theory.md](theory.md) — Bloom, CALM, layers.

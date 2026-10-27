@@ -12,3 +12,4 @@ This folder holds workspace-oriented guides: how the repository is laid out, how
 - [LRPL release prompt artifact](https://github.com/bahulneel/agent-brain-trust/blob/main/content/LRPL.md) — shipped lazy prompt source; may lag the specs
 - [RPL base specification](rpl/specification/rpl.md) — syntax, semantics, execution model, and grammar
 - [LRPL specification](rpl/specification/lrpl.md) — lazy extension delta
+- [RPL protocol reimplementations](rpl/protocols/README.md) — Brain Trust and expert protocols rewritten in RPL, plus an experience report on language gaps

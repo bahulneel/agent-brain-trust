@@ -290,3 +290,12 @@ RPL is a protocol language, not a programming language:
 - [language-bootstrap.md](language-bootstrap.md) — Layer catalog and closures (**RPL**, **LRPL**, additional logics).
 - [bootstrapping.md](bootstrapping.md) — Incomplete agent-habit sketch; do not use as language definition.
 - [agent-mck.md](agent-mck.md) — RPL as an internal metacognitive layer for stable, principled agent behaviour.
+- [protocols/expert-opinion.md](protocols/expert-opinion.md) — canonical RPL
+  reimplementation of the single-expert protocol
+- [protocols/brain-trust-technical-dialectic.md](protocols/brain-trust-technical-dialectic.md) —
+  canonical RPL reimplementation of the technical Brain Trust protocol
+- [protocols/brain-trust-editorial-room.md](protocols/brain-trust-editorial-room.md) —
+  canonical RPL reimplementation of the editorial Brain Trust protocol
+- [protocols/experience-report.md](protocols/experience-report.md) — expressivity
+  gaps, ambiguities, and frictions encountered while reimplementing the
+  protocols

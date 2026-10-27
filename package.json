@@ -30,6 +30,7 @@
     "test:mcp-drafting": "tsx scripts/test-mcp-drafting-protocol.ts",
     "test": "vitest run",
     "test:prompts": "vitest run tests/prompts",
+    "test:prompts:triage": "tsx scripts/prompt-test-triage.ts",
     "install:cursor-plugin": "npm run build && tsx scripts/install-cursor-plugin.ts",
     "install:claude-plugin": "npm run build && tsx scripts/install-claude-plugin.ts",
     "pack:mcp": "npm run build && npm pack -w @bahulneel/brain-trust-mcp",

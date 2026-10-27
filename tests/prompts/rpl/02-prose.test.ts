@@ -1,17 +1,21 @@
 import type { RplFixtureKey } from "@test/support/types";
-import { expect } from "vitest";
+import { fileURLToPath } from "node:url";
 
 import {
   chat,
   content,
   describeLogged,
   fixtures,
+  runPromptCase,
 } from "@test/support";
+
+const TEST_FILE = fileURLToPath(import.meta.url);
+const SUITE = "Prose verification (remote LLM)";
 
 const fixtureLabels: RplFixtureKey[] = ["prose", "proseQualityJudgement"];
 const cases = fixtures.load(...fixtureLabels);
 
-describeLogged("Prose verification (remote LLM)", (t) => {
+describeLogged(SUITE, (t) => {
   const system = content.load("rplEager").text;
 
   t.beforeAll(({ addDeps }) => {
@@ -27,14 +31,16 @@ describeLogged("Prose verification (remote LLM)", (t) => {
         const userPrompt = fixtures.buildUserPrompt(c);
         if (alreadyPassed({ case: c, userPrompt, system })) return;
 
-        const modelOutput = await chat.complete({
+        await runPromptCase({
+          case: c,
+          suite: SUITE,
+          testFile: TEST_FILE,
+          testName: c.id,
+          system,
+          userPrompt,
           apiKey: key,
           model: chat.modelId(),
-          system,
-          user: userPrompt,
         });
-        const parsed = chat.toJS(modelOutput);
-        expect(parsed, userPrompt.join("\n")).toMatchObject(c.expectation);
       }
     );
   }

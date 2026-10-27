@@ -153,7 +153,7 @@ canonical for tool metadata.
 Section 15.4 shows:
 
 ```text
-% <- %low -> !%
+% <= %low => !%
 ```
 
 but section 15.5 only defines `!%goal` as sugar for `%goal ^ false`. It is not

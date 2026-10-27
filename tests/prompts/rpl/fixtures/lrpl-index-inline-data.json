@@ -1,0 +1,51 @@
+[
+  {
+    "id": "lrpl-index-markdown-table-inline",
+    "description": "LRPL §5.1: $index can map inline markdown table data into relation extraction.",
+    "rpl": [
+      "# Inventory Data",
+      "| sku | qty |",
+      "| --- | --- |",
+      "| item-a | 3 |",
+      "| item-b | 1 |",
+      "has-item(?sku) <- $index('inline:inventory-table') ^ ~ {:result ?rows}, ?rows = ~ /(?P<sku>item-a)/"
+    ],
+    "output": "has-item(?sku)",
+    "expectation": {
+      "sku": "item-a"
+    }
+  },
+  {
+    "id": "lrpl-index-codefenced-json-inline",
+    "description": "LRPL §5.1: $index can project records from code-fenced inline JSON data.",
+    "rpl": [
+      "# User Data",
+      "```json",
+      "[{\"id\":\"u-1\",\"role\":\"admin\"},{\"id\":\"u-2\",\"role\":\"viewer\"}]",
+      "```",
+      "admin-id(?id) <- $index('inline:users-json') ^ ~ {:result ?rows}, ?rows = ~ /(?P<id>u-1)/"
+    ],
+    "output": "admin-id(?id)",
+    "expectation": {
+      "id": "u-1"
+    }
+  },
+  {
+    "id": "lrpl-index-structured-markdown-location-relation",
+    "description": "LRPL §5.1: relation LOCATION form with one $-marked argument indexes structured markdown.",
+    "rpl": [
+      "# Service Catalog",
+      "- service: api",
+      "  tier: gold",
+      "- service: worker",
+      "  tier: silver",
+      "catalog('services', $collection)",
+      "service-tier(?service, ?tier) <- $index(catalog('services', $collection), 'service,tier') ^ ~ {:result ?rows}, ?rows = ~ /(?P<service>api).*(?P<tier>gold)/"
+    ],
+    "output": "service-tier(?service, ?tier), ?service = 'api",
+    "expectation": {
+      "service": "api",
+      "tier": "gold"
+    }
+  }
+]

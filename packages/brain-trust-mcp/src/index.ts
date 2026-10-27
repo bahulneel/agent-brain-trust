@@ -18,6 +18,7 @@ import { existsSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
+import pkg from "../package.json";
 
 type GlobalWithMeta = typeof globalThis & { __BT_IMPORT_META_URL__?: string };
 
@@ -54,7 +55,7 @@ const resourcesRoot = getResourcesRoot();
 
 const server = new McpServer({
   name: "brain-trust",
-  version: "0.1.0",
+  version: pkg.version,
 });
 
 server.registerTool(

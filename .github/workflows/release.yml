@@ -20,12 +20,12 @@ jobs:
         if: github.event_name != 'release'
       - uses: actions/setup-node@v4
         with:
-          # Trusted publishing needs Node 22.14+ and npm 11.5.1+ (see npm docs).
+          # Trusted publishing needs Node 22.14+ and npm 11.5.1+ for the publish step (see npm docs).
           node-version: "22"
           registry-url: https://registry.npmjs.org
           cache: npm
-      - name: npm version for trusted publishing
-        run: npm install -g npm@^11.5.1
+      # Do not `npm install -g npm@…` here: it can leave a broken global npm on GHA (e.g. missing promise-retry).
+      # CI uses the Node-bundled npm for install/build; publish uses a pinned npm via npx below.
       - run: npm ci
       # Workspace builds (includes repo-tooling → dist-tooling/; Turbo orders deps + caches).
       - run: npm run build:packages
@@ -34,11 +34,12 @@ jobs:
       - run: npm run build
       - name: Pack release archives
         run: |
-          mkdir -p release/plugins release/skills
+          mkdir -p release/plugins release/skills release/prompts
           cd dist
           zip -q -r ../release/plugins/agent-brain-trust-cursor-plugin.zip agent-brain-trust-cursor-plugin
           zip -q -r ../release/plugins/agent-brain-trust-claude-plugin.zip agent-brain-trust-claude-plugin
           cp skill-zips/*.zip ../release/skills/
+          cp prompts/*.md ../release/prompts/
       - name: Upload Cursor plugin artefact
         uses: actions/upload-artifact@v4
         with:
@@ -54,6 +55,16 @@ jobs:
         with:
           name: brain-trust-skill-zips
           path: release/skills/*.zip
+      - name: Upload RPL prompt artefact
+        uses: actions/upload-artifact@v4
+        with:
+          name: RPL
+          path: release/prompts/RPL.md
+      - name: Upload LRPL prompt artefact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LRPL
+          path: release/prompts/LRPL.md
       - name: Upload assets to GitHub Release
         if: github.event_name == 'release'
         uses: softprops/action-gh-release@v2
@@ -63,8 +74,9 @@ jobs:
             release/plugins/agent-brain-trust-cursor-plugin.zip
             release/plugins/agent-brain-trust-claude-plugin.zip
             release/skills/*.zip
+            release/prompts/*.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Publish MCP to npm (OIDC trusted publisher)
         if: github.event_name == 'release'
-        run: npm publish -w @bahulneel/brain-trust-mcp --access public
+        run: npx --yes npm@11.6.2 publish -w @bahulneel/brain-trust-mcp --access public

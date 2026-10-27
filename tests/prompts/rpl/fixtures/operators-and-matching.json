@@ -1,0 +1,38 @@
+[
+  {
+    "id": "operators-precedence-arithmetic-before-comparison",
+    "description": "RPL §5.6: arithmetic composes before comparison in rule tails.",
+    "rpl": [
+      "qualified(?user) <- score(?user, ?base), ?base + 2 * 3 >= 16",
+      "score('u-9', 10)"
+    ],
+    "output": "qualified(?user)",
+    "expectation": {
+      "user": "u-9"
+    }
+  },
+  {
+    "id": "matching-regex-named-capture",
+    "description": "RPL §6: regex in-place matching binds named captures.",
+    "rpl": [
+      "ticket-id(?ticket) <- line(?text), ?text = ~ /(?P<ticket>INC-[0-9]+)/",
+      "line('INC-42 opened by monitor')"
+    ],
+    "output": "ticket-id(?ticket)",
+    "expectation": {
+      "ticket": "INC-42"
+    }
+  },
+  {
+    "id": "operators-cardinality-list-value",
+    "description": "RPL §5.2: cardinality over list-valued lvar returns item count.",
+    "rpl": [
+      "member-count(?n) <- members(?all), ?n = |?all|",
+      "members(['a' 'b' 'c'])"
+    ],
+    "output": "member-count(?n)",
+    "expectation": {
+      "n": 3
+    }
+  }
+]

@@ -1,0 +1,51 @@
+[
+  {
+    "id": "source-format-head-tail-plus-fenced-block",
+    "description": "RPL §17: heading tail and fenced block clauses conjoin for the same rule.",
+    "rpl": [
+      "# Send Notification - notify(?user, ?message) <- email(?user, ?email)",
+      "",
+      "```rpl",
+      "notify(?user, ?message) <- opted-in(?user), message(?user, ?message)",
+      "```",
+      "",
+      "email('u-1', 'u1@example.com')",
+      "opted-in('u-1')",
+      "message('u-1', 'welcome')"
+    ],
+    "output": "notify(?user, ?message)",
+    "expectation": {
+      "user": "u-1",
+      "message": "welcome"
+    }
+  },
+  {
+    "id": "source-format-scope-isolation-between-siblings",
+    "description": "RPL §17.5: sibling headings do not leak clauses into each other.",
+    "rpl": [
+      "# Intake",
+      "## Cardiac - severity(?patient, 'critical') <- symptom(?patient, 'chest pain')",
+      "## Mild - severity(?patient, 'mild') <- symptom(?patient, 'headache')",
+      "",
+      "symptom('p-2', 'headache')"
+    ],
+    "output": "severity(?patient, ?level)",
+    "expectation": {
+      "patient": "p-2",
+      "level": "mild"
+    }
+  },
+  {
+    "id": "source-format-emphasis-normalizes-kebab-lvar",
+    "description": "RPL §17.2: emphasized prose terms map to kebab-case lvar names.",
+    "rpl": [
+      "# Contact Routing - routable(?contact) <- first-name(?contact, ?first-name)",
+      "A contact is routable when __first name__ is known.",
+      "first-name('c-9', 'Ada')"
+    ],
+    "output": "routable(?contact)",
+    "expectation": {
+      "contact": "c-9"
+    }
+  }
+]

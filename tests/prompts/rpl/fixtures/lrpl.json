@@ -1,0 +1,15 @@
+[
+  {
+    "id": "lrpl-lazy-deferred-join",
+    "description": "Lazy wrapper defers expensive join until progress stalls.",
+    "rpl": [
+      "recommendation(?item) <- <reviewed(?item), in-stock(?item)>",
+      "reviewed('item-a')",
+      "in-stock('item-a')"
+    ],
+    "output": "recommendation(?item)",
+    "expectation": {
+      "item": "item-a"
+    }
+  }
+]

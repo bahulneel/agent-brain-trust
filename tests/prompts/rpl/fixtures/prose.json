@@ -1,0 +1,86 @@
+[
+  {
+    "id": "prose-no-rpl-no-emphasis",
+    "description": "§1: bare heading becomes relation; args and tail inferred from body.",
+    "rpl": [
+      "# Triage Patient",
+      "",
+      "Ask the user for the patient's name and their symptoms.",
+      "When symptoms include chest pain, severity is critical.",
+      "",
+      "name('sam', 'Sam')",
+      "symptoms('sam', 'chest pain')"
+    ],
+    "output": "severity(?patient, ?severity)",
+    "expectation": {
+      "patient": "sam",
+      "severity": "critical"
+    }
+  },
+  {
+    "id": "prose-no-rpl-emphasis-hints",
+    "description": "§2: emphasis in body hints at lvar names; heading is relation.",
+    "rpl": [
+      "# Order Fulfillment",
+      "",
+      "An order is fulfillable when its __order id__ is valid.",
+      "A fulfillable order has __customer details__.",
+      "",
+      "valid-order('o-42')",
+      "customer-details('o-42', 'Acme Corp')"
+    ],
+    "output": "fulfillable(?order-id)",
+    "expectation": {
+      "order-id": "o-42"
+    }
+  },
+  {
+    "id": "prose-rpl-head-no-emphasis",
+    "description": "§3: explicit RPL head in heading; tail inferred from body.",
+    "rpl": [
+      "# Calculate Discount - discount(?user, ?amount)",
+      "",
+      "If the user is a premium member, the discount is 20%.",
+      "Otherwise, it is 5%.",
+      "",
+      "premium-member('u-7')"
+    ],
+    "output": "discount(?user, ?amount)",
+    "expectation": {
+      "user": "u-7",
+      "amount": 20
+    }
+  },
+  {
+    "id": "prose-rpl-head-with-emphasis",
+    "description": "§4: RPL head + emphasis hints in body.",
+    "rpl": [
+      "# Approve Loan - %approve(?application)",
+      "",
+      "The loan is approved if the __credit score__ is above 700 and the __income__ is greater than 50000.",
+      "",
+      "credit-score('app-3', 750)",
+      "income('app-3', 60000)"
+    ],
+    "output": "approve(?application)",
+    "expectation": {
+      "application": "app-3"
+    }
+  },
+  {
+    "id": "prose-rpl-head-tail-plus-prose-additions",
+    "description": "§5: explicit head and partial tail; prose extends the tail.",
+    "rpl": [
+      "# Send Notification - notify(?user, ?message) <- email(?user, ?email)",
+      "",
+      "Notification also requires the user to have opted in.",
+      "",
+      "email('u-1', 'u1@example.com')",
+      "opted-in('u-1')"
+    ],
+    "output": "notify(?user, ?message)",
+    "expectation": {
+      "user": "u-1"
+    }
+  }
+]

@@ -1,0 +1,15 @@
+[
+  {
+    "id": "rpl-chain-derivation",
+    "description": "Multi-step derivation through type assertions.",
+    "rpl": [
+      "cleared(?patient) <- screened(?patient)",
+      "admitted(?patient) <- cleared(?patient)",
+      "screened('p-1')"
+    ],
+    "output": "admitted(?patient)",
+    "expectation": {
+      "patient": "p-1"
+    }
+  }
+]

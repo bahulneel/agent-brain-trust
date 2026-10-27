@@ -12,7 +12,7 @@ protocol. It keeps the runtime intent of the original skill:
 Where RPL cannot yet express a runtime concern directly, the missing behaviour
 is carried in prose and called out again in the accompanying experience report.
 
-# Expert Opinion - % <= deliver-expert-opinion(?request, ?expert-id, ?persona)
+# Expert Opinion - % <- deliver-expert-opinion(?request, ?expert-id, ?persona)
 
 Choose one expert, announce the choice, load only that persona, and answer in
 that voice for the rest of the turn.
@@ -29,7 +29,7 @@ Capture the user's task in their own words.
 
 If the user already names a Brain Trust expert id, prefer it over discovery.
 
-## Available expert id - available-expert(?expert-id) <= $list-experts() ^ ~ {:result #{& ?expert-ids}}, ?expert-id in ?expert-ids
+## Available expert id - available-expert(?expert-id) <- $list-experts() ^ ~ {:result #{& ?expert-ids}}, ?expert-id in ?expert-ids
 
 Treat `$list-experts` as the authoritative roster of valid ids for this run.
 If the host implements discovery by file access instead of an MCP surface, this
@@ -40,31 +40,31 @@ relation stands for that equivalent lookup.
 When no explicit expert id is present, restate the task as two to five short
 topic phrases that are suitable for expert resolution.
 
-## Draft candidate expert - candidate-expert(?expert-id) <= discovery-phrases(?phrases), $draft-experts(?phrases) ^ ~ {:result ?expert-id}
+## Draft candidate expert - candidate-expert(?expert-id) <- discovery-phrases(?phrases), $draft-experts(?phrases) ^ ~ {:result ?expert-id}
 
 Treat `$draft-experts` as the expert-resolution surface. A host may implement it
 by another skill, by MCP tools such as `resolve_topics`, or by an internal
 resolver. The protocol only needs the resulting expert id candidates.
 
-## Use the explicit expert - chosen-expert(?expert-id) <= explicit-expert-id(?expert-id)
+## Use the explicit expert - chosen-expert(?expert-id) <- explicit-expert-id(?expert-id)
 
 If the user already named an id, use it directly.
 
-## Choose a discovered expert - chosen-expert(?expert-id) <= candidate-expert(?expert-id) ; @choose(?expert-id, candidate-expert(?expert-id))
+## Choose a discovered expert - chosen-expert(?expert-id) <- candidate-expert(?expert-id) ; @choose(?expert-id, candidate-expert(?expert-id))
 
 Choose the one best-fit expert for the request. The choice should optimize for
 subject fit, not variety, because this protocol is intentionally single-voice.
 
-## Chosen expert must exist - chosen-expert(?expert-id) => available-expert(?expert-id)
+## Chosen expert must exist - chosen-expert(?expert-id) -> available-expert(?expert-id)
 
 Do not continue with an invented or stale expert id.
 
-## Load expert persona - expert-persona(?expert-id, ?persona) <= chosen-expert(?expert-id), $get-expert(?expert-id) ^ ~ {:result ?persona}
+## Load expert persona - expert-persona(?expert-id, ?persona) <- chosen-expert(?expert-id), $get-expert(?expert-id) ^ ~ {:result ?persona}
 
 Load only the chosen persona card. Do not load the entire roster when one card
 is sufficient.
 
-## Deliver the answer - deliver-expert-opinion(?request, ?expert-id, ?persona) <= request(?request), chosen-expert(?expert-id), expert-persona(?expert-id, ?persona)
+## Deliver the answer - deliver-expert-opinion(?request, ?expert-id, ?persona) <- request(?request), chosen-expert(?expert-id), expert-persona(?expert-id, ?persona)
 
 Before the substantive answer, briefly announce:
 

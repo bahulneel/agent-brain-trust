@@ -11,6 +11,7 @@ You do **not** need Node, npm, or a clone of this repository. Download **only** 
 | `agent-brain-trust-cursor-plugin.zip` | Cursor (full plugin: skills, MCP wiring, resources) |
 | `agent-brain-trust-claude-plugin.zip` | Claude Code as a plugin |
 | `<skill-name>.zip` (e.g. `expert-opinion.zip`) | That skill alone, portable |
+| `RPL.md`, `LRPL.md` | Standalone composed prompt documents |
 
 **Standalone MCP** is distributed only via **[npm](https://www.npmjs.com/package/@bahulneel/brain-trust-mcp)** (see [Standalone MCP](#standalone-mcp-no-plugin) below)—not as a GitHub Release zip.
 
@@ -21,6 +22,7 @@ You do **not** need Node, npm, or a clone of this repository. Download **only** 
 | `agent-brain-trust-cursor-plugin` | Cursor plugin zip (one file) |
 | `agent-brain-trust-claude-plugin` | Claude plugin zip (one file) |
 | `brain-trust-skill-zips` | All per-skill zips from that build (folder of `.zip` files inside the downloaded artifact) |
+| `brain-trust-prompts` | `RPL.md` and `LRPL.md` as standalone markdown files |
 
 GitHub may expire workflow artifacts after a retention period; prefer Releases when you can.
 
@@ -70,7 +72,7 @@ GitHub may expire workflow artifacts after a retention period; prefer Releases w
    }
    ```
 
-5. Restart Cursor or **Developer: Reload Window**. Enable the Brain Trust MCP server if you use MCP. The plugin’s **`.mcp.json`** runs the server with **`npx -y`** and a pinned **`@bahulneel/brain-trust-mcp@…`** spec (see [Cursor MCP docs](https://cursor.com/docs/mcp)). The install folder name **`agent-brain-trust`** should match the path above. If resources fail to resolve, set **`BRAIN_TRUST_RESOURCES`** to your plugin’s `resources/` directory.
+5. Restart Cursor or **Developer: Reload Window**. Enable the Brain Trust MCP server if you use MCP. The Cursor plugin’s **`.mcp.json`** starts the server with **`node`** on **`${CURSOR_PLUGIN_ROOT}/scripts/mcp-server.cjs`** and sets **`BRAIN_TRUST_RESOURCES`** to **`${CURSOR_PLUGIN_ROOT}/resources`** (see [Cursor MCP docs](https://cursor.com/docs/mcp)). The Claude Code plugin zip uses the same shape with **`${CLAUDE_PLUGIN_ROOT}`**. The install folder name **`agent-brain-trust`** should match the path above. Node.js 20+ must be on your **`PATH`**.
 
 ## Claude Code (full plugin)
 
@@ -99,7 +101,7 @@ Or run once without a global install:
 npx -y @bahulneel/brain-trust-mcp
 ```
 
-Point your MCP client at the same command (stdio). The built plugin zips use the same **`npx -y …`** spec in **`.mcp.json`**. For a local clone, **`npm run build`** produces **`packages/brain-trust-mcp/dist/brain-trust-mcp.js`** (Turbo) and **`resources/`** there (root build) — see [build.md](build.md).
+Point your MCP client at the same command (stdio). **Plugin** zips do **not** use this npx path — they run the bundled **`scripts/mcp-server.cjs`** with **`node`** and set **`BRAIN_TRUST_RESOURCES`** (see above). For a local clone, **`npm run build`** produces **`packages/brain-trust-mcp/dist/brain-trust-mcp.js`** (Turbo) and **`resources/`** there (root build) — see [build.md](build.md).
 
 ## One skill only (zip)
 

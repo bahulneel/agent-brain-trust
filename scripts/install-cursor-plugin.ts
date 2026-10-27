@@ -100,7 +100,7 @@ async function main(): Promise<void> {
   console.log(`Registered ${PLUGIN_ID} in ~/.claude/plugins/installed_plugins.json`);
   console.log(`Enabled ${PLUGIN_ID} in ~/.claude/settings.json`);
   console.log(
-    "MCP: the plugin includes .mcp.json (npx @bahulneel/brain-trust-mcp). Re-run this install after npm run build to refresh.",
+    "MCP: the plugin includes .mcp.json (node + scripts/mcp-server.cjs, BRAIN_TRUST_RESOURCES). Re-run this install after npm run build to refresh.",
   );
   console.log("Restart Cursor or run “Developer: Reload Window”.");
 }

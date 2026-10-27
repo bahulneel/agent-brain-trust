@@ -1,0 +1,38 @@
+# GitHub Pages (Jekyll) — this directory is the site source root.
+# https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site
+
+title: Agent Brain Trust — docs
+description: Technical documentation for the agent-brain-trust repository.
+theme: minima
+
+header_pages:
+  - index.md
+  - README.md
+  - install-prebuilt.md
+  - build.md
+  - repository-layout.md
+  - rpl/README.md
+
+markdown: kramdown
+
+defaults:
+  - scope:
+      path: "README.md"
+    values:
+      title: "Technical documentation"
+  - scope:
+      path: "install-prebuilt.md"
+    values:
+      title: "Install prebuilt"
+  - scope:
+      path: "build.md"
+    values:
+      title: "Build and validation"
+  - scope:
+      path: "repository-layout.md"
+    values:
+      title: "Repository layout"
+  - scope:
+      path: "rpl/README.md"
+    values:
+      title: "RPL language"

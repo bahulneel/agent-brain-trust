@@ -16,6 +16,7 @@ const ROOT = join(__dirname, "..");
 const CONTENT = join(ROOT, "content");
 const FRAGMENTS = join(CONTENT, "skill-fragments");
 const DIST = join(ROOT, "dist");
+const PROMPT_ARTIFACTS = join(DIST, "prompts");
 const PLUGIN_OUT = join(DIST, "agent-brain-trust-cursor-plugin");
 const CLAUDE_PLUGIN_OUT = join(DIST, "agent-brain-trust-claude-plugin");
 /** Publishable MCP package (manifest + README in repo; bundle + resources written here by build). */
@@ -44,18 +45,6 @@ async function readAndAssertMcpPackageMatchesRoot(): Promise<McpWorkspacePackage
     );
   }
   return mcp;
-}
-
-function publishMcpPackageName(pkgName: string): string {
-  return process.env.NPM_MCP_PACKAGE_NAME ?? pkgName;
-}
-
-function resolveMcpNpxSpec(version: string, publishName: string): string {
-  const override = process.env.BRAIN_TRUST_MCP_NPX_SPEC;
-  if (override !== undefined && override.length > 0) {
-    return override;
-  }
-  return `${publishName}@${version}`;
 }
 
 async function readPkgVersion(): Promise<string> {
@@ -185,6 +174,17 @@ async function buildZipSkills(stems: string[]): Promise<void> {
   await rm(stage, { recursive: true, force: true });
 }
 
+async function buildPromptArtifacts(): Promise<void> {
+  await mkdir(PROMPT_ARTIFACTS, { recursive: true });
+
+  for (const filename of ["RPL.md", "LRPL.md"] as const) {
+    const entry = join(CONTENT, filename);
+    const { frontmatter, body } = await loadAndCompose(entry, CONTENT, "plugin");
+    const text = `${frontmatter}${body}`.trimEnd() + "\n";
+    await writeFile(join(PROMPT_ARTIFACTS, filename), text, "utf8");
+  }
+}
+
 async function copyResourcesToPluginRoot(
   pluginRoot: string,
   stems: string[]
@@ -235,20 +235,26 @@ async function writeClaudePluginManifest(version: string): Promise<void> {
   await writeFile(join(dir, "plugin.json"), JSON.stringify(manifest, null, 2), "utf8");
 }
 
+type PluginRootVar = "${CURSOR_PLUGIN_ROOT}" | "${CLAUDE_PLUGIN_ROOT}";
+
 /**
- * Shipped plugin MCP config: stdio via npx and a pinned package spec (npm publish).
- * Override at build time: BRAIN_TRUST_MCP_NPX_SPEC, NPM_MCP_PACKAGE_NAME (npx spec only).
+ * Shipped plugin MCP config: stdio via system `node` + bundled `scripts/mcp-server.cjs`.
+ * Cursor expands `${CURSOR_PLUGIN_ROOT}`; Claude Code expands `${CLAUDE_PLUGIN_ROOT}`.
+ * Sets BRAIN_TRUST_RESOURCES so content loads from the plugin tree (not an npm fetch).
  */
-async function writeMcpConfigAt(pluginRoot: string): Promise<void> {
-  const mcp = await readAndAssertMcpPackageMatchesRoot();
-  const publishName = publishMcpPackageName(mcp.name);
-  const spec = resolveMcpNpxSpec(mcp.version, publishName);
+async function writeMcpConfigAt(
+  pluginRoot: string,
+  pluginRootVar: PluginRootVar
+): Promise<void> {
   const cfg = {
     mcpServers: {
       "brain-trust": {
         type: "stdio",
-        command: "npx",
-        args: ["-y", spec],
+        command: "node",
+        args: [`${pluginRootVar}/scripts/mcp-server.cjs`],
+        env: {
+          BRAIN_TRUST_RESOURCES: `${pluginRootVar}/resources`,
+        },
       },
     },
   };
@@ -285,7 +291,7 @@ async function bundleMcpServer(): Promise<void> {
 async function copyMcpBundleToClaudePlugin(): Promise<void> {
   await mkdir(join(CLAUDE_PLUGIN_OUT, "scripts"), { recursive: true });
   await copyTree(join(PLUGIN_OUT, "scripts"), join(CLAUDE_PLUGIN_OUT, "scripts"));
-  await writeMcpConfigAt(CLAUDE_PLUGIN_OUT);
+  await writeMcpConfigAt(CLAUDE_PLUGIN_OUT, "${CLAUDE_PLUGIN_ROOT}");
 }
 
 async function runSkillsRef(skillDir: string): Promise<void> {
@@ -310,6 +316,7 @@ export async function cmdBuild(): Promise<void> {
 
   await mkdir(PLUGIN_OUT, { recursive: true });
   await mkdir(CLAUDE_PLUGIN_OUT, { recursive: true });
+  await buildPromptArtifacts();
   await buildPluginSkills(stems);
   await buildClaudePluginSkills(stems);
   await copyResourcesToPluginRoot(PLUGIN_OUT, stems);
@@ -317,7 +324,7 @@ export async function cmdBuild(): Promise<void> {
   await writePluginManifest(version);
   await writeClaudePluginManifest(version);
   await bundleMcpServer();
-  await writeMcpConfigAt(PLUGIN_OUT);
+  await writeMcpConfigAt(PLUGIN_OUT, "${CURSOR_PLUGIN_ROOT}");
   await copyMcpBundleToClaudePlugin();
 
   await buildZipSkills(stems);
@@ -331,5 +338,12 @@ export async function cmdBuild(): Promise<void> {
     await runSkillsRef(join(CLAUDE_PLUGIN_OUT, "skills", stem));
   }
 
-  console.log("Build complete:", PLUGIN_OUT, CLAUDE_PLUGIN_OUT, MCP_PKG_ROOT, SKILL_ZIPS);
+  console.log(
+    "Build complete:",
+    PROMPT_ARTIFACTS,
+    PLUGIN_OUT,
+    CLAUDE_PLUGIN_OUT,
+    MCP_PKG_ROOT,
+    SKILL_ZIPS
+  );
 }

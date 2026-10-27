@@ -1,0 +1,45 @@
+[
+  {
+    "id": "prose-quality-relation-all-good",
+    "description": "Relation prose is clear, relationally named, and constraint-complete.",
+    "rpl": [
+      "# Eligible Adult",
+      "A user is eligible when they are registered and they are an adult.",
+      "",
+      "# Adult",
+      "A person is an adult when we know their age and it is over 18."
+    ],
+    "output": "quality(\"The statements above are good RPL\", ?verdict), @choose(?verdict, [\"all good\", \"some good\", \"none good\"])",
+    "expectation": {
+      "verdict": "all good"
+    }
+  },
+  {
+    "id": "prose-quality-program-some-good",
+    "description": "Program prose has a coherent flow but omits one branch and failure handling.",
+    "rpl": [
+      "# Weekly Summary Delivery",
+      "The system gathers this week's activity, formats a summary, and sends it to the user.",
+      "If the user has no email, the flow should use in-app delivery.",
+      "The success path is clear, but retry behavior and timeout handling are unspecified."
+    ],
+    "output": "quality(\"The statements above are good RPL\", ?verdict), @choose(?verdict, [\"all good\", \"some good\", \"none good\"])",
+    "expectation": {
+      "verdict": "some good"
+    }
+  },
+  {
+    "id": "prose-quality-protocol-none-good",
+    "description": "Protocol prose is contradictory and lacks stable boundaries or validation.",
+    "rpl": [
+      "# Incident Protocol",
+      "Start anywhere, skip confirmation, and overwrite previous outcomes whenever convenient.",
+      "Do steps in any order, including contradictory ones, and continue even when checks fail.",
+      "The protocol has no reliable start condition, handoff point, or stop condition."
+    ],
+    "output": "quality(\"The statements above are good RPL\", ?verdict), @choose(?verdict, [\"all good\", \"some good\", \"none good\"])",
+    "expectation": {
+      "verdict": "none good"
+    }
+  }
+]

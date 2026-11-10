@@ -234,3 +234,39 @@ ask(?prompt, ?answer) :- $ask(?prompt) ^ ~ {:result ?answer}
 ```
 
 **Not.** `<=` as implication. Implication is `:-` and constraints are `-:`.
+
+---
+
+### rpl.12 — `$json` writes bindings to chat
+
+**Law.** `$json(?x)` is a built-in tool. It writes the raw binding of the lvar `?x` to the chat (the user-visible transcript), not to an external API. The chat receives NDJSON: each line is the bound value itself, one line per binding instance.
+
+**FOL reading.** *Comment.* An oracle with a chat effect. Not a FOL connective.
+
+**Surface.** `$json(?x)` — exactly one lvar argument. The call dispatches only when `?x` is bound.
+
+**Spec.** [rpl.md §14.2](../specification/rpl.md#142-built-in-tools), [rpl.md §14.2.1](../specification/rpl.md#1421-user-contract-examples-closed-pure-rpl-programs).
+
+**Example.** A `^^` binding map serialises keys as lvars; several bindings yield one NDJSON line each.
+
+```rpl
+user('foo')
+% :- user(?u) ^^ ?b, $json(?b)
+```
+
+```ndjson
+{"?u":"foo"}
+```
+
+A `^` metadata projection uses a `:bindings` array (one object per instance):
+
+```rpl
+user('foo')
+% :- user(?u) ^ ?m, $json(?m)
+```
+
+```ndjson
+{":bindings":[{"?u":"foo"}]}
+```
+
+**Not.** `$json` is not an HTTP API, and not an internal-only debug stream. The chat carries the NDJSON; the trace records completion (`$json(?x) ^ ~ {:tool :json} -: true`).

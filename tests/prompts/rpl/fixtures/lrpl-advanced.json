@@ -8,7 +8,7 @@
     ],
     "output": "candidate(?item)",
     "expectation": {
-      "item": "item-z"
+      "?item": "item-z"
     }
   },
   {
@@ -21,7 +21,7 @@
     ],
     "output": "pending-choice(?value)",
     "expectation": {
-      "value": "v-1"
+      "?value": "v-1"
     }
   },
   {
@@ -34,8 +34,8 @@
     ],
     "output": "recommend(?user, ?item)",
     "expectation": {
-      "user": "u-1",
-      "item": "item-a"
+      "?user": "u-1",
+      "?item": "item-a"
     }
   }
 ]

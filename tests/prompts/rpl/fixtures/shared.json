@@ -5,7 +5,7 @@
     "rpl": ["account('acct-1')"],
     "output": "account(?id)",
     "expectation": {
-      "id": "acct-1"
+      "?id": "acct-1"
     }
   },
   {
@@ -18,7 +18,7 @@
     ],
     "output": "eligible(?u)",
     "expectation": {
-      "u": "u-1"
+      "?u": "u-1"
     }
   },
   {
@@ -27,7 +27,7 @@
     "rpl": ["valid-severity('critical')"],
     "output": "valid-severity(?level)",
     "expectation": {
-      "level": "critical"
+      "?level": "critical"
     }
   }
 ]

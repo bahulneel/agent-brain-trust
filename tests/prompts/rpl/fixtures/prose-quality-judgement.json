@@ -11,7 +11,7 @@
     ],
     "output": "quality(\"The statements above are good RPL\", ?verdict), @choose(?verdict, [\"all good\", \"some good\", \"none good\"])",
     "expectation": {
-      "verdict": "all good"
+      "?verdict": "all good"
     }
   },
   {
@@ -25,7 +25,7 @@
     ],
     "output": "quality(\"The statements above are good RPL\", ?verdict), @choose(?verdict, [\"all good\", \"some good\", \"none good\"])",
     "expectation": {
-      "verdict": "some good"
+      "?verdict": "some good"
     }
   },
   {
@@ -39,7 +39,7 @@
     ],
     "output": "quality(\"The statements above are good RPL\", ?verdict), @choose(?verdict, [\"all good\", \"some good\", \"none good\"])",
     "expectation": {
-      "verdict": "none good"
+      "?verdict": "none good"
     }
   }
 ]

@@ -4,7 +4,7 @@
 
 **Depends on.** None.
 
-**Not provided.** RPL namespaces, `->` traces, `%`, `$`, Markdown, timestep, additional logics, lazy evaluation.
+**Not provided.** RPL namespaces, `-:` traces, `%`, `$`, Markdown, timestep, additional logics, lazy evaluation.
 
 The fragment is first-order logic, restricted. It does not take arbitrary quantifier prefixes, function-term construction as a primary syntax, or classical completeness.
 
@@ -113,22 +113,22 @@ not premium-member(?user)
 
 ### fol.6 — Horn implication
 
-**Law.** `HEAD <- BODY` means the head holds when the body holds.
+**Law.** `HEAD :- BODY` means the head holds when the body holds.
 
 **FOL reading.** ∀x⃗ (BODY(x⃗) → HEAD(x⃗)).
 
-**Surface.** `HEAD <- EXPR`.
+**Surface.** `HEAD :- EXPR`.
 
 **Spec.** [rpl.md §10](../specification/rpl.md#10-rules-and-implication).
 
 **Example.**
 
 ```rpl
-ancestor(?x, ?y) <- parent(?x, ?y)
-ancestor(?x, ?z) <- parent(?x, ?y), ancestor(?y, ?z)
+ancestor(?x, ?y) :- parent(?x, ?y)
+ancestor(?x, ?z) :- parent(?x, ?y), ancestor(?y, ?z)
 ```
 
-**Not.** `<-` is not a procedure call. `<=` is comparison ([rpl.md §5.1](../specification/rpl.md#51-comparison-and-arithmetic)), not implication.
+**Not.** `:-` is not a procedure call. `<=` is comparison ([rpl.md §5.1](../specification/rpl.md#51-comparison-and-arithmetic)), not implication.
 
 ---
 
@@ -145,7 +145,7 @@ ancestor(?x, ?z) <- parent(?x, ?y), ancestor(?y, ?z)
 **Example.**
 
 ```rpl
-ancestor(?x, ?y) <- parent(?x, ?y)
+ancestor(?x, ?y) :- parent(?x, ?y)
 ```
 
 **Not.** `?q(?a)` is ill-formed. The callee must be a label. Syntax-reading `#?x` is [`rpl`](rpl.md).

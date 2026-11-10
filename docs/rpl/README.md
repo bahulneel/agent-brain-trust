@@ -20,7 +20,7 @@ reasoning state is easier to inspect, question, and improve.
 | [agent-mck.md](agent-mck.md) | RPL as metacognitive kernel: intent tracking, context stack, invariants |
 | [specification/rpl.md](specification/rpl.md) | Normative base spec: syntax, semantics, runtime, grammar |
 | [specification/lrpl.md](specification/lrpl.md) | Normative LRPL delta (lazy expressions, memos, stdlib) |
-| [specification/logics.md](specification/logics.md) | Additional logics: existential, modal, interpretive (`<@`, `@>`) |
+| [specification/logics.md](specification/logics.md) | Additional logics: existential, modal, interpretive (`:@`, `@:`) |
 | [tutorial/](tutorial/) | Continuations of the worked example (full recipe protocol, cook mode, kitchen context, scheduling, handoff) |
 
 The sections below walk through one **worked example**: a single-chat
@@ -155,7 +155,7 @@ If the model **jumps phases** or loses track of which stage applies, anchor
 headings until you need more structure there.
 
 ````markdown
-# Collaborative Recipe Session - %recipe-session(?phase) <- recipe-session(?phase)
+# Collaborative Recipe Session - %recipe-session(?phase) :- recipe-session(?phase)
 
 You are helping a home cook plan and execute a meal in this single chat.
 …
@@ -173,7 +173,7 @@ names-workflow-phase("overview")
 names-workflow-phase("cook")
 
 current-workflow-phase($phase)
-recipe-session(?phase) <- current-workflow-phase(?phase)
+recipe-session(?phase) :- current-workflow-phase(?phase)
 ```
 ````
 
@@ -193,7 +193,7 @@ Agree the ingredient list with approximate quantities before you write the full
 recipe. Flag substitutions only after they confirm the list.
 
 ```rpl
-ingredient-lines([& ?i ?q]) <- locked-ingredient-line(?i, ?q)
+ingredient-lines([& ?i ?q]) :- locked-ingredient-line(?i, ?q)
 ```
 ````
 

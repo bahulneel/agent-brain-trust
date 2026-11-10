@@ -4,7 +4,7 @@
 
 **Depends on.** [`rpl`](rpl.md).
 
-**Not provided.** A new meaning for `,` or `<-`. Those stay [`fol`](fol.md).
+**Not provided.** A new meaning for `,` or `:-`. Those stay [`fol`](fol.md).
 
 ---
 
@@ -30,7 +30,7 @@
 
 **FOL reading.** *Comment.* A host convention for posing an `rpl` query.
 
-**Surface.** A final line `% <- …` or `%name(?x) <- …`.
+**Surface.** A final line `% :- …` or `%name(?x) :- …`.
 
 **Spec.** [rpl.md §15.9](../specification/rpl.md#159-rpl-shell-mode-user-message-convention).
 
@@ -38,7 +38,7 @@
 
 ```rpl
 parent("ann", "bob")
-% <- parent("ann", ?c)
+% :- parent("ann", ?c)
 ```
 
 **Not.** Shell mode is not a new namespace. It is how a turn offers a `%` goal.

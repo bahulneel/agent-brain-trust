@@ -63,6 +63,17 @@ const RE_FULL_RECIPE =
 const RE_LOCKED_RECIPE_CLAIM =
   /\bwe (?:locked|chose|picked|selected)\b[^\n.]{0,80}\b(?:recipe|dish|pasta|curry|stew|soup|roast)\b|\blocked recipe\b[^\n.]{0,40}\b(?:is|was)\b\s+"?[^?.\n]{3,}/i;
 
+/** Affirmative (non-negated) claims that two forms are equivalent. */
+function affirmsEquivalence(reply: string): boolean {
+  const stripped = reply.replace(
+    /\b(?:are|is)\s+not\s+(?:the\s+same|equivalent|interchangeable|identical)(?:\s+in meaning)?\b|\b(?:do not|does not|don't|doesn't|not)\s+(?:have|has)\s+(?:the\s+)?same meaning\b|\bnot\s+(?:the\s+same|equivalent|interchangeable|identical(?:\s+in meaning)?)\b/gi,
+    " "
+  );
+  return /\b(?:are|is|they're)\s+(?:equivalent|interchangeable)\b|\b(?:have|has|with)\s+the\s+same meaning\b|\bidentical in meaning\b|\b(?:order )?does not matter\b/i.test(
+    stripped
+  );
+}
+
 export const probes: Probe[] = [
   {
     id: "intent-tracking",
@@ -328,12 +339,9 @@ export const probes: Probe[] = [
         description:
           "Says :Rare :~ BlackSwan is not the same as BlackSwan :~ :Rare.",
         test: (r) =>
-          /\b(?:not the same|not equivalent|different|order matters|does not mean|isn't the same|is not the same|not identical|swapping|reversed)\b/i.test(
+          /\b(?:not the same|not equivalent|different|order matters|does not mean|isn't the same|is not the same|not identical|swapping|reversed|(?:do not|does not|don't|doesn't) have the same meaning)\b/i.test(
             r
-          ) &&
-          !/\b(?:same meaning|are equivalent|interchangeable|identical in meaning|does not matter|order does not matter)\b/i.test(
-            r
-          ),
+          ) && !affirmsEquivalence(r),
       },
     ],
   },
@@ -370,12 +378,9 @@ export const probes: Probe[] = [
         description:
           "Does not treat BlackSwan ~: :Australia as the same as BlackSwan :~ :Australia.",
         test: (r) =>
-          /\b(?:not the same|not equivalent|different|distinct|does not mean|isn't the same|is not the same|not interchangeable|not identical)\b/i.test(
+          /\b(?:not the same|not equivalent|different|distinct|does not mean|isn't the same|is not the same|not interchangeable|not identical|(?:do not|does not|don't|doesn't) have the same meaning)\b/i.test(
             r
-          ) &&
-          !/\b(?:same meaning|are equivalent|interchangeable|identical in meaning)\b/i.test(
-            r
-          ),
+          ) && !affirmsEquivalence(r),
       },
     ],
   },

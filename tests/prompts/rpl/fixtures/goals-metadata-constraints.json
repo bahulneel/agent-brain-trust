@@ -8,7 +8,7 @@
     ],
     "output": "candidate(?user)",
     "expectation": {
-      "user": "u-1"
+      "?user": "u-1"
     }
   },
   {
@@ -20,7 +20,7 @@
     ],
     "output": "import-origin(?origin)",
     "expectation": {
-      "origin": "import"
+      "?origin": "import"
     }
   },
   {
@@ -33,7 +33,7 @@
     ],
     "output": "selected(?user)",
     "expectation": {
-      "user": "u-2"
+      "?user": "u-2"
     }
   }
 ]

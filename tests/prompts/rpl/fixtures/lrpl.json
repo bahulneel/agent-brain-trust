@@ -9,7 +9,7 @@
     ],
     "output": "recommendation(?item)",
     "expectation": {
-      "item": "item-a"
+      "?item": "item-a"
     }
   }
 ]

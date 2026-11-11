@@ -9,7 +9,7 @@
     ],
     "output": "admitted(?patient)",
     "expectation": {
-      "patient": "p-1"
+      "?patient": "p-1"
     }
   }
 ]

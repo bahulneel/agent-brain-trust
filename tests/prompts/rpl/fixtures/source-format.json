@@ -15,8 +15,8 @@
     ],
     "output": "notify(?user, ?message)",
     "expectation": {
-      "user": "u-1",
-      "message": "welcome"
+      "?user": "u-1",
+      "?message": "welcome"
     }
   },
   {
@@ -31,8 +31,8 @@
     ],
     "output": "severity(?patient, ?level)",
     "expectation": {
-      "patient": "p-2",
-      "level": "mild"
+      "?patient": "p-2",
+      "?level": "mild"
     }
   },
   {
@@ -45,7 +45,7 @@
     ],
     "output": "routable(?contact)",
     "expectation": {
-      "contact": "c-9"
+      "?contact": "c-9"
     }
   }
 ]

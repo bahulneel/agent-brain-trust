@@ -12,7 +12,7 @@
     ],
     "output": "has-item(?sku)",
     "expectation": {
-      "sku": "item-a"
+      "?sku": "item-a"
     }
   },
   {
@@ -27,7 +27,7 @@
     ],
     "output": "admin-id(?id)",
     "expectation": {
-      "id": "u-1"
+      "?id": "u-1"
     }
   },
   {
@@ -44,8 +44,8 @@
     ],
     "output": "service-tier(?service, ?tier), ?service = 'api",
     "expectation": {
-      "service": "api",
-      "tier": "gold"
+      "?service": "api",
+      "?tier": "gold"
     }
   }
 ]

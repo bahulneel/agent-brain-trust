@@ -211,7 +211,7 @@ These logics can be used separately or combined—yielding a "physics of informa
 With existential anchors, precise assertions arise:
 
 - `true %: (BlackSwan ~: :Protected)` — Any found swan must be viewed as protected.
-- `(:Mutation :~ BlackSwan) :% true` — Immediate impulse: the "Mutation" mode is possible because a black swan is seen.
+- `(BlackSwan :~ :Mutation) :% true` — Immediate impulse: black swan is identified since the "Mutation" mode is seen.
 
 ### 5.3 Interpretive with existential and modal
 

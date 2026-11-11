@@ -450,6 +450,6 @@ metacognitive layer. They are the natural follow-ups after this brief.
    mistaken for one procedure. Nothing says how they are combined when
    starting this bot; this brief is the first combination, and it is
    **inferred**.
-7. **No bot host in-repo.** "Start the RPL bot" is not specified as a
+7. **No bot host in-repo.** Start the RPL bot is not specified as a
    skill, a Cursor/Claude bot, or a shell-mode host. This brief only
    assembles a system prompt.

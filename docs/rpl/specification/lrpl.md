@@ -227,7 +227,7 @@ whose **syntax** reading is valid at a **head-compatible** position, the author
 may splice it with expansion (rpl.md §5.7):
 
 ```rpl
-#?rels <- $read(?location, ?options) ^:result ?rels
+#?rels :- $read(?location, ?options) ^:result ?rels
 ```
 
 Head-position validity for `#?rels` is as in rpl.md §5.7: every expanded result

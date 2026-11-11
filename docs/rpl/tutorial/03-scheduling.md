@@ -36,10 +36,10 @@ prose or with a lightweight predicate such as `step-in-stage(?stepOrdinal,
 ### Example rules block
 
 ```rpl
-stages([& ?so ?st ?th]) <- recipe-stage(?so, ?st, ?th)
+stages([& ?so ?st ?th]) :- recipe-stage(?so, ?st, ?th)
 
 scheduled-brief(?serve, ?stages, ?steps)
-  <- serve-target-time(?serve),
+  :- serve-target-time(?serve),
      stages(?stages),
      recipe-steps(?steps)
 ```
@@ -52,12 +52,12 @@ If you do not yet collect explicit stages, omit `recipe-stage` and keep
 
 ```markdown
 What serve time are you using?
-%t(?x) <- serve-target-time(?x)
+%t(?x) :- serve-target-time(?x)
 ```
 
 ```markdown
 List stages you believe apply (ordinal, title).
-%st(?rows) <- stages(?rows)
+%st(?rows) :- stages(?rows)
 ```
 
 When the model’s schedule disagrees with the user’s clock, the bug is often in

@@ -30,14 +30,14 @@ Each law uses: **Law**, **FOL reading** (or *comment*), **Surface**, **Spec**, *
 
 | Layer | Provides | Depends on | Spec |
 | --- | --- | --- | --- |
-| [`fol`](bootstrap/fol.md) | Horn / FOL fragment: truth, atoms, `,` `\|` `not`, `<-`, `?x`, `=` | — | [rpl.md](specification/rpl.md) §2, §3, §5.5, §10; [theory.md](theory.md) |
-| [`rpl`](bootstrap/rpl.md) | Base RPL: relations, `->`, traces, `%`, `$`, matching, abductives | `fol` | [rpl.md](specification/rpl.md) |
+| [`fol`](bootstrap/fol.md) | Horn / FOL fragment: truth, atoms, `,` `\|` `not`, `:-`, `?x`, `=` | — | [rpl.md](specification/rpl.md) §2, §3, §5.5, §10; [theory.md](theory.md) |
+| [`rpl`](bootstrap/rpl.md) | Base RPL: relations, `-:`, traces, `%`, `$`, matching, abductives | `fol` | [rpl.md](specification/rpl.md) |
 | [`rpl-source`](bootstrap/rpl-source.md) | Markdown source format; prose materialisation | `rpl` | [rpl.md](specification/rpl.md) §17 |
 | [`rpl-runtime`](bootstrap/rpl-runtime.md) | Timestep rhythm; RPL shell mode | `rpl` | [rpl.md](specification/rpl.md) §15.9, §18 |
 | [`agent`](bootstrap/agent.md) | Judgment remainder; no new syntax | `rpl` | [theory.md](theory.md); [vision.md](vision.md) |
-| [`existential`](bootstrap/existential.md) | Lifecycle `<%` `%>` | `rpl` | [logics.md](specification/logics.md) §2 |
-| [`modal`](bootstrap/modal.md) | Perspective `~>` `<~` | `rpl` | [logics.md](specification/logics.md) §3 |
-| [`interpretive`](bootstrap/interpretive.md) | Languages `<@` `@>` | `rpl` | [logics.md](specification/logics.md) §4 |
+| [`existential`](bootstrap/existential.md) | Lifecycle `:%` `%:` | `rpl` | [logics.md](specification/logics.md) §2 |
+| [`modal`](bootstrap/modal.md) | Perspective `~:` `:~` | `rpl` | [logics.md](specification/logics.md) §3 |
+| [`interpretive`](bootstrap/interpretive.md) | Languages `:@` `@:` | `rpl` | [logics.md](specification/logics.md) §4 |
 | [`lrpl`](bootstrap/lrpl.md) | Lazy evaluation, memos, satisfactory quiescence, lazy stdlib | `rpl` | [lrpl.md](specification/lrpl.md) |
 
 ```mermaid
@@ -75,10 +75,10 @@ Needs `fol` + `rpl` (the `%` query).
 parent("ann", "bob")
 parent("bob", "cam")
 
-ancestor(?x, ?y) <- parent(?x, ?y)
-ancestor(?x, ?z) <- parent(?x, ?y), ancestor(?y, ?z)
+ancestor(?x, ?y) :- parent(?x, ?y)
+ancestor(?x, ?z) :- parent(?x, ?y), ancestor(?y, ?z)
 
-% <- ancestor("ann", ?desc)
+% :- ancestor("ann", ?desc)
 ```
 
 **FOL reading** (`fol`): ∀-clauses for `ancestor`, two ground facts, query ∃d ancestor(ann, d). Witnesses `bob` and `cam`.

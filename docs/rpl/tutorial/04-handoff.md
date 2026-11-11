@@ -28,7 +28,7 @@ you are willing to trust across sessions, plus cook-mode anchors if you adopted
 
 ```rpl
 handoff-slice(?title, ?phase, ?stepOrdinal, ?stepText, ?serve)
-  <- committed-recipe-title(?title),
+  :- committed-recipe-title(?title),
      current-workflow-phase(?phase),
      current-recipe-step(?stepOrdinal, ?stepText),
      serve-target-time(?serve)
@@ -40,7 +40,7 @@ replace with `?stepOrdinal = nil`-friendly alternatives in your own catalog.)
 Emit and persist:
 
 ```rpl
-% <- handoff-slice(?title, ?phase, ?o, ?t, ?serve) ^^ ?slice, $json(?slice), $write(?slice, "handoff-supper.json")
+% :- handoff-slice(?title, ?phase, ?o, ?t, ?serve) ^^ ?slice, $json(?slice), $write(?slice, "handoff-supper.json")
 ```
 
 In the **next** session’s stratum:

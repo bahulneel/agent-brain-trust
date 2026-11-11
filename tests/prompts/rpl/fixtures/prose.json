@@ -71,7 +71,7 @@
     "id": "prose-rpl-head-tail-plus-prose-additions",
     "description": "§5: explicit head and partial tail; prose extends the tail.",
     "rpl": [
-      "# Send Notification - notify(?user, ?message) <- email(?user, ?email)",
+      "# Send Notification - notify(?user, ?message) :- email(?user, ?email)",
       "",
       "Notification also requires the user to have opted in.",
       "",

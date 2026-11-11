@@ -18,7 +18,7 @@
 
 ```
 # Human Title - rel(?arg)
-# Human Title - %goal(?arg) <- body-rel(?arg)
+# Human Title - %goal(?arg) :- body-rel(?arg)
 ```
 
 **Spec.** [rpl.md §17.1](../specification/rpl.md#171-heading-forms), [rpl.md §17.4](../specification/rpl.md#174-full-rule-tail-order).

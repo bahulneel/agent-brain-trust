@@ -12,7 +12,7 @@
     "id": "shared-rule-derivation-binding",
     "description": "Head derived from tail relation.",
     "rpl": [
-      "eligible(?u) <- registered(?u), age(?u, ?n), ?n >= 18",
+      "eligible(?u) :- registered(?u), age(?u, ?n), ?n >= 18",
       "registered('u-1')",
       "age('u-1', 22)"
     ],

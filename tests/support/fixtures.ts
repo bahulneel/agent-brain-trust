@@ -29,6 +29,6 @@ export function buildUserPrompt(c: RplCase): string[] {
   const lines = Array.isArray(c.rpl) ? c.rpl : [c.rpl];
   return [
     ...lines,
-    `% <- (${c.output}) ^^ ?result, $json(?result)`,
+    `% :- (${c.output}) ^^ ?result, $json(?result)`,
   ];
 }

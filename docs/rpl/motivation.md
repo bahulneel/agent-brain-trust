@@ -59,7 +59,7 @@ best judgment.
 **How to read RPL** — Read the surface syntax **declaratively**. A fragment states
 **what holds**, **what follows from what**, or **what must remain true**, as
 relations and constraints over bindings — not a script of steps for an engine to
-execute. Heads (`rel`, `%`, `$`), connectives (`,`, `|`, `<-`, `->`), variables and
+execute. Heads (`rel`, `%`, `$`), connectives (`,`, `|`, `:-`, `-:`), variables and
 patterns, literals and collections, metadata (`^`), tools, goals, and abductives
 each have a **meaning** (a claim or constraint shape) fixed in the base
 specification; **lvars** in particular are §3 there. **How** an implementation or agent

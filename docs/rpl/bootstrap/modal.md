@@ -10,19 +10,19 @@
 
 ### modal.1 — Necessity and possibility
 
-**Law.** `A ~> B` projects A into the mode of B (necessity in that world-view). `B <~ A` maps B back to the base context (possibility justified by A).
+**Law.** `A ~: B` projects A into the mode of B (necessity in that world-view). `B :~ A` maps B back to the base context (possibility justified by A).
 
 **FOL reading.** *Comment.* Modal operators, not Horn connectives.
 
-**Surface.** `~>`, `<~`.
+**Surface.** `~:`, `:~`.
 
 **Spec.** [logics.md §3](../specification/logics.md#3-additional-logic-b-modal).
 
 **Example.**
 
 ```rpl
-BlackSwan ~> :Australia
-:Rare <~ BlackSwan
+BlackSwan ~: :Australia
+:Rare :~ BlackSwan
 ```
 
 **Not.** Flat identification of a user goal with a safety requirement. Modes keep those contexts apart.

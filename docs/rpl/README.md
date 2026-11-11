@@ -225,7 +225,7 @@ one capability.
 | [tutorial/03-scheduling.md](tutorial/03-scheduling.md) | Serve-time targets and stage-shaped prep |
 | [tutorial/04-handoff.md](tutorial/04-handoff.md) | Trace parking and continuation in a new session |
 
-LRPL builtins such as `$json`, `$write`, and `$index` are specified in
+`$json` is a base RPL built-in ([specification/rpl.md](specification/rpl.md) §14.2; [`rpl.12`](bootstrap/rpl.md)). LRPL builtins such as `$write` and `$index` are specified in
 [specification/lrpl.md](specification/lrpl.md). Optional interpretive and modal
 operators are in [specification/logics.md](specification/logics.md).
 

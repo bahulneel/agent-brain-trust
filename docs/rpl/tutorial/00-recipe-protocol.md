@@ -304,7 +304,7 @@ to chat:
 % :- recipe-artifact(?candidates, ?title, ?steps, ?parked) ^^ ?trace, $json(?trace)
 ```
 
-See [../specification/lrpl.md](../specification/lrpl.md) for the `$json` contract.
+See [../specification/rpl.md](../specification/rpl.md) §14.2 for the `$json` contract.
 
 A trace written via `$write` is a valid `$index` source for a later stratum:
 
@@ -326,4 +326,4 @@ $index("supper-trace.json")
 | [03-scheduling.md](03-scheduling.md) | Serve-time targets and stage-shaped prep |
 | [04-handoff.md](04-handoff.md) | Trace parking and continuation in a new session |
 
-Normative LRPL builtins (`$json`, `$write`, `$index`, …): [../specification/lrpl.md](../specification/lrpl.md).
+`$json` is a base RPL built-in ([../specification/rpl.md](../specification/rpl.md) §14.2). LRPL builtins (`$write`, `$index`, …): [../specification/lrpl.md](../specification/lrpl.md).

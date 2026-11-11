@@ -30,7 +30,7 @@
 
 **FOL reading.** These are exactly the steps `fol.9` does not decide.
 
-**Surface.** `-> false` and host choices. No extra operator.
+**Surface.** `-: false` and host choices. No extra operator.
 
 **Spec.** [theory.md](../theory.md).
 

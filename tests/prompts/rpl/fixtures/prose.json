@@ -13,8 +13,8 @@
     ],
     "output": "severity(?patient, ?severity)",
     "expectation": {
-      "patient": "sam",
-      "severity": "critical"
+      "?patient": "sam",
+      "?severity": "critical"
     }
   },
   {
@@ -31,7 +31,7 @@
     ],
     "output": "fulfillable(?order-id)",
     "expectation": {
-      "order-id": "o-42"
+      "?order-id": "o-42"
     }
   },
   {
@@ -47,8 +47,8 @@
     ],
     "output": "discount(?user, ?amount)",
     "expectation": {
-      "user": "u-7",
-      "amount": 20
+      "?user": "u-7",
+      "?amount": 20
     }
   },
   {
@@ -64,14 +64,14 @@
     ],
     "output": "approve(?application)",
     "expectation": {
-      "application": "app-3"
+      "?application": "app-3"
     }
   },
   {
     "id": "prose-rpl-head-tail-plus-prose-additions",
     "description": "§5: explicit head and partial tail; prose extends the tail.",
     "rpl": [
-      "# Send Notification - notify(?user, ?message) <- email(?user, ?email)",
+      "# Send Notification - notify(?user, ?message) :- email(?user, ?email)",
       "",
       "Notification also requires the user to have opted in.",
       "",
@@ -80,7 +80,7 @@
     ],
     "output": "notify(?user, ?message)",
     "expectation": {
-      "user": "u-1"
+      "?user": "u-1"
     }
   }
 ]

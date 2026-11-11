@@ -18,9 +18,10 @@ reasoning state is easier to inspect, question, and improve.
 | [language-bootstrap.md](language-bootstrap.md) | Language bootstrap: named layers (`fol`, `rpl`, `lrpl`, …) with explicit dependencies |
 | [bootstrapping.md](bootstrapping.md) | Incomplete agent-habit sketch — not a language source; see the status note there |
 | [agent-mck.md](agent-mck.md) | RPL as metacognitive kernel: intent tracking, context stack, invariants |
+| [bots/rpl-bot.md](bots/rpl-bot.md) | Starting brief for the RPL test bot: closure, kernel probes, gaps |
 | [specification/rpl.md](specification/rpl.md) | Normative base spec: syntax, semantics, runtime, grammar |
 | [specification/lrpl.md](specification/lrpl.md) | Normative LRPL delta (lazy expressions, memos, stdlib) |
-| [specification/logics.md](specification/logics.md) | Additional logics: existential, modal, interpretive (`<@`, `@>`) |
+| [specification/logics.md](specification/logics.md) | Additional logics: existential, modal, interpretive (`:@`, `@:`) |
 | [tutorial/](tutorial/) | Continuations of the worked example (full recipe protocol, cook mode, kitchen context, scheduling, handoff) |
 
 The sections below walk through one **worked example**: a single-chat
@@ -155,7 +156,7 @@ If the model **jumps phases** or loses track of which stage applies, anchor
 headings until you need more structure there.
 
 ````markdown
-# Collaborative Recipe Session - %recipe-session(?phase) <- recipe-session(?phase)
+# Collaborative Recipe Session - %recipe-session(?phase) :- recipe-session(?phase)
 
 You are helping a home cook plan and execute a meal in this single chat.
 …
@@ -173,7 +174,7 @@ names-workflow-phase("overview")
 names-workflow-phase("cook")
 
 current-workflow-phase($phase)
-recipe-session(?phase) <- current-workflow-phase(?phase)
+recipe-session(?phase) :- current-workflow-phase(?phase)
 ```
 ````
 
@@ -193,7 +194,7 @@ Agree the ingredient list with approximate quantities before you write the full
 recipe. Flag substitutions only after they confirm the list.
 
 ```rpl
-ingredient-lines([& ?i ?q]) <- locked-ingredient-line(?i, ?q)
+ingredient-lines([& ?i ?q]) :- locked-ingredient-line(?i, ?q)
 ```
 ````
 
@@ -224,7 +225,7 @@ one capability.
 | [tutorial/03-scheduling.md](tutorial/03-scheduling.md) | Serve-time targets and stage-shaped prep |
 | [tutorial/04-handoff.md](tutorial/04-handoff.md) | Trace parking and continuation in a new session |
 
-LRPL builtins such as `$json`, `$write`, and `$index` are specified in
+`$json` is a base RPL built-in ([specification/rpl.md](specification/rpl.md) §14.2; [`rpl.12`](bootstrap/rpl.md)). LRPL builtins such as `$write` and `$index` are specified in
 [specification/lrpl.md](specification/lrpl.md). Optional interpretive and modal
 operators are in [specification/logics.md](specification/logics.md).
 
@@ -290,6 +291,7 @@ RPL is a protocol language, not a programming language:
 - [language-bootstrap.md](language-bootstrap.md) — Layer catalog and closures (**RPL**, **LRPL**, additional logics).
 - [bootstrapping.md](bootstrapping.md) — Incomplete agent-habit sketch; do not use as language definition.
 - [agent-mck.md](agent-mck.md) — RPL as an internal metacognitive layer for stable, principled agent behaviour.
+- [bots/rpl-bot.md](bots/rpl-bot.md) — Starting brief for the RPL test bot that exercises the metacognitive kernel.
 - [protocols/expert-opinion.md](protocols/expert-opinion.md) — canonical RPL
   reimplementation of the single-expert protocol
 - [protocols/brain-trust-technical-dialectic.md](protocols/brain-trust-technical-dialectic.md) —

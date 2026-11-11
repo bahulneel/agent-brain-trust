@@ -28,7 +28,7 @@ pending-choice(?value) ^^ choice ?x              -- single-slot binding shorthan
 pending-choice(?value) ^^ {choice ?x}           -- equivalent map form
 pending-choice(?value) ^:bindings {choice ?x}   -- equivalent explicit form
 
-pending-choice(?value) ^^ {?choice "critical"} -> true
+pending-choice(?value) ^^ {?choice "critical"} -: true
 ```
 
 **Variable key** — metadata maps may not use an lvar as a key. Bind the map, then match (tuple or map destructuring per §4 / §6):
@@ -47,7 +47,7 @@ extra facts are assumed.
 USER:
 ```rpl
 user('foo')
-% <- user(?u), $json(?u)
+% :- user(?u), $json(?u)
 ```
 
 AGENT:
@@ -60,7 +60,7 @@ AGENT:
 USER:
 ```rpl
 user('foo')
-% <- user(?u) ^^ ?b, $json(?b)
+% :- user(?u) ^^ ?b, $json(?b)
 ```
 
 AGENT:
@@ -74,7 +74,7 @@ USER:
 ```rpl
 user('foo')
 user('bar')
-% <- user(?u), $json(?u)
+% :- user(?u), $json(?u)
 ```
 
 AGENT:
@@ -89,7 +89,7 @@ USER:
 ```rpl
 user('foo')
 user('bar')
-% <- user(?u) ^^ ?b, $json(?b)
+% :- user(?u) ^^ ?b, $json(?b)
 ```
 
 AGENT:
@@ -103,7 +103,7 @@ AGENT:
 USER:
 ```rpl
 user('foo')
-% <- user(?u) ^ ?m, $json(?m)
+% :- user(?u) ^ ?m, $json(?m)
 ```
 
 AGENT:
@@ -117,7 +117,7 @@ USER:
 ```rpl
 user('foo')
 user('bar')
-% <- user(?u) ^ ?m, $json(?m)
+% :- user(?u) ^ ?m, $json(?m)
 ```
 
 AGENT:
@@ -185,10 +185,10 @@ Prose that refers to **action-shaped tools** (`$ask`, `$write`, `$generate`) may
 Prose that refers to **query-shaped tools** (`$query-db`, `$index`) stays relational — e.g. “A query has results from the database” rather than “Run the query”.
 
 ## Level 5: Rules, Logic & Metadata
-Rules combine heads and tails using implication (`<-`).
-- **Implication**: `head <- tail`
-- **Conjunction**: `head <- rel1(?x), rel2(?x)`
-- **Disjunction**: `head <- rel1(?x) | rel2(?x)`
+Rules combine heads and tails using implication (`:-`).
+- **Implication**: `head :- tail`
+- **Conjunction**: `head :- rel1(?x), rel2(?x)`
+- **Disjunction**: `head :- rel1(?x) | rel2(?x)`
 
 **Metadata** (`^` and `^^`):
 Attaches provenance or bindings to clauses (map keys **literal** in `^ ~` / `^^` forms; spec §11).
@@ -196,10 +196,10 @@ Attaches provenance or bindings to clauses (map keys **literal** in `^ ~` / `^^`
 - `clause ^:scope ?s` (shorthand for `^ ~ {:scope ?s}`)
 - `clause ^^ {a ?a}` (shorthand for `:bindings` sub-map; key `a` is a symbol literal)
 
-**Constraints** (`->`):
+**Constraints** (`-:`):
 Expresses invariants.
-- `rel(?x) -> valid(?x)` (if `rel(?x)` holds, `valid(?x)` must hold)
-- `rel1(?x), rel2(?x) -> false` (mutual exclusion)
+- `rel(?x) -: valid(?x)` (if `rel(?x)` holds, `valid(?x)` must hold)
+- `rel1(?x), rel2(?x) -: false` (mutual exclusion)
 
 ## Level 6: Async & Control
 - **Async Variables (avar)**: `$x` (suspends until external value arrives; once resolved, the value is recorded under **`?x`**; trace/bindings in `^^ {…}` use **literal** symbol keys per §11)

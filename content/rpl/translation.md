@@ -8,7 +8,7 @@ When the user’s **last non-empty line** starts with **`%`** (allow leading whi
 
 - Parse **that line** as a **goal**; treat everything **above** as **context**.
 - **Run** the query against the current programme and bindings.
-- **If the goal has capture arguments** in the head (`%report(?x) <- …`): output **only** what was **requested**—the **result values**—with no extra prose.
+- **If the goal has capture arguments** in the head (`%report(?x) :- …`): output **only** what was **requested**—the **result values**—with no extra prose.
 - **If you would produce no substantive output** (no capture values to show, and no tool-written chat such as **`$json`** NDJSON lines): reply with exactly **`true`** if the rule is **satisfied**, or a **concise reason** if **unsatisfied**.
 
 Do not mix shell-style terse output with normal conversational wrapping in the same turn.
@@ -23,7 +23,7 @@ bindings, preserve or infer `$json` and output NDJSON in chat.
 
 Example:
 ```rpl
-% <- pending-choice(?value), $json(?value)
+% :- pending-choice(?value), $json(?value)
 ```
 
 ## 0. Style: readability and string quotes
@@ -40,9 +40,9 @@ Ask the user for the patient's name and their symptoms. When symptoms include ch
 
 **Inferred RPL:**
 ```rpl
-# Triage Patient - triage(?patient) <- name(?patient, $name), symptoms(?patient, $symptoms), severity(?patient, ?severity)
+# Triage Patient - triage(?patient) :- name(?patient, $name), symptoms(?patient, $symptoms), severity(?patient, ?severity)
 
-severity(?patient, "critical") <- symptoms(?patient, ?s), ?s ~ /chest pain/
+severity(?patient, "critical") :- symptoms(?patient, ?s), ?s ~ /chest pain/
 ```
 
 ## 2. No RPL + Emphasis in Body (Prose with Hints)
@@ -55,7 +55,7 @@ An order is fulfillable when its __order id__ is valid. A fulfillable order has 
 
 **Inferred RPL:**
 ```rpl
-# Order Fulfillment - fulfillable(?order-id) <- valid-order(?order-id), customer-details(?order-id, $customer-details), shipping-address(?order-id, $shipping-address)
+# Order Fulfillment - fulfillable(?order-id) :- valid-order(?order-id), customer-details(?order-id, $customer-details), shipping-address(?order-id, $shipping-address)
 ```
 
 ## 3. RPL Head + No Emphasis (Signature Provided, Body Inferred)
@@ -70,8 +70,8 @@ If the user is a premium member, the discount is 20%. Otherwise, it is 5%.
 ```rpl
 # Calculate Discount - discount(?user, ?amount)
 
-discount(?user, 20) <- premium-member(?user)
-discount(?user, 5) <- not premium-member(?user)
+discount(?user, 20) :- premium-member(?user)
+discount(?user, 5) :- not premium-member(?user)
 ```
 
 ## 4. RPL Head + Emphasis (Signature Provided, Body Uses Hints)
@@ -84,20 +84,20 @@ The loan is approved if the __credit score__ is above 700 and the __income__ is 
 
 **Inferred RPL:**
 ```rpl
-# Approve Loan - %approve(?application) <- credit-score(?application, ?credit-score), ?credit-score > 700, income(?application, ?income), ?income > 50000
+# Approve Loan - %approve(?application) :- credit-score(?application, ?credit-score), ?credit-score > 700, income(?application, ?income), ?income > 50000
 ```
 
 ## 5. RPL Head and Tail + Tail Additions (Explicit Rules Mixed with Prose)
 
 **Prose:**
 ```markdown
-# Send Notification - notify(?user, ?message) <- email(?user, ?email)
+# Send Notification - notify(?user, ?message) :- email(?user, ?email)
 Notification also requires the user to have opted in.
 ```
 
 **Inferred RPL:**
 ```rpl
-# Send Notification - notify(?user, ?message) <- email(?user, ?email), opted-in(?user)
+# Send Notification - notify(?user, ?message) :- email(?user, ?email), opted-in(?user)
 ```
 
 ## 6. Async Variables and Tools
@@ -110,7 +110,7 @@ A query has results from the database.
 
 **Inferred RPL:**
 ```rpl
-# Query Result - query-result(?query, ?results) <- $query-db(?query) ^ ~ {:result ?results}
+# Query Result - query-result(?query, ?results) :- $query-db(?query) ^ ~ {:result ?results}
 ```
 
 ## 7. Binding keys and traces

@@ -56,7 +56,7 @@ And extend your RPL block:
 
 ```rpl
 cook-mode-anchored(?title, ?o, ?t)
-  <- current-workflow-phase("cook"),
+  :- current-workflow-phase("cook"),
      active-recipe-title(?title),
      committed-recipe-title(?title),
      current-recipe-step(?o, ?t)
@@ -69,7 +69,7 @@ the conjunction fails in review or in agent self-check.
 
 ```markdown
 What step do you treat as current?
-%cur(?o, ?t) <- current-recipe-step(?o, ?t)
+%cur(?o, ?t) :- current-recipe-step(?o, ?t)
 ```
 
 If `?o` jumps backward without user intent, fix the prose that made “helpful

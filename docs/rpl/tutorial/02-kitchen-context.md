@@ -38,7 +38,7 @@ $index("kitchen-context.json")
 
 # After index facts appear in the stratum, treat them like any other facts:
 pantry-aware-lock(?i, ?q)
-  <- locked-ingredient-line(?i, ?q), pantry-stock(?i, _)
+  :- locked-ingredient-line(?i, ?q), pantry-stock(?i, _)
 ```
 
 In real prompts you would document the expected JSON keys beside the file—but

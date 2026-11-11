@@ -8,11 +8,11 @@
       "| --- | --- |",
       "| item-a | 3 |",
       "| item-b | 1 |",
-      "has-item(?sku) <- $index('inline:inventory-table') ^ ~ {:result ?rows}, ?rows = ~ /(?P<sku>item-a)/"
+      "has-item(?sku) :- $index('inline:inventory-table') ^ ~ {:result ?rows}, ?rows = ~ /(?P<sku>item-a)/"
     ],
     "output": "has-item(?sku)",
     "expectation": {
-      "sku": "item-a"
+      "?sku": "item-a"
     }
   },
   {
@@ -23,11 +23,11 @@
       "```json",
       "[{\"id\":\"u-1\",\"role\":\"admin\"},{\"id\":\"u-2\",\"role\":\"viewer\"}]",
       "```",
-      "admin-id(?id) <- $index('inline:users-json') ^ ~ {:result ?rows}, ?rows = ~ /(?P<id>u-1)/"
+      "admin-id(?id) :- $index('inline:users-json') ^ ~ {:result ?rows}, ?rows = ~ /(?P<id>u-1)/"
     ],
     "output": "admin-id(?id)",
     "expectation": {
-      "id": "u-1"
+      "?id": "u-1"
     }
   },
   {
@@ -40,12 +40,12 @@
       "- service: worker",
       "  tier: silver",
       "catalog('services', $collection)",
-      "service-tier(?service, ?tier) <- $index(catalog('services', $collection), 'service,tier') ^ ~ {:result ?rows}, ?rows = ~ /(?P<service>api).*(?P<tier>gold)/"
+      "service-tier(?service, ?tier) :- $index(catalog('services', $collection), 'service,tier') ^ ~ {:result ?rows}, ?rows = ~ /(?P<service>api).*(?P<tier>gold)/"
     ],
     "output": "service-tier(?service, ?tier), ?service = 'api",
     "expectation": {
-      "service": "api",
-      "tier": "gold"
+      "?service": "api",
+      "?tier": "gold"
     }
   }
 ]

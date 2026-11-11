@@ -10,19 +10,19 @@
 
 ### interpretive.1 — Define and interpret
 
-**Law.** `<@` defines a language from a specification (assertion side). `@>` requests the interpretation of a statement in a named language (goal side). A statement holds when its interpretation unifies with the expected RPL reading.
+**Law.** `:@` defines a language from a specification (assertion side). `@:` requests the interpretation of a statement in a named language (goal side). A statement holds when its interpretation unifies with the expected RPL reading.
 
 **FOL reading.** *Comment.* A translation into the `rpl` theory, not a FOL quantifier.
 
-**Surface.** `Statement @> lang(Interpretation)`, `name(?spec) <@ Specification`.
+**Surface.** `Statement @: lang(Interpretation)`, `name(?spec) :@ Specification`.
 
 **Spec.** [logics.md §4](../specification/logics.md#4-additional-logic-c-interpretive).
 
 **Example.**
 
 ```rpl
-'SELECT * FROM foo' @> sql(_)
-'SELECT * FROM foo' @> sql(~ foo(_))
+'SELECT * FROM foo' @: sql(_)
+'SELECT * FROM foo' @: sql(~ foo(_))
 ```
 
 **Not.** A comparison of surface strings. Shared meaning is shared `rpl` interpretation.

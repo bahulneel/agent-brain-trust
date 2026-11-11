@@ -75,10 +75,10 @@ single value.
 Make the collections explicit:
 
 ```rpl
-candidate-dishes([& ?d]) <- proposed-candidate-dish(?d)
-ingredient-lines([& ?i ?q]) <- locked-ingredient-line(?i, ?q)
-recipe-steps([& ?o ?t]) <- recipe-step(?o, ?t)
-parked-cook-questions([& ?q]) <- parked-cook-question(?q)
+candidate-dishes([& ?d]) :- proposed-candidate-dish(?d)
+ingredient-lines([& ?i ?q]) :- locked-ingredient-line(?i, ?q)
+recipe-steps([& ?o ?t]) :- recipe-step(?o, ?t)
+parked-cook-questions([& ?q]) :- parked-cook-question(?q)
 ```
 
 Now the model has a concrete reading for “more than one thing collected here”
@@ -91,7 +91,7 @@ from which the next phase can run honestly:
 
 ````markdown
 ## Prep brief - meal-prep-brief(?phase, ?candidates, ?locks, ?title, ?serve)
-  <- current-workflow-phase(?phase),
+  :- current-workflow-phase(?phase),
      candidate-dishes(?candidates),
      ingredient-lines(?locks),
      committed-recipe-title(?title),
@@ -110,7 +110,7 @@ The goal is not just "done". It yields useful values you might inspect, log, or
 hand off:
 
 ```markdown
-# Collaborative Recipe Session - %recipe-artifact(?candidates, ?title, ?steps, ?parked) <- recipe-artifact(?candidates, ?title, ?steps, ?parked)
+# Collaborative Recipe Session - %recipe-artifact(?candidates, ?title, ?steps, ?parked) :- recipe-artifact(?candidates, ?title, ?steps, ?parked)
 ```
 
 That says the protocol is working toward an output relation whose pieces matter:
@@ -122,17 +122,17 @@ numbered steps, and anything parked for later.
 Different phases justify different immediate sub-goals:
 
 ```markdown
-# Collaborative Recipe Session - %active-recipe-session <- %recipe-session-planning | %recipe-session-cook
+# Collaborative Recipe Session - %active-recipe-session :- %recipe-session-planning | %recipe-session-cook
 
 # Planning track - %recipe-session-planning
-  <- current-workflow-phase("explore")
+  :- current-workflow-phase("explore")
   | current-workflow-phase("refine")
   | current-workflow-phase("lock")
   | current-workflow-phase("overview")
 
 Keep candidates, constraints, and locks explicit before cook mode.
 
-# Cook mode track - %recipe-session-cook <- current-workflow-phase("cook")
+# Cook mode track - %recipe-session-cook :- current-workflow-phase("cook")
 
 One numbered step at a time; answer questions against the active step only.
 ```
@@ -162,7 +162,7 @@ In shell-style querying, that can become explicit:
 USER:
 ```markdown
 What workflow phase do you think is active?
-%phase(?p) <- current-workflow-phase(?p)
+%phase(?p) :- current-workflow-phase(?p)
 ```
 
 AGENT:
@@ -175,7 +175,7 @@ Or:
 USER:
 ```markdown
 What ingredient lines are locked?
-%locks(?lines) <- ingredient-lines(?lines)
+%locks(?lines) :- ingredient-lines(?lines)
 ```
 
 If the answer surprises you, the bug may be in the prose rather than the model.
@@ -195,7 +195,7 @@ notes, steps, serve target, parked questions). Each name is meant to pass a
 “table test”: if this were a row, would the columns mean what they say?
 
 ````markdown
-# Collaborative Recipe Session - %active-recipe-session <- %recipe-session-planning | %recipe-session-cook
+# Collaborative Recipe Session - %active-recipe-session :- %recipe-session-planning | %recipe-session-cook
 
 You are helping a home cook plan and execute a meal in this single chat. The
 cook may need clear steps, small chunks of information, and explicit checkpoints
@@ -257,34 +257,34 @@ names-workflow-phase("cook")
 
 current-workflow-phase($phase)
 
-candidate-dishes([& ?d]) <- proposed-candidate-dish(?d)
-ingredient-lines([& ?i ?q]) <- locked-ingredient-line(?i, ?q)
-recipe-steps([& ?o ?t]) <- recipe-step(?o, ?t)
-parked-cook-questions([& ?q]) <- parked-cook-question(?q)
+candidate-dishes([& ?d]) :- proposed-candidate-dish(?d)
+ingredient-lines([& ?i ?q]) :- locked-ingredient-line(?i, ?q)
+recipe-steps([& ?o ?t]) :- recipe-step(?o, ?t)
+parked-cook-questions([& ?q]) :- parked-cook-question(?q)
 
 meal-prep-brief(?phase, ?candidates, ?locks, ?title, ?serve)
-  <- current-workflow-phase(?phase),
+  :- current-workflow-phase(?phase),
      candidate-dishes(?candidates),
      ingredient-lines(?locks),
      committed-recipe-title(?title),
      serve-target-time(?serve)
 
 recipe-artifact(?candidates, ?title, ?steps, ?parked)
-  <- candidate-dishes(?candidates),
+  :- candidate-dishes(?candidates),
      committed-recipe-title(?title),
      recipe-steps(?steps),
      parked-cook-questions(?parked)
 ```
 
 # Planning track - %recipe-session-planning
-  <- current-workflow-phase("explore")
+  :- current-workflow-phase("explore")
   | current-workflow-phase("refine")
   | current-workflow-phase("lock")
   | current-workflow-phase("overview")
 
 Keep candidates, constraints, and locks explicit before cook mode.
 
-# Cook mode track - %recipe-session-cook <- current-workflow-phase("cook")
+# Cook mode track - %recipe-session-cook :- current-workflow-phase("cook")
 
 One numbered step at a time; answer questions against the active step only.
 ````
@@ -301,10 +301,10 @@ If you want a user-visible record of current bindings, `$json(?x)` emits NDJSON
 to chat:
 
 ```rpl
-% <- recipe-artifact(?candidates, ?title, ?steps, ?parked) ^^ ?trace, $json(?trace)
+% :- recipe-artifact(?candidates, ?title, ?steps, ?parked) ^^ ?trace, $json(?trace)
 ```
 
-See [../specification/lrpl.md](../specification/lrpl.md) for the `$json` contract.
+See [../specification/rpl.md](../specification/rpl.md) §14.2 for the `$json` contract.
 
 A trace written via `$write` is a valid `$index` source for a later stratum:
 
@@ -326,4 +326,4 @@ $index("supper-trace.json")
 | [03-scheduling.md](03-scheduling.md) | Serve-time targets and stage-shaped prep |
 | [04-handoff.md](04-handoff.md) | Trace parking and continuation in a new session |
 
-Normative LRPL builtins (`$json`, `$write`, `$index`, …): [../specification/lrpl.md](../specification/lrpl.md).
+`$json` is a base RPL built-in ([../specification/rpl.md](../specification/rpl.md) §14.2). LRPL builtins (`$write`, `$index`, …): [../specification/lrpl.md](../specification/lrpl.md).

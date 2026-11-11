@@ -5,20 +5,20 @@
     "rpl": ["account('acct-1')"],
     "output": "account(?id)",
     "expectation": {
-      "id": "acct-1"
+      "?id": "acct-1"
     }
   },
   {
     "id": "shared-rule-derivation-binding",
     "description": "Head derived from tail relation.",
     "rpl": [
-      "eligible(?u) <- registered(?u), age(?u, ?n), ?n >= 18",
+      "eligible(?u) :- registered(?u), age(?u, ?n), ?n >= 18",
       "registered('u-1')",
       "age('u-1', 22)"
     ],
     "output": "eligible(?u)",
     "expectation": {
-      "u": "u-1"
+      "?u": "u-1"
     }
   },
   {
@@ -27,7 +27,7 @@
     "rpl": ["valid-severity('critical')"],
     "output": "valid-severity(?level)",
     "expectation": {
-      "level": "critical"
+      "?level": "critical"
     }
   }
 ]

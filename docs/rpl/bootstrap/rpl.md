@@ -41,7 +41,7 @@ locked-ingredient-line($ingredient, $qtyNote)
 **Example.**
 
 ```rpl
-outer(?r, ?y) <- ... -> ?r -> inner(?x)
+outer(?r, ?y) :- ... -: ?r -: inner(?x)
 ```
 
 **Not.** An lvar in callee position is still ill-formed.
@@ -70,22 +70,22 @@ outer(?r, ?y) <- ... -> ?r -> inner(?x)
 
 ### rpl.4 — Invariant implication
 
-**Law.** `LEFT -> RIGHT` is an invariant: under the left-hand conditions, the right-hand side must hold.
+**Law.** `LEFT -: RIGHT` is an invariant: under the left-hand conditions, the right-hand side must hold.
 
 **FOL reading.** An obligation LEFT ⊨ RIGHT, checked, not used to generate heads.
 
-**Surface.** `… -> CONSTRAINT`.
+**Surface.** `… -: CONSTRAINT`.
 
 **Spec.** [rpl.md §12](../specification/rpl.md#12-constraints-and-tracing).
 
 **Example.**
 
 ```rpl
-edit-brief(?d, ?g), editing-goal(?g) -> valid-editing-goal(?g)
-rel1(?x), rel2(?x) -> false
+edit-brief(?d, ?g), editing-goal(?g) -: valid-editing-goal(?g)
+rel1(?x), rel2(?x) -: false
 ```
 
-**Not.** `->` is not the `%` namespace. [logics.md](../specification/logics.md) sometimes calls `->` “Goals” in the fact/proof sense. That is this invariant. It is not `%`.
+**Not.** `-:` is not the `%` namespace. [logics.md](../specification/logics.md) sometimes calls `-:` “Goals” in the fact/proof sense. That is this invariant. It is not `%`.
 
 ---
 
@@ -96,7 +96,7 @@ rel1(?x), rel2(?x) -> false
 **FOL reading.** Existence plus obligation. Canonical form:
 
 ```
-true <- expr -> true
+true :- expr -: true
 ```
 
 **Surface.** A bare `expr`.
@@ -119,14 +119,14 @@ names-workflow-phase("explore")
 
 **FOL reading.** A closed sentence, recorded.
 
-**Surface.** `… ^^ {…} -> true`; retract with `… -> false`.
+**Surface.** `… ^^ {…} -: true`; retract with `… -: false`.
 
 **Spec.** [rpl.md §12.2–12.5](../specification/rpl.md#122-constraint-grounding), [vision.md](../vision.md#the-trace).
 
 **Example.**
 
 ```rpl
-editing-goal(?g) ^^ {?g "publish", ?d "draft-0"} -> true
+editing-goal(?g) ^^ {?g "publish", ?d "draft-0"} -: true
 ```
 
 **Not.** The trace is not optional debug output.
@@ -148,7 +148,7 @@ editing-goal(?g) ^^ {?g "publish", ?d "draft-0"} -> true
 **Example.**
 
 ```rpl
-ask(?prompt, ?answer) <- $ask(?prompt) ^ ~ {:result ?answer}
+ask(?prompt, ?answer) :- $ask(?prompt) ^ ~ {:result ?answer}
 ```
 
 **Not.** A tool is not a derived relation. Hide it behind a relation when you want a stable interface ([rpl.md §13.3](../specification/rpl.md#133-resolution-as-grounded-constraint)).
@@ -161,14 +161,14 @@ ask(?prompt, ?answer) <- $ask(?prompt) ^ ~ {:result ?answer}
 
 **FOL reading.** ∃x⃗ BODY(x⃗). Several `%` rules disjoin (`fol.4`).
 
-**Surface.** `% <- tail`, `%name <- tail`, `%name(?a, ?b) <- tail`.
+**Surface.** `% :- tail`, `%name :- tail`, `%name(?a, ?b) :- tail`.
 
 **Spec.** [rpl.md §15](../specification/rpl.md#15-goals).
 
 **Example.**
 
 ```rpl
-% <- %needs-discovery | %needs-edit
+% :- %needs-discovery | %needs-edit
 ```
 
 **Not.** A goal is not an imperative script.
@@ -203,17 +203,17 @@ ask(?prompt, ?answer) <- $ask(?prompt) ^ ~ {:result ?answer}
 
 **FOL reading.** *Comment.* Formal, not Horn generators ([theory.md](../theory.md#layers-formal-and-agent)).
 
-**Surface.** `HEAD <- EXPR ; ABDUCTIVE`.
+**Surface.** `HEAD :- EXPR ; ABDUCTIVE`.
 
 **Spec.** [rpl.md §16](../specification/rpl.md#16-activation-clause--abductives).
 
 **Example.**
 
 ```rpl
-%needs-edit(?d) <- edit-brief(?d, ?g) ; @when(?g != "unknown")
+%needs-edit(?d) :- edit-brief(?d, ?g) ; @when(?g != "unknown")
 ```
 
-**Not.** Nested `HEAD <- HEAD <- TAIL` is a permitted idiom, not the execution model ([rpl.md §10](../specification/rpl.md#10-rules-and-implication)).
+**Not.** Nested `HEAD :- HEAD :- TAIL` is a permitted idiom, not the execution model ([rpl.md §10](../specification/rpl.md#10-rules-and-implication)).
 
 ---
 
@@ -233,4 +233,40 @@ ask(?prompt, ?answer) <- $ask(?prompt) ^ ~ {:result ?answer}
 |locked-ingredient-line(?i, ?q)|
 ```
 
-**Not.** `<=` as implication. Implication remains `<-` / `->`.
+**Not.** `<=` as implication. Implication is `:-` and constraints are `-:`.
+
+---
+
+### rpl.12 — `$json` writes bindings to chat
+
+**Law.** `$json(?x)` is a built-in tool. It writes the raw binding of the lvar `?x` to the chat (the user-visible transcript), not to an external API. The chat receives NDJSON: each line is the bound value itself, one line per binding instance.
+
+**FOL reading.** *Comment.* An oracle with a chat effect. Not a FOL connective.
+
+**Surface.** `$json(?x)` — exactly one lvar argument. The call dispatches only when `?x` is bound.
+
+**Spec.** [rpl.md §14.2](../specification/rpl.md#142-built-in-tools), [rpl.md §14.2.1](../specification/rpl.md#1421-user-contract-examples-closed-pure-rpl-programs).
+
+**Example.** A `^^` binding map serialises keys as lvars; several bindings yield one NDJSON line each.
+
+```rpl
+user('foo')
+% :- user(?u) ^^ ?b, $json(?b)
+```
+
+```ndjson
+{"?u":"foo"}
+```
+
+A `^` metadata projection uses a `:bindings` array (one object per instance):
+
+```rpl
+user('foo')
+% :- user(?u) ^ ?m, $json(?m)
+```
+
+```ndjson
+{":bindings":[{"?u":"foo"}]}
+```
+
+**Not.** `$json` is not an HTTP API, and not an internal-only debug stream. The chat carries the NDJSON; the trace records completion (`$json(?x) ^ ~ {:tool :json} -: true`).

@@ -21,6 +21,7 @@ reasoning state is easier to inspect, question, and improve.
 | [specification/rpl.md](specification/rpl.md) | Normative base spec: syntax, semantics, runtime, grammar |
 | [specification/lrpl.md](specification/lrpl.md) | Normative LRPL delta (lazy expressions, memos, stdlib) |
 | [specification/logics.md](specification/logics.md) | Additional logics: existential, modal, interpretive (`:@`, `@:`) |
+| [glyphs.md](glyphs.md) | Presentation glyphs for the logic-pair connectives (ASCII stays canonical) |
 | [tutorial/](tutorial/) | Continuations of the worked example (full recipe protocol, cook mode, kitchen context, scheduling, handoff) |
 
 The sections below walk through one **worked example**: a single-chat
@@ -283,6 +284,7 @@ RPL is a protocol language, not a programming language:
 - [specification/rpl.md](specification/rpl.md) — Base specification: syntax, semantics, execution model, grammar.
 - [specification/lrpl.md](specification/lrpl.md) — LRPL delta: lazy evaluation, memos, satisfactory quiescence, stdlib.
 - [specification/logics.md](specification/logics.md) — Additional logic frameworks: existential, modal, and interpretive operators.
+- [glyphs.md](glyphs.md) — Presentation glyphs for the logic-pair connectives; ASCII remains canonical.
 - [tutorial/](tutorial/) — Full recipe protocol, cook mode, kitchen context, scheduling, handoff.
 - [scope.md](scope.md) — Scope, boundaries, and document map.
 - [enterprise.md](enterprise.md) — Enterprise boundary: non-fit for long-running systems, fit as HCI with business artifacts.

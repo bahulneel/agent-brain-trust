@@ -16,5 +16,12 @@
     "composite": true
   },
   "include": ["../../scripts/**/*.ts"],
-  "exclude": ["../../node_modules", "../../dist", "../../packages", "../../dist-tooling"]
+  "exclude": [
+    "../../node_modules",
+    "../../dist",
+    "../../packages",
+    "../../dist-tooling",
+    "../../scripts/assemble-rpl-bot-prompt.ts",
+    "../../scripts/smoke-rpl-bot.ts"
+  ]
 }

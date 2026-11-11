@@ -17,7 +17,7 @@
     "packages/*"
   ],
   "scripts": {
-    "typecheck": "npm run build:tooling",
+    "typecheck": "npm run build:tooling && tsc -p scripts/tsconfig.rpl-bot.json",
     "build:tooling": "turbo run build --filter=repo-tooling...",
     "build": "turbo run build && tsx scripts/build.ts build",
     "build:packages": "turbo run build",

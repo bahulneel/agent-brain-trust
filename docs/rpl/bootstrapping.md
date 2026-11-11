@@ -21,9 +21,9 @@ The bootstrap is organised into tables that allow the model to triangulate the m
 | Dimension | Description |
 |---|---|
 | **Prose** | If someone is your parent, they are your ancestor. If someone is the ancestor of your parent, they are also your ancestor. |
-| **Canonical Form** | ancestor(X, Y) :- parent(X, Y).
-ancestor(X, Z) :- parent(X, Y), ancestor(Y, Z). |
-| **Equivalent Form** | reachable(A, C) :- link(A, B), reachable(B, C). |
+| **Canonical Form** | ancestor(?x, ?y) :- parent(?x, ?y)
+ancestor(?x, ?z) :- parent(?x, ?y), ancestor(?y, ?z) |
+| **Equivalent Form** | reachable(?a, ?c) :- link(?a, ?b), reachable(?b, ?c) |
 | **Intent** | To train the agent in recursive logic and the traversal of hierarchical context. |
 | **Interpretation** | You must be able to trace a path back to the origin of an idea or a state. If B follows from A, and C follows from B, then C is rooted in A. |
 | **Notes** | This is essential for context tracking. It allows the agent to understand that a current sub-task is "descended" from a primary goal three levels up. |
@@ -31,8 +31,8 @@ ancestor(X, Z) :- parent(X, Y), ancestor(Y, Z). |
 | Dimension | Description |
 |---|---|
 | **Prose** | A single statement may contain a command to act and a constraint on how to act. Treat them as distinct relations. |
-| **Canonical Form** | intent(Input, command, Action) , intent(Input, constraint, Rule). |
-| **Equivalent Form** | holds(Input, type, Instruction) :- has_intent(Input, Instruction). |
+| **Canonical Form** | intent(?input, command, ?action), intent(?input, constraint, ?rule) |
+| **Equivalent Form** | holds(?input, type, ?instruction) :- has-intent(?input, ?instruction) |
 | **Intent** | To prevent the agent from collapsing nuanced dialogue into a single generic instruction. |
 | **Interpretation** | Before acting, fragment the user's input into its relational intents. An analogy is for understanding, a command is for execution, and a constraint is for filtering. |
 | **Notes** | This is the foundation for Intent Tracking. If a user says "Like a chef (analogy), make me a sandwich (command), but no mayo (constraint)", each must be tracked separately in the kernel. |

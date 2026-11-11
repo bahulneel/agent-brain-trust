@@ -437,15 +437,14 @@ metacognitive layer. They are the natural follow-ups after this brief.
    the trace is not optional debug output, and [cognition.md](../cognition.md)
    treats structure as inspectable. A test bot needs a visible check; a
    production posture may not. The docs do not reconcile the two.
-4. **Stale agent sketch.** [bootstrapping.md](../bootstrapping.md) is the
-   only worked intent-tracking example, but it is incomplete, not a source,
-   and still written with Prolog-style `X, Y` variables and trailing periods
-   rather than `?x` and the colon-style connectives.
-5. **Stale `$json` grouping.** [README.md](../README.md) (tutorial table
-   lead-out) still groups `$json` with LRPL builtins. [`rpl.12`](../bootstrap/rpl.md)
-   and [specification/rpl.md](../specification/rpl.md) §14.2 place `$json` in
-   base RPL. Not a kernel issue, but it can confuse a runner that assembles
-   the wrong closure.
+4. **Stale agent sketch (spelling addressed).** [bootstrapping.md](../bootstrapping.md) is the
+   only worked intent-tracking example. It remains incomplete and is not a
+   source. Its examples now use `?lvars` and colon-style connectives.
+5. **Stale `$json` grouping (addressed).** [README.md](../README.md) (tutorial table
+   lead-out) and [tutorial/00-recipe-protocol.md](../tutorial/00-recipe-protocol.md)
+   now place `$json` in base RPL, per [`rpl.12`](../bootstrap/rpl.md) and
+   [specification/rpl.md](../specification/rpl.md) §14.2. `$write` and `$index`
+   remain LRPL builtins.
 6. **Three "bootstraps".** Language bootstrap, session bootstrap
    ([README.md](../README.md), "Bootstrap RPL"), and the kernel essay can be
    mistaken for one procedure. Nothing says how they are combined when

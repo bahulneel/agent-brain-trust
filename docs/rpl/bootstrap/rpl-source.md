@@ -122,8 +122,11 @@ An order is fulfillable when its __order id__ is valid. A fulfillable order has 
 Inferred RPL:
 
 ```rpl
-# Order Fulfillment - fulfillable(?order-id) :- valid-order(?order-id), customer-details(?order-id, ?customer-details), shipping-address(?order-id, ?shipping-address)
+# Order Fulfillment - fulfillable(?order-id) :- valid-order(?order-id)
+fulfillable(?order-id) -: customer-details(?order-id, ?customer-details), shipping-address(?order-id, ?shipping-address)
 ```
+
+The first sentence generates `fulfillable` from `valid-order` (`:-`). The second is a checked constraint on that head (`-:`): a fulfillable order has customer details and a shipping address ([`rpl.4`](rpl.md)). Those details are not conditions in the rule body.
 
 **Not.** Prose does not add a connective. It denotes `rpl` sentences.
 

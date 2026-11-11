@@ -18,6 +18,7 @@ reasoning state is easier to inspect, question, and improve.
 | [language-bootstrap.md](language-bootstrap.md) | Language bootstrap: named layers (`fol`, `rpl`, `lrpl`, …) with explicit dependencies |
 | [bootstrapping.md](bootstrapping.md) | Incomplete agent-habit sketch — not a language source; see the status note there |
 | [agent-mck.md](agent-mck.md) | RPL as metacognitive kernel: intent tracking, context stack, invariants |
+| [bots/rpl-bot.md](bots/rpl-bot.md) | Starting brief for the RPL test bot: closure, kernel probes, gaps |
 | [specification/rpl.md](specification/rpl.md) | Normative base spec: syntax, semantics, runtime, grammar |
 | [specification/lrpl.md](specification/lrpl.md) | Normative LRPL delta (lazy expressions, memos, stdlib) |
 | [specification/logics.md](specification/logics.md) | Additional logics: existential, modal, interpretive (`:@`, `@:`) |
@@ -290,3 +291,4 @@ RPL is a protocol language, not a programming language:
 - [language-bootstrap.md](language-bootstrap.md) — Layer catalog and closures (**RPL**, **LRPL**, additional logics).
 - [bootstrapping.md](bootstrapping.md) — Incomplete agent-habit sketch; do not use as language definition.
 - [agent-mck.md](agent-mck.md) — RPL as an internal metacognitive layer for stable, principled agent behaviour.
+- [bots/rpl-bot.md](bots/rpl-bot.md) — Starting brief for the RPL test bot that exercises the metacognitive kernel.

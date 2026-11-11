@@ -98,3 +98,4 @@ ancestor(?x, ?z) :- parent(?x, ?y), ancestor(?y, ?z)
 - [specification/rpl.md](specification/rpl.md), [specification/lrpl.md](specification/lrpl.md), [specification/logics.md](specification/logics.md)
 - [theory.md](theory.md), [motivation.md](motivation.md), [README.md](README.md)
 - [bootstrapping.md](bootstrapping.md) — not a layer
+- [bots/rpl-bot.md](bots/rpl-bot.md) — test-bot brief for the metacognitive kernel; not a layer

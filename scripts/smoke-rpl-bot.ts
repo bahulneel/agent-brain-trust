@@ -66,7 +66,7 @@ const RE_LOCKED_RECIPE_CLAIM =
 /** Affirmative (non-negated) claims that two forms are equivalent. */
 function affirmsEquivalence(reply: string): boolean {
   const stripped = reply.replace(
-    /\b(?:are|is)\s+not\s+(?:the\s+same(?:\s+(?:meaning|sentence|thing))?|equivalent|interchangeable|identical(?:\s+in meaning)?)\b|\b(?:aren't|isn't)\s+(?:the\s+same(?:\s+(?:meaning|sentence|thing))?|equivalent|interchangeable|identical(?:\s+in meaning)?)\b|\b(?:do not|does not|don't|doesn't|not)\s+(?:have|has|mean)\s+(?:the\s+)?same(?:\s+(?:meaning|sentence|thing))?\b|\bnot\s+(?:the\s+same(?:\s+(?:meaning|sentence|thing))?|equivalent|interchangeable|identical(?:\s+in meaning)?)\b/gi,
+    /\b(?:are|is)\s+not\s+(?:the\s+same(?:\s+(?:meaning|sentence|thing))?|equivalent|interchangeable|identical(?:\s+in meaning)?)\b|\b(?:aren't|isn't)\s+(?:the\s+same(?:\s+(?:meaning|sentence|thing))?|equivalent|interchangeable|identical(?:\s+in meaning)?)\b|\b(?:do not|does not|don't|doesn't|not)\s+(?:have|has|mean|give)\s+(?:the\s+)?same(?:\s+(?:meaning|sentence|thing))?\b|\bnot\s+(?:the\s+same(?:\s+(?:meaning|sentence|thing))?|equivalent|interchangeable|identical(?:\s+in meaning)?)\b/gi,
     " "
   );
   return /\b(?:are|is|they're)\s+(?:equivalent|interchangeable)\b|\bsame(?:\s+(?:meaning|sentence|thing))\b|\bidentical in meaning\b|\b(?:order )?does not matter\b/i.test(
@@ -339,7 +339,7 @@ export const probes: Probe[] = [
         description:
           "Says :Rare :~ BlackSwan is not the same as BlackSwan :~ :Rare.",
         test: (r) =>
-          /\b(?:not the same|not equivalent|not interchangeable|order matters|does not mean|don't mean|(?:is not|isn't|aren't)\s+(?:the same|equivalent|interchangeable)|not identical|(?:do not|does not|don't|doesn't) have the same meaning)\b/i.test(
+          /\b(?:not the same|not equivalent|not interchangeable|order matters|does not mean|don't mean|does not give the same|mean different|are different|differ|differs|different|changes which|(?:is not|isn't|aren't)\s+(?:the same|equivalent|interchangeable)|not identical|(?:do not|does not|don't|doesn't) have the same meaning)\b/i.test(
             r
           ) && !affirmsEquivalence(r),
       },
@@ -378,7 +378,7 @@ export const probes: Probe[] = [
         description:
           "Does not treat BlackSwan ~: :Australia as the same as BlackSwan :~ :Australia.",
         test: (r) =>
-          /\b(?:not the same|not equivalent|not interchangeable|distinct|does not mean|don't mean|(?:is not|isn't|aren't)\s+(?:the same|equivalent|interchangeable)|not identical|(?:do not|does not|don't|doesn't) have the same meaning)\b/i.test(
+          /\b(?:not the same|not equivalent|not interchangeable|distinct|does not mean|don't mean|does not give the same|mean different|are different|differ|differs|different|changes which|(?:is not|isn't|aren't)\s+(?:the same|equivalent|interchangeable)|not identical|(?:do not|does not|don't|doesn't) have the same meaning)\b/i.test(
             r
           ) && !affirmsEquivalence(r),
       },

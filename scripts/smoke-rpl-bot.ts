@@ -3,7 +3,11 @@
  *
  * Usage:
  *   PROMPTS_LLM_MODEL=google/gemma-4-31b-it PROMPT_TEST_RESULT_LOG=0 \\
- *     npx tsx scripts/smoke-rpl-bot.ts --out /path/to/rpl-bot-smoke.md
+ *     npx tsx scripts/smoke-rpl-bot.ts
+ *   npx tsx scripts/smoke-rpl-bot.ts --out docs/rpl/bots/rpl-bot-live-run-3.md
+ *
+ * Writes the report to stdout unless --out is given, matching
+ * scripts/assemble-rpl-bot-prompt.ts.
  *
  * Uses process.env.PROMPTS_LLM_API_KEY (NVIDIA_NIM_API_KEY as alias).
  * Never prints the key. Times out once per probe, then retries once.
@@ -239,6 +243,188 @@ export const probes: Probe[] = [
       },
     ],
   },
+  {
+    id: "combined-form",
+    title: "Combined sentence A :- B -: C",
+    user: [
+      "Parse this RPL sentence and explain each part. Do not invent syntax.",
+      "",
+      "recommend(?d) :- in-season(?d) -: vegetarian(?d)",
+      "",
+      "Name the rule head, the body (the implication tail), and the constraint.",
+      "Say whether -: generates the head or only checks an invariant.",
+      "Say what must hold for the sentence to be satisfied.",
+    ].join("\n"),
+    checks: [
+      {
+        id: "names-three-parts",
+        description:
+          "Identifies recommend(?d) as the head, in-season(?d) as the body/tail, and vegetarian(?d) as the constraint/invariant.",
+        test: (r) => {
+          const head = /recommend\(\?d\)/i.test(r) && /\bhead\b/i.test(r);
+          const body =
+            /in-season\(\?d\)/i.test(r) &&
+            /\b(?:body|tail|implication)\b/i.test(r);
+          const constraint =
+            /vegetarian\(\?d\)/i.test(r) &&
+            /\b(?:constraint|invariant)\b/i.test(r);
+          return head && body && constraint;
+        },
+      },
+      {
+        id: "constraint-is-checked",
+        description:
+          "Says -: is a checked invariant, not a generator of the head.",
+        test: (r) => {
+          const checked =
+            /\b(?:check(?:ed|s|ing)?|invariant|must hold|obligation)\b/i.test(r);
+          const notGenerator =
+            /\b(?:does not|doesn't|not used to|not a generator|only check(?:s|ed)?|checked,? not)\b[^\n.]{0,80}\b(?:generat|head)\b/i.test(
+              r
+            ) ||
+            !/\b(?:-:|constraint)\b[^\n.]{0,60}\bgenerat(?:e|es|or|ing)\b[^\n.]{0,40}\bhead\b/i.test(
+              r
+            );
+          return checked && notGenerator;
+        },
+      },
+    ],
+  },
+  {
+    id: "possibility-order",
+    title: ":~ argument order B :~ A",
+    user: [
+      "The modal layer is not in this bot's loaded closure. The following law is",
+      "quoted from docs/rpl/bootstrap/modal.md (modal.1) and logics.md §3 so you",
+      "can interpret the form. Do not treat this as taking the layer. Do not",
+      "invent a different argument order.",
+      "",
+      "Law: A ~: B projects A into the mode of B (necessity in that world-view).",
+      "B :~ A maps B back to the base context (possibility justified by A).",
+      "Example: :Rare :~ BlackSwan",
+      "",
+      "What does :Rare :~ BlackSwan mean? Which argument is the mode and which is",
+      "the justifying existence? Is :Rare :~ BlackSwan the same as BlackSwan :~ :Rare?",
+      "Answer from the quoted law only.",
+    ].join("\n"),
+    checks: [
+      {
+        id: "mode-then-existence",
+        description:
+          "Treats :Rare as the mode and BlackSwan as the justifying existence (B :~ A).",
+        test: (r) => {
+          const rareIsMode =
+            /:Rare\b[^\n.]{0,80}\bmode\b|\bmode\b[^\n.]{0,80}:Rare\b/i.test(r);
+          const swanJustifies =
+            /BlackSwan\b[^\n.]{0,100}\b(?:justif|existence|exist(?:s|ence)?|possib)/i.test(
+              r
+            ) ||
+            /(?:justif|existence|possib)[^\n.]{0,100}BlackSwan/i.test(r);
+          return rareIsMode && swanJustifies;
+        },
+      },
+      {
+        id: "order-matters",
+        description:
+          "Says :Rare :~ BlackSwan is not the same as BlackSwan :~ :Rare.",
+        test: (r) =>
+          /\b(?:not the same|not equivalent|different|order matters|does not mean|isn't the same|is not the same|not identical|swapping|reversed)\b/i.test(
+            r
+          ) &&
+          !/\b(?:same meaning|are equivalent|interchangeable|identical in meaning|does not matter|order does not matter)\b/i.test(
+            r
+          ),
+      },
+    ],
+  },
+  {
+    id: "necessity-vs-possibility",
+    title: "Telling ~: from :~",
+    user: [
+      "The modal layer is not in this bot's loaded closure. The following law is",
+      "quoted from docs/rpl/bootstrap/modal.md (modal.1) and logics.md §3 so you",
+      "can interpret the forms. Do not treat this as taking the layer.",
+      "",
+      "Law: A ~: B projects A into the mode of B (necessity in that world-view).",
+      "B :~ A maps B back to the base context (possibility justified by A).",
+      "Examples: BlackSwan ~: :Australia    and    :Rare :~ BlackSwan",
+      "",
+      "Contrast those two sentences. Which operator is necessity and which is",
+      "possibility? Does BlackSwan ~: :Australia mean the same as BlackSwan :~ :Australia?",
+      "Keep the two operators distinct.",
+    ].join("\n"),
+    checks: [
+      {
+        id: "labels-operators",
+        description: "Labels ~: as necessity and :~ as possibility.",
+        test: (r) => {
+          const nec =
+            /~:[^\n]{0,80}\bnecess/i.test(r) || /\bnecess[^\n]{0,80}~:/i.test(r);
+          const pos =
+            /:~[^\n]{0,80}\bpossib/i.test(r) || /\bpossib[^\n]{0,80}:~/i.test(r);
+          return nec && pos;
+        },
+      },
+      {
+        id: "not-interchangeable",
+        description:
+          "Does not treat BlackSwan ~: :Australia as the same as BlackSwan :~ :Australia.",
+        test: (r) =>
+          /\b(?:not the same|not equivalent|different|distinct|does not mean|isn't the same|is not the same|not interchangeable|not identical)\b/i.test(
+            r
+          ) &&
+          !/\b(?:same meaning|are equivalent|interchangeable|identical in meaning)\b/i.test(
+            r
+          ),
+      },
+    ],
+  },
+  {
+    id: "inert-domain-fact",
+    title: "Domain fact not auto-linked to an invariant",
+    user: [
+      "These session facts are already in force. There is no other rule or invariant.",
+      "",
+      'dietary-restriction("no-shellfish")',
+      "",
+      "I fancy a shrimp pasta tonight. Does the language, as taken, forbid",
+      "recommending shrimp? Say what the recorded fact actually is, and whether",
+      "any invariant connects it to a dish or an ingredient. Do not invent a",
+      "linking law. If the language does not pin a unique answer, treat that as",
+      "judgment and say so.",
+    ].join("\n"),
+    checks: [
+      {
+        id: "names-the-fact",
+        description:
+          "Cites the dietary-restriction fact and does not invent an invariant linking it to shrimp or a recommended dish.",
+        test: (r) =>
+          /dietary-restriction/i.test(r) &&
+          !/\bdietary-restriction[^\n]{0,80}-:[^\n]{0,80}(?:shrimp|prawn|shellfish|recommended-dish)/i.test(
+            r
+          ) &&
+          !/\b(?:I will add|here is a (?:new )?rule|the implicit (?:rule|invariant)|this implies the invariant)\b/i.test(
+            r
+          ),
+      },
+      {
+        id: "no-invented-link",
+        description:
+          "Does not claim the language already forbids shrimp; notes the missing link or that judgment is required.",
+        test: (r) => {
+          const claimsForbiddenByLaw =
+            /\b(?:the language (?:forbids|prohibits|bans)|invariant (?:forbids|already)|must not recommend shrimp|shrimp is forbidden by (?:the )?(?:language|law|fact))\b/i.test(
+              r
+            );
+          const notesGap =
+            /\b(?:no (?:invariant|rule|law|link|connection)|does not (?:connect|link|pin|forbid)|not (?:connected|linked|an invariant)|inert|judgment|does not pin|nothing connects)\b/i.test(
+              r
+            );
+          return !claimsForbiddenByLaw && notesGap;
+        },
+      },
+    ],
+  },
 ];
 
 function sanitize(text: string): string {
@@ -383,13 +569,13 @@ function renderReport(opts: {
 async function main(): Promise<void> {
   const argv = process.argv.slice(2);
   const outIdx = argv.indexOf("--out");
-  const dest =
-    outIdx >= 0
-      ? argv[outIdx + 1]
-      : resolve("/workspace/agent-brain-trust/rpl-bot-smoke.md");
-  if (!dest) {
-    console.error("usage: npx tsx scripts/smoke-rpl-bot.ts [--out path.md]");
-    process.exit(2);
+  let dest: string | undefined;
+  if (outIdx >= 0) {
+    dest = argv[outIdx + 1];
+    if (!dest) {
+      console.error("usage: npx tsx scripts/smoke-rpl-bot.ts [--out path.md]");
+      process.exit(2);
+    }
   }
 
   const key = apiKey();
@@ -449,10 +635,14 @@ async function main(): Promise<void> {
     systemChars: system.length,
     results,
   });
-  const path = resolve(dest);
-  mkdirSync(dirname(path), { recursive: true });
-  writeFileSync(path, report.endsWith("\n") ? report : `${report}\n`, "utf8");
-  process.stderr.write(`wrote ${path}\n`);
+  if (dest) {
+    const path = resolve(dest);
+    mkdirSync(dirname(path), { recursive: true });
+    writeFileSync(path, report.endsWith("\n") ? report : `${report}\n`, "utf8");
+    process.stderr.write(`wrote ${path}\n`);
+  } else {
+    process.stdout.write(report.endsWith("\n") ? report : `${report}\n`);
+  }
   if (results.some((r) => r.verdict !== "pass")) process.exitCode = 1;
 }
 

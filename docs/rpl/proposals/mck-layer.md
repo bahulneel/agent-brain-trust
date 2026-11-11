@@ -38,6 +38,14 @@ invariants that use it; no rule for how far a constraint reaches; no
 protocol for presenting a coordination point, or for who may retract and
 when; and no surface for any of the habits.
 
+A second live run of edge cases
+([bots/rpl-bot-live-run-2.md](../bots/rpl-bot-live-run-2.md)) raised four
+further gaps: how far a correction retracts; whether a later preference
+outranks a constraint still in force; whether "forget" erases or records
+(the default proposed here is to record and keep the history); and a
+third verdict, `"unchecked"`, for an invariant check that has no ground
+([`fol.5`](../bootstrap/fol.md)). Those are mck.15–mck.18.
+
 This proposal is a candidate layer that would close those gaps. Names are
 for Bahul to decide. Acceptance, and any later move into `bootstrap/`, are
 separate steps.
@@ -68,7 +76,7 @@ All of the following are **PROPOSED NAME, for Bahul to decide**.
 | `frame-parent(?child, ?parent)` | The frame a tangent interrupts. |
 | `active-frame(?id)` | The frame currently in force. |
 | `check-posture(?p)` | `"test"` or `"production"` visibility. |
-| `invariant-check(?invariant, ?grounding, ?holds)` | The pre-output check, as a record. |
+| `invariant-check(?invariant, ?grounding, ?verdict)` | The pre-output check, as a record. Verdict: `"holds"`, `"fails"`, or `"unchecked"`. |
 | `restriction-enforced-by(?restriction, ?invariant)` | Link from a restriction fact to an invariant. |
 | `restriction-covers(?restriction, ?item)` | Judged scope of a restriction. |
 | `coordination-point(?id, ?kind, ?conflict)` | A presented non-monotonic step. |
@@ -91,6 +99,8 @@ Proposed vocabularies, also **for Bahul to decide**:
 - Memory strata: `"short-term"`, `"long-term"`.
 - Confidence levels: `"high"`, `"medium"`, `"low"`, `"none"`. Basis:
   `"ground"`, `"judgment"`.
+- Invariant-check verdicts, also **PROPOSED NAME, for Bahul to decide**:
+  `"holds"`, `"fails"`, `"unchecked"`.
 
 ---
 
@@ -268,13 +278,15 @@ scratch fact in the tangent frame is kept.
 
 **Law.** Before emitting an output, every applicable session invariant
 is checked against that output and the session facts. An output that
-would violate an invariant is not emitted as if it held.
+would violate an invariant is not emitted as if it held. The check
+records a verdict under mck.18: `"holds"`, `"fails"`, or `"unchecked"`.
 
 **FOL reading.** The obligation is [`rpl.4`](../bootstrap/rpl.md):
 LEFT ⊨ RIGHT, checked, not used to generate heads.
 
-**Surface.** `invariant-check(?invariant, ?grounding, ?holds)` —
-**PROPOSED NAME, for Bahul to decide**.
+**Surface.** `invariant-check(?invariant, ?grounding, ?verdict)` —
+**PROPOSED NAME, for Bahul to decide**. `?verdict` is `"holds"`,
+`"fails"`, or `"unchecked"` (mck.18).
 
 **Grounding.** [agent-mck.md](../agent-mck.md), "Recording Invariants"
 (a check against session principles before every output);
@@ -291,7 +303,7 @@ recommended-dish(?d), contains-ingredient(?d, "prawn") -: false
 invariant-check(
   (recommended-dish(?d), contains-ingredient(?d, "shrimp") -: false),
   {?d "shrimp pasta"},
-  false
+  "fails"
 )
 ```
 
@@ -335,7 +347,7 @@ check-posture("test")
 invariant-check(
   (recommended-dish(?d), contains-ingredient(?d, "shrimp") -: false),
   {?d "shrimp pasta"},
-  false
+  "fails"
 )
 ```
 
@@ -672,6 +684,159 @@ confidence("bread on the list may contain dairy", "medium", "judgment")
 
 ---
 
+### mck.15 — How far a correction retracts
+
+**Law.** **Inferred.** A later utterance that corrects earlier guidance
+retracts only what it clearly replaces. Other session facts, constraints,
+and invariants stay in force. If the scope of the correction is unclear
+— it might or might not also retract a remaining constraint — that
+unclarity is a coordination point (mck.10). The agent does not silently
+drop the remainder, and does not silently keep it without naming the
+question.
+
+**FOL reading.** *Comment.* Scope of a retraction, not a new connective.
+
+**Surface.** None beyond the retraction form in mck.11 (`… -: false`) and
+`coordination-point`.
+
+**Grounding.** Live run 2, probe B
+([bots/rpl-bot-live-run-2.md](../bots/rpl-bot-live-run-2.md)): "comfort
+matters more" clearly replaces "cheapest", but leaves unclear whether a
+£100 cap still holds. The bot raised that as a coordination point.
+
+**Example.**
+
+```rpl
+intent("u1", "constraint", "budget cap of £100")
+intent("u1", "suggestion", "cheapest option")
+intent("u2", "suggestion", "comfort matters more")
+```
+
+The correction retracts `intent("u1", "suggestion", "cheapest option")`
+(`… -: false`). The £100 cap is not clearly retracted. Present a
+coordination point rather than dropping or keeping the cap quietly.
+
+**Not.** A licence to treat every correction as wiping the session. Not
+a new retraction operator.
+
+---
+
+### mck.16 — A later preference does not outrank a constraint still in force
+
+**Law.** **Inferred.** mck.3 already ranks a constraint above a
+suggestion. A later preference or suggestion, including one that
+corrects an earlier preference (mck.15), does not retract or outrank a
+constraint or invariant that is still in force. If honouring the
+preference would violate that constraint, present a coordination point
+(mck.10). Do not drop the constraint to satisfy the preference.
+
+**FOL reading.** *Comment.* The same precedence as mck.3, applied after
+a correction. Not a new connective.
+
+**Surface.** None beyond `intent` and `LEFT -: RIGHT`.
+
+**Grounding.** Live run 2, probe B
+([bots/rpl-bot-live-run-2.md](../bots/rpl-bot-live-run-2.md)):
+constraint-versus-preference priority, when "comfort matters more"
+might clash with a remaining £100 cap.
+
+**Example.** If the £100 cap still holds under mck.15, a more comfortable
+option that exceeds it is not chosen unilaterally. The clash is
+coordinated.
+
+**Not.** A rewriting of mck.3, and not a licence to drop a constraint
+because a later preference arrived.
+
+---
+
+### mck.17 — "Forget" records, and keeps the history
+
+**Law.** **Inferred.** When the session authority accepts a retraction
+(mck.11), including a request to "forget" a fact, the default is to
+*record* that the fact no longer holds, using the
+[`rpl.6`](../bootstrap/rpl.md) surface (`… -: false`), and to keep the
+prior record in the history. The default is not to erase the history as
+if the fact had never been asserted.
+
+**FOL reading.** *Comment.* A policy for non-monotonic update, not a new
+connective. Traces remain ordinary relations
+([`rpl.6`](../bootstrap/rpl.md)).
+
+**Surface.** Retraction stays `… -: false`. No new name.
+
+**Grounding.** Live run 2, probe C
+([bots/rpl-bot-live-run-2.md](../bots/rpl-bot-live-run-2.md)): the user
+settled a coordination point; the bot recorded `likes -: false`,
+asserted `dislikes`, and kept the history. [`rpl.6`](../bootstrap/rpl.md)
+does not say whether "forget" means erasing or recording that the fact
+no longer holds.
+
+**Example.**
+
+```rpl
+likes("x") -: false
+dislikes("x")
+```
+
+The earlier `likes("x")` remains in the history; the retraction is the
+record that it no longer holds.
+
+**Not.** A new erase operator, and not a licence to drop traces.
+Whether a host may additionally offer an erase mode (for example, to
+remove personal data from a store the host controls) is an open
+question; it is not the default of this layer, and it is not specified
+here.
+
+---
+
+### mck.18 — Unchecked when there is no ground
+
+**Law.** **Inferred.** The pre-output check (mck.6) has three verdicts:
+`"holds"`, `"fails"`, and `"unchecked"`. All three are **PROPOSED NAME,
+for Bahul to decide**.
+
+When the facts needed to ground the check are absent, the verdict is
+`"unchecked"`, not `"holds"` and not `"fails"`.
+[`fol.5`](../bootstrap/fol.md) says a missing fact is not automatically
+a proof of `not P`. The same applies in the other direction: a missing
+fact is not a proof that the invariant holds, and not a proof that it
+fails.
+
+Granted autonomy does not fill in the missing ground. Name the gap.
+Yield (mck.12) when the missing ground would change the outcome, or
+carry an `"unchecked"` record when the user has asked the agent to
+proceed without that ground.
+
+**FOL reading.** *Comment.* A third outcome of the check, required by
+[`fol.5`](../bootstrap/fol.md). Not a new connective, and not a reading
+of `not`.
+
+**Surface.** `invariant-check(?invariant, ?grounding, ?verdict)` —
+**PROPOSED NAME, for Bahul to decide** — as in mck.6, with `?verdict`
+one of `"holds"`, `"fails"`, or `"unchecked"`. When the verdict is
+`"unchecked"`, `?grounding` may be empty.
+
+**Grounding.** Live run 2, probe D
+([bots/rpl-bot-live-run-2.md](../bots/rpl-bot-live-run-2.md)): the bot
+picked a recipe under granted autonomy, then reported the diet check as
+UNCHECKED under [`fol.5`](../bootstrap/fol.md) rather than passed. Gap:
+no form for a check with nothing to check against.
+
+**Example.**
+
+```rpl
+invariant-check(
+  (recommended-dish(?d), violates-diet(?d) -: false),
+  {},
+  "unchecked"
+)
+```
+
+**Not.** A pass. Not a fail. Not a licence to invent the missing facts
+in order to make the check look grounded.
+
+---
+
 ## What this would change in the bot's system prompt
 
 Nothing in this section is in force until the proposal is accepted and
@@ -735,3 +900,5 @@ These are for Bahul, not settled by this document:
   leave it optional.
 - Whether `cognition.md` should be loaded into the test bot's prompt
   once mck.13 cites it, or whether the layer text is enough.
+- Whether a host may offer an erase mode in addition to the default
+  record-and-keep-history behaviour of "forget" (mck.17).

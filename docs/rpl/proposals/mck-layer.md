@@ -5,7 +5,9 @@ of any instantiation, and is not in force. It must not be loaded as if it
 lived under [`bootstrap/`](../bootstrap/). It does not change an existing
 layer or the specification.
 
-**Proposed layer name.** `mck` — **PROPOSED NAME, for Bahul to decide**.
+**Proposed layer name.** `mck` ("metacognitive kernel"), written McK in
+prose. Bahul agreed the McK prose form on 11 Nov 2026; the code name `mck`
+stays lowercase like `fol`, `rpl` and `agent`. Law ids stay `mck.1` and so on.
 
 **Provides.** *(candidate)* Laws and surfaces for the five metacognitive
 habits named in [agent-mck.md](../agent-mck.md), so those habits no longer
@@ -70,7 +72,7 @@ All of the following are **PROPOSED NAME, for Bahul to decide**.
 
 | Name | Role |
 | --- | --- |
-| `mck` | Layer name. |
+| `mck` | Layer name in code (McK in prose). |
 | `intent(?source, ?kind, ?content)` | An intent found in an utterance. |
 | `context-frame(?id, ?objective)` | A frame on the context stack. |
 | `frame-parent(?child, ?parent)` | The frame a tangent interrupts. |

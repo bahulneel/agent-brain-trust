@@ -69,7 +69,7 @@ function affirmsEquivalence(reply: string): boolean {
     /\b(?:are|is)\s+not\s+(?:the\s+same(?:\s+(?:meaning|sentence|thing))?|equivalent|interchangeable|identical(?:\s+in meaning)?)\b|\b(?:aren't|isn't)\s+(?:the\s+same(?:\s+(?:meaning|sentence|thing))?|equivalent|interchangeable|identical(?:\s+in meaning)?)\b|\b(?:do not|does not|don't|doesn't|not)\s+(?:have|has|mean|give)\s+(?:the\s+)?same(?:\s+(?:meaning|sentence|thing))?\b|\bnot\s+(?:the\s+same(?:\s+(?:meaning|sentence|thing))?|equivalent|interchangeable|identical(?:\s+in meaning)?)\b/gi,
     " "
   );
-  return /\b(?:are|is|they're)\s+(?:equivalent|interchangeable)\b|\bsame(?:\s+(?:meaning|sentence|thing))\b|\bidentical in meaning\b|\b(?:order )?does not matter\b/i.test(
+  return /\b(?:are|is|they're)\s+(?:equivalent|interchangeable)\b|\bsame(?:\s+(?:meaning|sentence|thing))\b|\bidentical in meaning\b|\bmeaning is (?:identical|the same)\b|\bamounts to the same\b|\b(?:order )?does not matter\b/i.test(
     stripped
   );
 }
@@ -314,24 +314,26 @@ export const probes: Probe[] = [
       "B :~ A maps B back to the base context (possibility justified by A).",
       "Example: :Rare :~ BlackSwan",
       "",
-      "What does :Rare :~ BlackSwan mean? Which argument is the mode and which is",
-      "the justifying existence? Is :Rare :~ BlackSwan the same as BlackSwan :~ :Rare?",
+      "What does :Rare :~ BlackSwan mean? Which argument is made possible and which",
+      "justifies it? Is :Rare :~ BlackSwan the same as BlackSwan :~ :Rare?",
       "Answer from the quoted law only.",
     ].join("\n"),
     checks: [
       {
-        id: "mode-then-existence",
+        id: "possible-then-justifier",
         description:
-          "Treats :Rare as the mode and BlackSwan as the justifying existence (B :~ A).",
+          "Treats :Rare as what is made possible and BlackSwan as what justifies it (B :~ A).",
         test: (r) => {
-          const rareIsMode =
-            /:Rare\b[^\n.]{0,80}\bmode\b|\bmode\b[^\n.]{0,80}:Rare\b/i.test(r);
+          const rareIsPossible =
+            /:Rare\b[^\n.]{0,80}\b(?:made possible|possible|mode)\b|\b(?:made possible|possible|mode)\b[^\n.]{0,80}:Rare\b/i.test(
+              r
+            );
           const swanJustifies =
             /BlackSwan\b[^\n.]{0,100}\b(?:justif|existence|exist(?:s|ence)?|possib)/i.test(
               r
             ) ||
             /(?:justif|existence|possib)[^\n.]{0,100}BlackSwan/i.test(r);
-          return rareIsMode && swanJustifies;
+          return rareIsPossible && swanJustifies;
         },
       },
       {
@@ -339,7 +341,7 @@ export const probes: Probe[] = [
         description:
           "Says :Rare :~ BlackSwan is not the same as BlackSwan :~ :Rare.",
         test: (r) =>
-          /\b(?:not the same|not equivalent|not interchangeable|order matters|does not mean|don't mean|does not give the same|mean different|are different|differ|differs|different|changes which|(?:is not|isn't|aren't)\s+(?:the same|equivalent|interchangeable)|not identical|(?:do not|does not|don't|doesn't) have the same meaning)\b/i.test(
+          /\b(?:not the same|not equivalent|not interchangeable|order matters|does not mean|don't mean|(?:does not|doesn't) give the same|mean different|are different|differ|differs|different|changes which|(?:is not|isn't|aren't)\s+(?:the same|equivalent|interchangeable)|not identical|(?:do not|does not|don't|doesn't) have the same meaning)\b/i.test(
             r
           ) && !affirmsEquivalence(r),
       },
@@ -378,7 +380,7 @@ export const probes: Probe[] = [
         description:
           "Does not treat BlackSwan ~: :Australia as the same as BlackSwan :~ :Australia.",
         test: (r) =>
-          /\b(?:not the same|not equivalent|not interchangeable|distinct|does not mean|don't mean|does not give the same|mean different|are different|differ|differs|different|changes which|(?:is not|isn't|aren't)\s+(?:the same|equivalent|interchangeable)|not identical|(?:do not|does not|don't|doesn't) have the same meaning)\b/i.test(
+          /\b(?:not the same|not equivalent|not interchangeable|distinct|does not mean|don't mean|(?:does not|doesn't) give the same|mean different|are different|differ|differs|different|changes which|(?:is not|isn't|aren't)\s+(?:the same|equivalent|interchangeable)|not identical|(?:do not|does not|don't|doesn't) have the same meaning)\b/i.test(
             r
           ) && !affirmsEquivalence(r),
       },

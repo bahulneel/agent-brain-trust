@@ -326,14 +326,13 @@ Law: A ~: B projects A into the mode of B (necessity in that world-view).
 B :~ A maps B back to the base context (possibility justified by A).
 Example: :Rare :~ BlackSwan
 
-What does :Rare :~ BlackSwan mean? Which argument is the mode and which is
-the justifying existence? Is :Rare :~ BlackSwan the same as BlackSwan :~ :Rare?
+What does :Rare :~ BlackSwan mean? Which argument is made possible and which
+justifies it? Is :Rare :~ BlackSwan the same as BlackSwan :~ :Rare?
 Answer from the quoted law only.
 ```
 
-**Expected observable behaviour.** The reply treats `:Rare` as the mode and
-`BlackSwan` as the justifying existence: the swan's existence makes the
-"Rare" mode possible in the base context. It says `:Rare :~ BlackSwan` is
+**Expected observable behaviour.** The reply says `:Rare` is what is made
+possible; `BlackSwan` justifies it. It says `:Rare :~ BlackSwan` is
 not the same as `BlackSwan :~ :Rare`. It does not invert the quoted
 `B :~ A` order.
 

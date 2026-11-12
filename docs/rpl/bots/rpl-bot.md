@@ -326,8 +326,8 @@ Law: A ~: B projects A into the mode of B (necessity in that world-view).
 B :~ A maps B back to the base context (possibility justified by A).
 Example: :Rare :~ BlackSwan
 
-What does :Rare :~ BlackSwan mean? Which argument is the mode and which is
-the justifying existence? Is :Rare :~ BlackSwan the same as BlackSwan :~ :Rare?
+What does :Rare :~ BlackSwan mean? Which argument is made possible and which
+justifies it? Is :Rare :~ BlackSwan the same as BlackSwan :~ :Rare?
 Answer from the quoted law only.
 ```
 

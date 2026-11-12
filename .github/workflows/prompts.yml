@@ -108,7 +108,6 @@ jobs:
         env:
           PROMPTS_LLM_API_KEY: ${{ secrets.PROMPTS_LLM_API_KEY }}
           NVIDIA_NIM_API_KEY: ${{ secrets.NVIDIA_NIM_API_KEY }}
-          PROMPTS_LLM_MODEL: meta/llama3-70b-instruct
         run: npm run test:prompts:triage
 
       - name: Upload triage report

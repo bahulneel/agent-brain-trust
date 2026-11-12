@@ -7,33 +7,23 @@
  * Output: PROMPT_TRIAGE_OUTPUT (default .meta/prompt-test-triage.json)
  */
 
-import { readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
 import { jsonrepair } from "jsonrepair";
 
-const CHAT_URL = "https://integrate.api.nvidia.com/v1/chat/completions";
+import { apiKey, CHAT_URL, modelId } from "../tests/support/chat.ts";
 
 type FailureRow = Record<string, unknown>;
 
-function apiKey(): string {
-  const k =
-    process.env.PROMPTS_LLM_API_KEY?.trim() ||
-    process.env.NVIDIA_NIM_API_KEY?.trim();
+function requireApiKey(): string {
+  const k = apiKey();
   if (!k) {
     throw new Error(
       "Set PROMPTS_LLM_API_KEY or NVIDIA_NIM_API_KEY for prompt triage."
     );
   }
   return k;
-}
-
-function modelId(): string {
-  return (
-    process.env.PROMPTS_LLM_MODEL?.trim() ||
-    process.env.NIM_MODEL?.trim() ||
-    "meta/llama3-70b-instruct"
-  );
 }
 
 function loadNdjson(path: string): FailureRow[] {
@@ -107,7 +97,7 @@ For each distinct failure group in the user message, output one JSON object in a
 Respond with ONLY valid JSON: a single array of objects, no markdown fences.`;
 
 async function complete(user: string): Promise<string> {
-  const key = apiKey();
+  const key = requireApiKey();
   const body = {
     model: modelId(),
     temperature: 0.2,
@@ -159,6 +149,8 @@ async function main(): Promise<void> {
     process.env.PROMPT_TRIAGE_OUTPUT?.trim() ||
     join(cwd, ".meta", "prompt-test-triage.json");
 
+  mkdirSync(dirname(outputPath), { recursive: true });
+
   const rows = loadNdjson(inputPath);
   if (rows.length === 0) {
     const empty = {
@@ -193,7 +185,6 @@ async function main(): Promise<void> {
     analysis,
   };
 
-  const dir = dirname(outputPath);
   writeFileSync(outputPath, `${JSON.stringify(out, null, 2)}\n`, "utf-8");
   console.log(`Wrote ${outputPath}`);
 }

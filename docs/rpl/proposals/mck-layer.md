@@ -48,6 +48,11 @@ outranks a constraint still in force; whether "forget" erases or records
 third verdict, `"unchecked"`, for an invariant check that has no ground
 ([`fol.5`](../bootstrap/fol.md)). Those are mck.15–mck.18.
 
+Bahul then asked (12 Nov 2026) for the graph to be provisionable into a
+persistent store when the host offers one, and for rules on composing
+graphs and resolving their conflicts, that is, knowledge sharing. Those
+are mck.19–mck.23, all **Inferred**.
+
 This proposal is a candidate layer that would close those gaps. Names are
 for Bahul to decide. Acceptance, and any later move into `bootstrap/`, are
 separate steps.
@@ -106,8 +111,18 @@ listed first; a compound key is written `(a, b)`.
 | `memory-item(?item, ?description, ?stratum)` | `?item` | A remembered item and its stratum. |
 | `memory-item-record(?item, ?record)` | `(?item, ?record)` | A trace, handoff, or persisted record that grounds the item. |
 | `confidence-report(?report, ?turn, ?claim, ?level, ?basis)` | `?report` | A confidence report uttered in a turn. |
-| `graph-store(?store, ?host, ?durability)` | `?store` | A store the host provides for session graphs: `"persistent"` or `"session-only"`. |
-| `session-graph-store(?session, ?store)` | `?session` | The store a session's graph lives in. |
+| `graph-store(?store, ?host, ?durability)` | `?store` | A store the host provides for graphs: `"persistent"` or `"session-only"`. |
+| `knowledge-graph(?graph, ?store, ?agent)` | `?graph` | A graph of facts, the store it lives in, and the agent that keeps it. |
+| `session-graph(?session, ?graph)` | `?session` | The graph a session works in. |
+| `session-graph-store(?session, ?store)` | `?session` | Derived: the store a session's graph lives in. |
+| `topic(?topic, ?graph, ?label)` | `?topic` | A topic in a graph, with its label. |
+| `topic-alignment(?topic, ?other, ?basis)` | `(?topic, ?other)` | Two topics are taken to be the same, on a basis. |
+| `fact-provenance(?fact, ?graph, ?session, ?agent)` | `(?fact, ?graph)` | Where a fact came from: graph, session, and agent. |
+| `graph-composition(?composition, ?session, ?target)` | `?composition` | A composition of graphs into a target graph, in a session. |
+| `composition-source(?composition, ?graph)` | `(?composition, ?graph)` | A graph composed in. |
+| `composition-conflict(?conflict, ?composition, ?kind, ?point)` | `?conflict` | A clash found in a composition, and the coordination point that presents it. |
+| `conflict-fact(?conflict, ?fact)` | `(?conflict, ?fact)` | A fact taking part in the clash. |
+| `conflict-resolution(?conflict, ?option)` | `?conflict` | The accepted repair option that resolves the clash. |
 
 ## Entities
 
@@ -140,9 +155,22 @@ Each entity with the relations that describe it, key first. All names are
 - **Confidence report** (`?report`):
   `confidence-report(?report, ?turn, ?claim, ?level, ?basis)`.
 - **Posture**: `session-posture(?session, ?posture)`, one row per session.
-- **Graph store** (`?store`): `graph-store(?store, ?host, ?durability)`;
-  referenced by `session-graph-store(?session, ?store)`, one row per
-  session (mck.19).
+- **Graph store** (`?store`): `graph-store(?store, ?host, ?durability)`
+  (mck.19).
+- **Knowledge graph** (`?graph`): `knowledge-graph(?graph, ?store, ?agent)`;
+  `session-graph(?session, ?graph)`, one row per session; derived
+  `session-graph-store(?session, ?store)` (mck.19, mck.20).
+- **Topic** (`?topic`): `topic(?topic, ?graph, ?label)`;
+  `topic-alignment(?topic, ?other, ?basis)` (mck.22).
+- **Provenance** (`(?fact, ?graph)`):
+  `fact-provenance(?fact, ?graph, ?session, ?agent)` (mck.20).
+- **Composition** (`?composition`):
+  `graph-composition(?composition, ?session, ?target)`;
+  `composition-source(?composition, ?graph)` (mck.21).
+- **Conflict** (`?conflict`):
+  `composition-conflict(?conflict, ?composition, ?kind, ?point)`;
+  `conflict-fact(?conflict, ?fact)`; `conflict-resolution(?conflict, ?option)`
+  (mck.23).
 
 A change of state (a pop, a cession, a new holder) is recorded as a
 retraction of the old row (`… -: false`) and a new row, so the history is
@@ -160,6 +188,8 @@ Proposed vocabularies, also **for Bahul to decide**:
   `"uncertain-scope"`.
 - Memory strata: `"short-term"`, `"long-term"`.
 - Store durability: `"persistent"`, `"session-only"`.
+- Topic alignment basis: `"same-id"`, `"declared"`, `"judgment"`.
+- Composition conflict kinds: `"constraint"`, `"decision"`, `"term"`.
 - Confidence levels: `"high"`, `"medium"`, `"low"`, `"none"`. Basis:
   `"ground"`, `"judgment"`.
 - Speakers and parties: `"user"`, `"agent"`, or a party a host names.
@@ -941,9 +971,9 @@ in order to make the check look grounded.
 
 ### mck.19 — Provisioning the session graph into a store
 
-**Law.** **Inferred.** Every session's graph (the facts, frames,
-intents, checks, traces, and retraction records of this layer) lives in
-exactly one graph store. When the host provides a `"persistent"` store,
+**Law.** **Inferred.** Every session works in one knowledge graph (the
+facts, frames, intents, checks, traces, and retraction records of this
+layer), and that graph lives in exactly one graph store. When the host provides a `"persistent"` store,
 the session's graph is provisioned into it and the agent uses it. When
 the host provides none, the agent falls back to a `"session-only"` store
 that lasts as long as the session. The agent does not claim persistence
@@ -960,7 +990,15 @@ fact means the same in either kind of store.
 
 - `graph-store(?store, ?host, ?durability)` — `?durability` is
   `"persistent"` or `"session-only"`.
-- `session-graph-store(?session, ?store)` — one row per session.
+- `knowledge-graph(?graph, ?store, ?agent)` and
+  `session-graph(?session, ?graph)` (see mck.20).
+
+The store of a session's graph is derived, not stored twice:
+
+```rpl
+session-graph-store(?session, ?store) :-
+  session-graph(?session, ?graph), knowledge-graph(?graph, ?store, ?agent)
+```
 
 **Grounding.** Bahul, 12 Nov 2026: the graph should be provisionable
 into a persistent place when one is available. [cognition.md](../cognition.md)
@@ -972,20 +1010,215 @@ and mck.17.
 
 ```rpl
 session("s1", "host-a")
-graph-store("g1", "host-a", "persistent")
-session-graph-store("s1", "g1")
+graph-store("st1", "host-a", "persistent")
+knowledge-graph("g1", "st1", "rpl-bot")
+session-graph("s1", "g1")
 ```
 
 A host with none, so the agent falls back:
 
 ```rpl
 session("s2", "host-b")
-graph-store("g2", "host-b", "session-only")
-session-graph-store("s2", "g2")
+graph-store("st2", "host-b", "session-only")
+knowledge-graph("g2", "st2", "rpl-bot")
+session-graph("s2", "g2")
 ```
+
+`session-graph-store("s1", "st1")` and `session-graph-store("s2", "st2")`
+follow.
 
 **Not.** A specific database or product. Not a licence to treat residual
 model memory as a store. Not an erase mode (mck.17 leaves that open).
+
+---
+
+### mck.20 — Graphs, topics, and provenance
+
+**Law.** **Inferred.** Knowledge is shared between sessions, agents, and
+stores as knowledge graphs. A graph has an id, lives in one store
+(mck.19), and is kept by one agent. Its subject matter is organised by
+topics, each with an id within its graph. Every fact that enters a graph
+from another graph records its provenance: the graph, the session, and
+the agent it came from. A fact asserted twice from two graphs has two
+provenance rows, not one. Provenance is a record like a trace
+([`rpl.6`](../bootstrap/rpl.md)): an ordinary relation, not optional
+debug output.
+
+**FOL reading.** *Comment.* Bookkeeping about where facts came from. A
+fact means the same whatever its provenance.
+
+**Surface.** All are **PROPOSED NAME, for Bahul to decide**:
+
+- `knowledge-graph(?graph, ?store, ?agent)`
+- `session-graph(?session, ?graph)` — one row per session.
+- `topic(?topic, ?graph, ?label)`
+- `fact-provenance(?fact, ?graph, ?session, ?agent)` — `?fact` is the
+  quoted fact, as `?invariant` quotes a rule in `invariant`.
+
+**Grounding.** Bahul, 12 Nov 2026 ("graph composition and conflict
+resolution, basically knowledge sharing"); [`rpl.6`](../bootstrap/rpl.md)
+(traces are ordinary relations); mck.13 (only recorded ground may be
+cited, so shared facts need a record of where they came from).
+
+**Example.**
+
+```rpl
+knowledge-graph("g1", "st1", "rpl-bot")
+knowledge-graph("g3", "st1", "planner-bot")
+topic("tp1", "g1", "dinner on Saturday")
+topic("tp7", "g3", "Saturday dinner")
+fact-provenance(vegetarian("guest"), "g3", "s9", "planner-bot")
+```
+
+**Not.** A fact with no provenance once it has crossed graphs. Not a
+claim that provenance makes a fact true.
+
+---
+
+### mck.21 — Composing graphs
+
+**Law.** **Inferred.** Composing graphs adds the facts of each source
+graph to a target graph, with provenance (mck.20). Monotonic additions
+are automatic: a fact, rule, or invariant that does not clash with the
+target joins it without coordination, because adding sentences does not
+withdraw earlier consequences ([`fol.9`](../bootstrap/fol.md)).
+Composition never retracts anything in a source graph or in the target.
+Anything that would need a retraction, a forced choice, or a change of
+meaning is a clash and goes to mck.23.
+
+Invariants from every source apply to the composed graph, and the
+pre-output check (mck.6) runs against all of them.
+
+**FOL reading.** *Comment.* Union of sentences, which is monotonic in
+the Horn fragment ([`fol.9`](../bootstrap/fol.md)). The non-monotonic
+remainder is `agent` ([`agent.2`](../bootstrap/agent.md)).
+
+**Surface.** Both are **PROPOSED NAME, for Bahul to decide**:
+
+- `graph-composition(?composition, ?session, ?target)`
+- `composition-source(?composition, ?graph)`
+
+**Grounding.** [`fol.9`](../bootstrap/fol.md) (monotonic consequence);
+[`agent.2`](../bootstrap/agent.md) (non-monotonic steps are
+coordination); Bahul, 12 Nov 2026.
+
+**Example.**
+
+```rpl
+graph-composition("cmp1", "s1", "g1")
+composition-source("cmp1", "g3")
+```
+
+`vegetarian("guest")` from `"g3"` joins `"g1"` with the provenance row in
+the mck.20 example. No coordination is needed, unless it clashes.
+
+**Not.** A last-writer-wins merge. Not a retraction of anything by
+composition alone.
+
+---
+
+### mck.22 — Aligning topics
+
+**Law.** **Inferred.** Topics in different graphs are the same topic
+only when an alignment says so. An alignment has a basis: `"same-id"`
+(both graphs use one shared id), `"declared"` (a graph or host records
+the equivalence), or `"judgment"` (the agent judges two labels to name
+one thing). Unaligned topics stay distinct; a matching label alone does
+not merge them. A judgment alignment is [`agent.1`](../bootstrap/agent.md)
+judgment and not an axiom ([`agent.3`](../bootstrap/agent.md)). When a
+judgment alignment is material and uncertain, present it as a
+coordination point (mck.10) or cede the initiative (mck.12), as with
+constraint scope (mck.9).
+
+**FOL reading.** *Comment.* A recorded identification between ids, not
+`fol.8` equality of values.
+
+**Surface.** `topic-alignment(?topic, ?other, ?basis)` — **PROPOSED
+NAME, for Bahul to decide**.
+
+**Grounding.** [`agent.1`](../bootstrap/agent.md),
+[`agent.3`](../bootstrap/agent.md); mck.9 (judged scope); Bahul,
+12 Nov 2026.
+
+**Example.**
+
+```rpl
+topic-alignment("tp1", "tp7", "judgment")
+```
+
+"dinner on Saturday" and "Saturday dinner" are judged one topic. Had the
+two graphs shared one id, the basis would be `"same-id"`.
+
+**Not.** A silent merge of two topics because their labels match. Not a
+term ontology.
+
+---
+
+### mck.23 — Conflicts between composed graphs
+
+**Law.** **Inferred.** When composed graphs disagree, the clash is
+recorded and presented; no graph silently wins. A clash is one of:
+
+- *constraint* — facts from one graph violate an invariant or
+  restriction from another, or two constraints cannot both hold;
+- *decision* — two graphs record incompatible choices on the same
+  topic;
+- *term* — one label is used with incompatible meanings, or an
+  alignment (mck.22) would change what a fact says.
+
+Each clash is a coordination point (mck.10), of kind
+`"constraint-conflict"`, `"forced-choice"`, or
+`"non-monotonic-schema-change"` respectively
+([`agent.2`](../bootstrap/agent.md)). The facts on every side still hold
+as asserted, with their provenance, until the session authority accepts
+a repair option (mck.11). The agent may order options with reasons,
+including recency or provenance, but ordering is not a selection
+(mck.10). A resolution that retracts a fact does so under mck.17: it
+records that the fact no longer holds, keeps the history, and persists
+where the store is persistent (mck.19). Monotonic additions are not
+clashes and stay automatic (mck.21).
+
+**FOL reading.** *Comment.* The non-monotonic steps
+[`fol.9`](../bootstrap/fol.md) does not decide, reserved to `agent`
+([`agent.2`](../bootstrap/agent.md); [`rpl.6`](../bootstrap/rpl.md)
+comment, "Retraction is non-monotonic. Coordination is `agent`.").
+
+**Surface.** All three are **PROPOSED NAME, for Bahul to decide**:
+
+- `composition-conflict(?conflict, ?composition, ?kind, ?point)` —
+  `?kind` is `"constraint"`, `"decision"`, or `"term"`; `?point` names
+  the `coordination-point`.
+- `conflict-fact(?conflict, ?fact)`
+- `conflict-resolution(?conflict, ?option)` — `?option` names a
+  `repair-option` with a `repair-acceptance` row.
+
+**Grounding.** [`agent.2`](../bootstrap/agent.md);
+[`rpl.6`](../bootstrap/rpl.md); [`fol.9`](../bootstrap/fol.md); mck.10,
+mck.11, mck.17; Bahul, 12 Nov 2026.
+
+**Example.** `"g1"` holds that the guest eats fish; `"g3"` holds that the
+guest is vegetarian under an invariant that rules out fish.
+
+```rpl
+composition-conflict("cf1", "cmp1", "constraint", "c2")
+conflict-fact("cf1", menu-item("guest", "grilled trout"))
+conflict-fact("cf1", vegetarian("guest"))
+coordination-point("c2", "t5", "constraint-conflict",
+  "g1 serves the guest trout; g3 says the guest is vegetarian")
+repair-option("c2-a", "c2", "change the dish")
+repair-option("c2-b", "c2", "drop the vegetarian fact from g3")
+```
+
+After the user accepts `"c2-a"`:
+
+```rpl
+repair-acceptance("c2-a", "t6", "user")
+conflict-resolution("cf1", "c2-a")
+menu-item("guest", "grilled trout") -: false
+```
+
+**Not.** A silent win for the newer, larger, or local graph. Not a new
+retraction operator. Not an erase (mck.17 leaves erase open).
 
 ---
 
@@ -1061,5 +1294,9 @@ These are for Bahul, not settled by this document:
   once mck.13 cites it, or whether the layer text is enough.
 - Whether a host's persistent store (mck.19) should be shared across
   sessions of one user, or one store per session.
+- Whether a `"declared"` topic alignment (mck.22) may be taken without
+  coordination when it comes from another agent's graph.
+- Whether the composition conflict kinds map to the `agent.2` kinds as
+  proposed in mck.23.
 - Whether a host may offer an erase mode in addition to the default
   record-and-keep-history behaviour of "forget" (mck.17).

@@ -66,27 +66,82 @@ to decide**. Relation labels stay kebab-case and declarative
 forms already in `rpl` (`:-`, `-:`). Variables are `?lvars`. No new
 paired operator is proposed.
 
+**Relational shape.** Each core concept is a reified entity with its own
+id, described by keyed binary or n-ary relations, in the style of a
+normalised SQL schema: the first argument of an entity relation is its
+key, every row is a fact, and session- or turn-scoped facts carry the
+session or turn as an argument. There are no unary state flags and no
+imperative names. Ids in examples are plain strings (`"s1"`, `"t1"`,
+`"f1"`). Parties (`"user"`, `"agent"`, or a host-named party) are plain
+strings and are not reified here.
+
 ## Proposed names
 
-All of the following are **PROPOSED NAME, for Bahul to decide**.
+All of the following are **PROPOSED NAME, for Bahul to decide**. Keys are
+listed first; a compound key is written `(a, b)`.
 
-| Name | Role |
-| --- | --- |
-| `mck` | Layer name in code (McK in prose). |
-| `intent(?source, ?kind, ?content)` | An intent found in an utterance. |
-| `context-frame(?id, ?objective)` | A frame on the context stack. |
-| `frame-parent(?child, ?parent)` | The frame a tangent interrupts. |
-| `active-frame(?id)` | The frame currently in force. |
-| `check-posture(?p)` | `"test"` or `"production"` visibility. |
-| `invariant-check(?invariant, ?grounding, ?verdict)` | The pre-output check, as a record. Verdict: `"holds"`, `"fails"`, or `"unchecked"`. |
-| `restriction-enforced-by(?restriction, ?invariant)` | Link from a restriction fact to an invariant. |
-| `restriction-covers(?restriction, ?item)` | Judged scope of a restriction. |
-| `coordination-point(?id, ?kind, ?conflict)` | A presented non-monotonic step. |
-| `repair-option(?point, ?proposal)` | One option at that point. |
-| `session-authority(?who)` | Who may accept a retraction. |
-| `yield(?reason)` | A decision to stop for validation. |
-| `memory-stratum(?item, ?stratum)` | `"short-term"` or `"long-term"`. |
-| `confidence(?claim, ?level, ?basis)` | A confidence report. |
+| Name | Key | Role |
+| --- | --- | --- |
+| `mck` | — | Layer name in code (McK in prose). |
+| `session(?session, ?host)` | `?session` | A session and the host running it. |
+| `session-authority(?session, ?party)` | `?session` | Who may accept a retraction in that session. |
+| `session-posture(?session, ?posture)` | `?session` | `"test"` or `"production"` visibility for that session. |
+| `turn(?turn, ?session, ?position, ?speaker)` | `?turn` | A turn: its session, its position in order, and who spoke. |
+| `intent(?intent, ?turn, ?kind, ?content)` | `?intent` | An intent found in the utterance of a turn. |
+| `context-frame(?frame, ?session, ?objective)` | `?frame` | A frame on a session's context stack. |
+| `frame-parent(?frame, ?parent)` | `?frame` | The frame a tangent interrupts. |
+| `active-frame(?session, ?frame)` | `?session` | The frame currently in force in a session. |
+| `initiative(?initiative, ?session, ?purpose)` | `?initiative` | A unit of initiative: who drives the next step, and to what end. |
+| `initiative-holder(?initiative, ?party)` | `?initiative` | Who holds the initiative now. |
+| `initiative-ceded(?initiative, ?turn, ?party, ?reason)` | `(?initiative, ?turn)` | The initiative was ceded at a turn, to a party, for a reason. |
+| `invariant(?invariant, ?session, ?rule)` | `?invariant` | Names a session invariant; `?rule` is its `LEFT -: RIGHT` form. |
+| `restriction(?restriction, ?session, ?statement)` | `?restriction` | A recorded restriction, as stated. |
+| `restriction-enforced-by(?restriction, ?invariant)` | `(?restriction, ?invariant)` | Link from a restriction to an invariant that enforces it. |
+| `restriction-covers(?restriction, ?item)` | `(?restriction, ?item)` | Judged scope of a restriction. |
+| `invariant-check(?check, ?turn, ?invariant, ?verdict)` | `?check` | The pre-output check of one invariant in one turn, and its verdict. |
+| `invariant-check-grounding(?check, ?grounding)` | `?check` | The bindings the check was grounded on; absent when there were none. |
+| `coordination-point(?point, ?turn, ?kind, ?conflict)` | `?point` | A non-monotonic step presented in a turn. |
+| `repair-option(?option, ?point, ?proposal)` | `?option` | One option at a coordination point. |
+| `repair-acceptance(?option, ?turn, ?party)` | `?option` | The session authority accepted that option in a turn. |
+| `memory-item(?item, ?description, ?stratum)` | `?item` | A remembered item and its stratum. |
+| `memory-item-record(?item, ?record)` | `(?item, ?record)` | A trace, handoff, or persisted record that grounds the item. |
+| `confidence-report(?report, ?turn, ?claim, ?level, ?basis)` | `?report` | A confidence report uttered in a turn. |
+
+## Entities
+
+Each entity with the relations that describe it, key first. All names are
+**PROPOSED NAME, for Bahul to decide**.
+
+- **Session** (`?session`): `session(?session, ?host)`;
+  `session-authority(?session, ?party)`; `session-posture(?session, ?posture)`;
+  `active-frame(?session, ?frame)`.
+- **Turn** (`?turn`): `turn(?turn, ?session, ?position, ?speaker)`.
+- **Initiative** (`?initiative`): `initiative(?initiative, ?session, ?purpose)`;
+  `initiative-holder(?initiative, ?party)`;
+  `initiative-ceded(?initiative, ?turn, ?party, ?reason)`.
+- **Frame** (`?frame`): `context-frame(?frame, ?session, ?objective)`;
+  `frame-parent(?frame, ?parent)`; referenced by `active-frame`.
+- **Intent** (`?intent`): `intent(?intent, ?turn, ?kind, ?content)`.
+- **Invariant** (`?invariant`): `invariant(?invariant, ?session, ?rule)`.
+- **Restriction** (`?restriction`): `restriction(?restriction, ?session, ?statement)`;
+  `restriction-enforced-by(?restriction, ?invariant)`;
+  `restriction-covers(?restriction, ?item)`.
+- **Invariant check** (`?check`): `invariant-check(?check, ?turn, ?invariant, ?verdict)`;
+  `invariant-check-grounding(?check, ?grounding)`.
+- **Coordination point** (`?point`): `coordination-point(?point, ?turn, ?kind, ?conflict)`.
+- **Repair option** (`?option`): `repair-option(?option, ?point, ?proposal)`;
+  `repair-acceptance(?option, ?turn, ?party)`.
+- **Session authority**: `session-authority(?session, ?party)`, one row per
+  session.
+- **Memory item** (`?item`): `memory-item(?item, ?description, ?stratum)`;
+  `memory-item-record(?item, ?record)`.
+- **Confidence report** (`?report`):
+  `confidence-report(?report, ?turn, ?claim, ?level, ?basis)`.
+- **Posture**: `session-posture(?session, ?posture)`, one row per session.
+
+A change of state (a pop, a cession, a new holder) is recorded as a
+retraction of the old row (`… -: false`) and a new row, so the history is
+kept under mck.17.
 
 Proposed vocabularies, also **for Bahul to decide**:
 
@@ -96,11 +151,12 @@ Proposed vocabularies, also **for Bahul to decide**:
 - Coordination kinds, from [`agent.2`](../bootstrap/agent.md):
   `"retraction"`, `"forced-choice"`, `"constraint-conflict"`,
   `"non-monotonic-schema-change"`.
-- Yield reasons: `"user-choice"`, `"coordination"`, `"missing-ground"`,
+- Initiative cession reasons: `"user-choice"`, `"coordination"`, `"missing-ground"`,
   `"uncertain-scope"`.
 - Memory strata: `"short-term"`, `"long-term"`.
 - Confidence levels: `"high"`, `"medium"`, `"low"`, `"none"`. Basis:
   `"ground"`, `"judgment"`.
+- Speakers and parties: `"user"`, `"agent"`, or a party a host names.
 - Invariant-check verdicts, also **PROPOSED NAME, for Bahul to decide**:
   `"holds"`, `"fails"`, `"unchecked"`.
 
@@ -114,8 +170,9 @@ command, query, constraint, instruction, analogy, or suggestion.
 
 **FOL reading.** *Comment.* A classification of input, not a connective.
 
-**Surface.** `intent(?source, ?kind, ?content)` — **PROPOSED NAME, for
-Bahul to decide**.
+**Surface.** `intent(?intent, ?turn, ?kind, ?content)` — **PROPOSED
+NAME, for Bahul to decide**. `?turn` is the turn whose utterance carries
+the intent (`turn`, see Entities).
 
 **Grounding.** [agent-mck.md](../agent-mck.md), "Contextual Intent
 Tracking"; [bots/rpl-bot.md](../bots/rpl-bot.md) gap 2; live probe 1.
@@ -123,10 +180,11 @@ Tracking"; [bots/rpl-bot.md](../bots/rpl-bot.md) gap 2; live probe 1.
 **Example.**
 
 ```rpl
-intent("u1", "command", "make a sandwich")
-intent("u1", "constraint", "no mayonnaise")
-intent("u1", "analogy", "like a chef")
-intent("u1", "instruction", "say briefly what you will make")
+turn("t1", "s1", 1, "user")
+intent("i1", "t1", "command", "make a sandwich")
+intent("i2", "t1", "constraint", "no mayonnaise")
+intent("i3", "t1", "analogy", "like a chef")
+intent("i4", "t1", "instruction", "say briefly what you will make")
 ```
 
 **Not.** Collapsing two kinds into one. A constraint is not a suggestion.
@@ -191,9 +249,9 @@ aioli).
 **Example.**
 
 ```rpl
-intent("u1", "command", "make a sandwich")
-intent("u1", "constraint", "no mayonnaise")
-intent("u1", "analogy", "like a chef")
+intent("i1", "t1", "command", "make a sandwich")
+intent("i2", "t1", "constraint", "no mayonnaise")
+intent("i3", "t1", "analogy", "like a chef")
 recommended-sandwich(?s), contains-ingredient(?s, "mayonnaise") -: false
 ```
 
@@ -216,12 +274,13 @@ is resolved, the stack pops and the parent frame becomes active again.
 
 **Surface.** All three are **PROPOSED NAME, for Bahul to decide**:
 
-- `context-frame(?id, ?objective)`
-- `frame-parent(?child, ?parent)`
-- `active-frame(?id)`
+- `context-frame(?frame, ?session, ?objective)`
+- `frame-parent(?frame, ?parent)`
+- `active-frame(?session, ?frame)` — one row per session.
 
-A push asserts a new frame, a parent link, and a new `active-frame`.
-A pop moves `active-frame` to the parent. There is no push or pop
+A push asserts a new frame, a parent link, and a new `active-frame` row
+for the session. A pop moves the session's `active-frame` row to the
+parent (the old row is retracted with `… -: false`). There is no push or pop
 operator; relations stay declarative ([`rpl.1`](../bootstrap/rpl.md)).
 
 **Grounding.** [agent-mck.md](../agent-mck.md), "Context Stacking"; live
@@ -232,14 +291,14 @@ gap 2.
 Tangent: one guest cannot have dairy.
 
 ```rpl
-context-frame("f1", "plan a vegetarian dinner for two")
-context-frame("f2", "no dairy for one guest")
+context-frame("f1", "s1", "plan a vegetarian dinner for two")
+context-frame("f2", "s1", "no dairy for one guest")
 frame-parent("f2", "f1")
-active-frame("f2")
+active-frame("s1", "f2")
 ```
 
-After the list is adjusted, `active-frame("f1")` holds and `"f2"` is no
-longer active.
+After the list is adjusted, `active-frame("s1", "f1")` holds and `"f2"`
+is no longer active.
 
 **Not.** A linear chat log treated as the stack. History may still be
 recorded; priority is the stack.
@@ -286,9 +345,10 @@ records a verdict under mck.18: `"holds"`, `"fails"`, or `"unchecked"`.
 **FOL reading.** The obligation is [`rpl.4`](../bootstrap/rpl.md):
 LEFT ⊨ RIGHT, checked, not used to generate heads.
 
-**Surface.** `invariant-check(?invariant, ?grounding, ?verdict)` —
-**PROPOSED NAME, for Bahul to decide**. `?verdict` is `"holds"`,
-`"fails"`, or `"unchecked"` (mck.18).
+**Surface.** `invariant-check(?check, ?turn, ?invariant, ?verdict)` and
+`invariant-check-grounding(?check, ?grounding)` — **PROPOSED NAME, for
+Bahul to decide**. `?invariant` names an `invariant` row. `?verdict` is
+`"holds"`, `"fails"`, or `"unchecked"` (mck.18).
 
 **Grounding.** [agent-mck.md](../agent-mck.md), "Recording Invariants"
 (a check against session principles before every output);
@@ -298,15 +358,15 @@ probe 2.
 **Example.**
 
 ```rpl
-dietary-restriction("no-shellfish")
 recommended-dish(?d), contains-ingredient(?d, "shrimp") -: false
 recommended-dish(?d), contains-ingredient(?d, "prawn") -: false
+invariant("inv1", "s1",
+  (recommended-dish(?d), contains-ingredient(?d, "shrimp") -: false))
+invariant("inv2", "s1",
+  (recommended-dish(?d), contains-ingredient(?d, "prawn") -: false))
 
-invariant-check(
-  (recommended-dish(?d), contains-ingredient(?d, "shrimp") -: false),
-  {?d "shrimp pasta"},
-  "fails"
-)
+invariant-check("chk1", "t2", "inv1", "fails")
+invariant-check-grounding("chk1", {?d "shrimp pasta"})
 ```
 
 Shrimp pasta is not recommended. An alternative is offered only if it
@@ -332,8 +392,9 @@ user-visible reply depends on posture:
 **FOL reading.** *Comment.* A host posture over an already-recorded
 trace, not a second meaning of `-:`.
 
-**Surface.** `check-posture(?p)` — **PROPOSED NAME, for Bahul to
-decide**. `?p` is `"test"` or `"production"`.
+**Surface.** `session-posture(?session, ?posture)` — **PROPOSED NAME,
+for Bahul to decide**. One row per session; `?posture` is `"test"` or
+`"production"`.
 
 **Grounding.** [bots/rpl-bot.md](../bots/rpl-bot.md) gap 3 (the docs do
 not reconcile the silent check with the inspectable trace); live probe
@@ -345,12 +406,9 @@ Structure vs. Black-Box Prose".
 **Example.**
 
 ```rpl
-check-posture("test")
-invariant-check(
-  (recommended-dish(?d), contains-ingredient(?d, "shrimp") -: false),
-  {?d "shrimp pasta"},
-  "fails"
-)
+session-posture("s1", "test")
+invariant-check("chk1", "t2", "inv1", "fails")
+invariant-check-grounding("chk1", {?d "shrimp pasta"})
 ```
 
 In `"production"`, the same check still runs and is still recorded; the
@@ -369,7 +427,7 @@ must be linked to the invariants that enforce it: either those
 invariants are already in the session, or the agent derives and holds
 the corresponding `LEFT -: false` forms (or other right-hand sides)
 that the restriction requires. A restriction fact with no linked
-invariant is a gap: fill the link, or yield (mck.12).
+invariant is a gap: fill the link, or cede the initiative (mck.12).
 
 The *obligation to link* is a kernel law. The *domain mapping* (which
 ingredients a named restriction rules out) is judgment, recorded under
@@ -378,8 +436,9 @@ mck.9, not a theorem of `fol` or `rpl` ([`agent.3`](../bootstrap/agent.md)).
 **FOL reading.** *Comment.* A required connection between a fact and the
 invariants that give it force. Not a new connective.
 
-**Surface.** `restriction-enforced-by(?restriction, ?invariant)` —
-**PROPOSED NAME, for Bahul to decide**.
+**Surface.** `restriction(?restriction, ?session, ?statement)` and
+`restriction-enforced-by(?restriction, ?invariant)` — **PROPOSED NAME,
+for Bahul to decide**. `?invariant` names an `invariant` row.
 
 **Grounding.** Live probe 2 and cross-probe gap 1: `dietary-restriction("no-shellfish")`
 is inert unless someone interprets it; no rule links a restriction fact
@@ -388,20 +447,16 @@ to the invariants that use it.
 **Example.**
 
 ```rpl
-dietary-restriction("no-shellfish")
-recommended-dish(?d), contains-ingredient(?d, "shrimp") -: false
-recommended-dish(?d), contains-ingredient(?d, "prawn") -: false
-restriction-enforced-by(
-  dietary-restriction("no-shellfish"),
-  (recommended-dish(?d), contains-ingredient(?d, "shrimp") -: false)
-)
-restriction-enforced-by(
-  dietary-restriction("no-shellfish"),
-  (recommended-dish(?d), contains-ingredient(?d, "prawn") -: false)
-)
+restriction("r1", "s1", "no-shellfish")
+invariant("inv1", "s1",
+  (recommended-dish(?d), contains-ingredient(?d, "shrimp") -: false))
+invariant("inv2", "s1",
+  (recommended-dish(?d), contains-ingredient(?d, "prawn") -: false))
+restriction-enforced-by("r1", "inv1")
+restriction-enforced-by("r1", "inv2")
 ```
 
-**Not.** A claim that the restriction fact, by itself, fires `-:`.
+**Not.** A claim that the restriction row, by itself, fires `-:`.
 Without the link, it blocks nothing.
 
 ---
@@ -414,12 +469,12 @@ activity, a constraint attached to one participant applies to shared
 outputs unless a per-person alternative is coordinated under mck.10.
 
 When a scope extension is material and uncertain, name it as judgment
-and yield (mck.12) rather than quietly widening or narrowing.
+and cede the initiative (mck.12) rather than quietly widening or narrowing.
 
 **FOL reading.** *Comment.* A judged scope record, not a domain theory.
 
 **Surface.** `restriction-covers(?restriction, ?item)` — **PROPOSED
-NAME, for Bahul to decide**.
+NAME, for Bahul to decide**. `?restriction` names a `restriction` row.
 
 **Grounding.** Live probe 1, gap (b) (does aioli count as mayonnaise?);
 live probe 2 (does "no-shellfish" reach crab, lobster, mussels?);
@@ -429,15 +484,18 @@ shared course?); cross-probe gap 2.
 **Example.**
 
 ```rpl
-restriction-covers("no mayonnaise", "aioli")
-restriction-covers("no-shellfish", "shrimp")
-restriction-covers("no-shellfish", "prawn")
-restriction-covers("no dairy for one guest", "200ml cream")
+restriction("r1", "s1", "no-shellfish")
+restriction("r2", "s1", "no mayonnaise")
+restriction("r3", "s1", "no dairy for one guest")
+restriction-covers("r2", "aioli")
+restriction-covers("r1", "shrimp")
+restriction-covers("r1", "prawn")
+restriction-covers("r3", "200ml cream")
 ```
 
 Extending "no-shellfish" to crab is the same kind of judgment. If that
 extension would change the recommendation and is not already grounded,
-yield rather than treat it as a law.
+cede the initiative rather than treat it as a law.
 
 **Not.** A food ontology added to `rpl`. [`agent.3`](../bootstrap/agent.md)
 still forbids axiomatising that interpretation.
@@ -470,8 +528,8 @@ does not decide, already reserved to `agent`.
 
 **Surface.** Both are **PROPOSED NAME, for Bahul to decide**:
 
-- `coordination-point(?id, ?kind, ?conflict)`
-- `repair-option(?point, ?proposal)`
+- `coordination-point(?point, ?turn, ?kind, ?conflict)`
+- `repair-option(?option, ?point, ?proposal)`
 
 `?kind` uses the [`agent.2`](../bootstrap/agent.md) list:
 `"retraction"`, `"forced-choice"`, `"constraint-conflict"`,
@@ -492,12 +550,13 @@ vegetarian(?g), menu-item(?g, ?d), contains-meat(?d) -: false
 
 coordination-point(
   "c1",
+  "t3",
   "constraint-conflict",
   "vegetarian guest cannot be served beef stew"
 )
-repair-option("c1", "change the dish")
-repair-option("c1", "drop the vegetarian fact for guest")
-repair-option("c1", "drop the beef-stew menu item")
+repair-option("c1-a", "c1", "change the dish")
+repair-option("c1-b", "c1", "drop the vegetarian fact for guest")
+repair-option("c1-c", "c1", "drop the beef-stew menu item")
 ```
 
 The three facts still hold as asserted. The invariant does not hold for
@@ -525,8 +584,10 @@ recorded session fact.
 **FOL reading.** *Comment.* Authority over a non-monotonic step, not a
 new connective.
 
-**Surface.** `session-authority(?who)` — **PROPOSED NAME, for Bahul to
-decide**. Retraction itself stays `… -: false`.
+**Surface.** `session-authority(?session, ?party)` and
+`repair-acceptance(?option, ?turn, ?party)` — **PROPOSED NAME, for Bahul
+to decide**. One `session-authority` row per session. Retraction itself
+stays `… -: false`.
 
 **Grounding.** [`rpl.6`](../bootstrap/rpl.md) ("Retraction is
 non-monotonic. Coordination is `agent`."); live probe 3 (who may
@@ -535,13 +596,14 @@ retract, and when).
 **Example.**
 
 ```rpl
-session-authority("user")
-repair-option("c1", "drop the beef-stew menu item")
+session-authority("s1", "user")
+repair-option("c1-c", "c1", "drop the beef-stew menu item")
 ```
 
 Only after acceptance:
 
 ```rpl
+repair-acceptance("c1-c", "t4", "user")
 menu-item("guest", "beef stew") -: false
 ```
 
@@ -550,10 +612,10 @@ to repair an inconsistent program by itself.
 
 ---
 
-### mck.12 — When to yield
+### mck.12 — When to cede the initiative
 
-**Law.** **Inferred.** The agent yields the turn for user validation
-when any of these hold:
+**Law.** **Inferred.** The agent cedes the initiative to the user for
+validation (it yields the turn) when any of these hold:
 
 1. the user set an explicit choice or stop point;
 2. a coordination point (mck.10) needs acceptance, including a proposed
@@ -562,15 +624,22 @@ when any of these hold:
    change the outcome, and the agent has only a guess;
 4. required ground for the answer is absent (mck.13).
 
-The agent carries on without yielding when the request is complete
+The agent keeps the initiative and carries on when the request is complete
 enough to honour, every applicable invariant holds, no such choice or
 gap is open, and no coordination point is pending.
 
 **FOL reading.** *Comment.* Turn-taking policy, not a connective.
 
-**Surface.** `yield(?reason)` — **PROPOSED NAME, for Bahul to decide**.
-Proposed reasons: `"user-choice"`, `"coordination"`, `"missing-ground"`,
-`"uncertain-scope"`.
+**Surface.** All three are **PROPOSED NAME, for Bahul to decide**:
+
+- `initiative(?initiative, ?session, ?purpose)`
+- `initiative-holder(?initiative, ?party)` — one row per initiative.
+- `initiative-ceded(?initiative, ?turn, ?party, ?reason)`
+
+A cession records who received the initiative, in which turn, and why,
+and moves `initiative-holder` to that party (the old row is retracted
+with `… -: false`). Proposed reasons: `"user-choice"`, `"coordination"`,
+`"missing-ground"`, `"uncertain-scope"`.
 
 **Grounding.** [agent-mck.md](../agent-mck.md), "Autonomy vs Turn-Taking"
 (the habit is named, with no rule); live probe 1, gap (c); live probe 5
@@ -578,17 +647,26 @@ Proposed reasons: `"user-choice"`, `"coordination"`, `"missing-ground"`,
 live probe 6 (missing ground yields); [bots/rpl-bot.md](../bots/rpl-bot.md)
 gap 2.
 
-**Example.** "Give me a few options, then we will pick" is a yield
-point, even before any option is written:
+**Example.** "Give me a few options, then we will pick" is a point to
+cede the initiative, even before any option is written:
 
 ```rpl
-yield("user-choice")
+initiative("n1", "s1", "offer a few dinner options")
+initiative-holder("n1", "agent")
+```
+
+Once the options are written, in turn `"t2"`:
+
+```rpl
+initiative-ceded("n1", "t2", "user", "user-choice")
+initiative-holder("n1", "agent") -: false
+initiative-holder("n1", "user")
 ```
 
 "Like a chef, make me a sandwich, but no mayo" is a complete command
 with one honourable constraint and no open choice: carry on. A default
 filling (chicken, say) that was not given is a guess; if that default
-is material, yield or flag it under mck.14 rather than treat it as
+is material, cede the initiative or flag it under mck.14 rather than treat it as
 ground.
 
 **Not.** A fixed number for "a few" options. That count remains
@@ -622,8 +700,10 @@ it is such a record.
 Related to, but not the same as, the turn-to-turn stratification in
 [cognition.md](../cognition.md) §III.
 
-**Surface.** `memory-stratum(?item, ?stratum)` — **PROPOSED NAME, for
-Bahul to decide**.
+**Surface.** `memory-item(?item, ?description, ?stratum)` and
+`memory-item-record(?item, ?record)` — **PROPOSED NAME, for Bahul to
+decide**. A long-term item is ground only when it has a
+`memory-item-record` row that is actually present.
 
 **Grounding.** [agent-mck.md](../agent-mck.md), "Memory Stratification";
 [cognition.md](../cognition.md) §I and §III; live probe 6 (no surface
@@ -633,10 +713,11 @@ loaded prompt); [bots/rpl-bot.md](../bots/rpl-bot.md) gap 2.
 **Example.**
 
 ```rpl
-memory-stratum("locked recipe from a previous session", "long-term")
+memory-item("m1", "locked recipe from a previous session", "long-term")
 ```
 
-If no trace, handoff, or persisted record of that item is present, the
+If no trace, handoff, or persisted record of that item is present (no
+`memory-item-record("m1", ?record)` row), the
 agent does not name a recipe. Confidence is `"none"` (mck.14).
 
 **Not.** A claim that the model's residual weights are a long-term
@@ -664,8 +745,9 @@ the user asks, or the level on a material claim is `"low"` or
 **FOL reading.** *Comment.* A report about a claim, not a probability
 and not a connective.
 
-**Surface.** `confidence(?claim, ?level, ?basis)` — **PROPOSED NAME,
-for Bahul to decide**. Proposed basis values: `"ground"`, `"judgment"`.
+**Surface.** `confidence-report(?report, ?turn, ?claim, ?level, ?basis)`
+— **PROPOSED NAME, for Bahul to decide**. Proposed basis values:
+`"ground"`, `"judgment"`.
 
 **Grounding.** Live probe 6 and probe 1, gap (f): there is no surface
 for reporting confidence. [bots/rpl-bot.md](../bots/rpl-bot.md) probe 6
@@ -677,9 +759,9 @@ does not pin behaviour.
 **Example.**
 
 ```rpl
-confidence("no locked recipe is known", "none", "ground")
-confidence("the shrimp-pasta invariant fires", "high", "ground")
-confidence("bread on the list may contain dairy", "medium", "judgment")
+confidence-report("k1", "t6", "no locked recipe is known", "none", "ground")
+confidence-report("k2", "t2", "the shrimp-pasta invariant fires", "high", "ground")
+confidence-report("k3", "t5", "bread on the list may contain dairy", "medium", "judgment")
 ```
 
 **Not.** A numeric score, and not a substitute for recording a trace.
@@ -709,12 +791,12 @@ matters more" clearly replaces "cheapest", but leaves unclear whether a
 **Example.**
 
 ```rpl
-intent("u1", "constraint", "budget cap of £100")
-intent("u1", "suggestion", "cheapest option")
-intent("u2", "suggestion", "comfort matters more")
+intent("i1", "t1", "constraint", "budget cap of £100")
+intent("i2", "t1", "suggestion", "cheapest option")
+intent("i3", "t3", "suggestion", "comfort matters more")
 ```
 
-The correction retracts `intent("u1", "suggestion", "cheapest option")`
+The correction retracts `intent("i2", "t1", "suggestion", "cheapest option")`
 (`… -: false`). The £100 cap is not clearly retracted. Present a
 coordination point rather than dropping or keeping the cap quietly.
 
@@ -805,7 +887,7 @@ fact is not a proof that the invariant holds, and not a proof that it
 fails.
 
 Granted autonomy does not fill in the missing ground. Name the gap.
-Yield (mck.12) when the missing ground would change the outcome, or
+Cede the initiative (mck.12) when the missing ground would change the outcome, or
 carry an `"unchecked"` record when the user has asked the agent to
 proceed without that ground.
 
@@ -813,10 +895,12 @@ proceed without that ground.
 [`fol.5`](../bootstrap/fol.md). Not a new connective, and not a reading
 of `not`.
 
-**Surface.** `invariant-check(?invariant, ?grounding, ?verdict)` —
-**PROPOSED NAME, for Bahul to decide** — as in mck.6, with `?verdict`
-one of `"holds"`, `"fails"`, or `"unchecked"`. When the verdict is
-`"unchecked"`, `?grounding` may be empty.
+**Surface.** `invariant-check(?check, ?turn, ?invariant, ?verdict)` and
+`invariant-check-grounding(?check, ?grounding)` — **PROPOSED NAME, for
+Bahul to decide** — as in mck.6, with `?verdict` one of `"holds"`,
+`"fails"`, or `"unchecked"`. When the verdict is `"unchecked"`, the
+grounding may be empty: there is no `invariant-check-grounding` row for
+the check, or its `?grounding` is `{}`.
 
 **Grounding.** Live run 2, probe D
 ([bots/rpl-bot-live-run-2.md](../bots/rpl-bot-live-run-2.md)): the bot
@@ -827,11 +911,8 @@ no form for a check with nothing to check against.
 **Example.**
 
 ```rpl
-invariant-check(
-  (recommended-dish(?d), violates-diet(?d) -: false),
-  {},
-  "unchecked"
-)
+invariant("inv3", "s2", (recommended-dish(?d), violates-diet(?d) -: false))
+invariant-check("chk2", "t3", "inv3", "unchecked")
 ```
 
 **Not.** A pass. Not a fail. Not a licence to invent the missing facts
@@ -863,16 +944,17 @@ If `mck` were taken:
    the laws cover the habits.
 
 3. **Shrink the role preamble.** Visibility would come from
-   `check-posture("test")` plus mck.7 and mck.14, not from a paragraph
+   `session-posture(?session, "test")` plus mck.7 and mck.14, not from a paragraph
    that has to invent the protocol. The role would tell the bot to take
    these laws, utter the surfaces in test posture (`intent`,
-   `invariant-check`, the frame relations, `yield`, `confidence`), and
+   `invariant-check`, the frame relations, `initiative-ceded`,
+   `confidence-report`), and
    still obey [`agent.1`](../bootstrap/agent.md) (**Not.** do not
    contradict a law in a taken layer).
 
 4. **Set posture and authority as session facts.** A test run would
-   assert `check-posture("test")` and `session-authority("user")` at
-   the start of the prompt, so probes 1–6 can expect the surfaces
+   assert `session("s1", ?host)`, `session-posture("s1", "test")` and
+   `session-authority("s1", "user")` at the start of the prompt, so probes 1–6 can expect the surfaces
    rather than improvised prose.
 
 5. **Do not add `mck` to `docs/rpl/bootstrap/` or to
@@ -883,8 +965,9 @@ If `mck` were taken:
    `docs/rpl/proposals/`.
 
 6. **Probes can later be restated against the surfaces** (for example,
-   expect `yield("user-choice")` on probe 5, and
-   `confidence(..., "none", "ground")` on probe 6). That restatement is
+   expect `initiative-ceded(?initiative, ?turn, "user", "user-choice")`
+   on probe 5, and `confidence-report(?report, ?turn, ?claim, "none",
+   "ground")` on probe 6). That restatement is
    not part of this proposal.
 
 ---
@@ -894,6 +977,10 @@ If `mck` were taken:
 These are for Bahul, not settled by this document:
 
 - Every name and vocabulary item in the table above.
+- The reified shape in **Entities**: in particular whether
+  `initiative-holder` is stored or derived from `initiative-ceded`,
+  whether `invariant` should name a `-:` form by id, and whether
+  `memory-item` should carry a session.
 - Whether a constraint always survives a pop (mck.5), or may be tagged
   as frame-local.
 - Who the default `session-authority` is when a host does not say

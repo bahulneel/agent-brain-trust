@@ -12,6 +12,7 @@ function check(probeId: string, checkId: string): Check {
 }
 
 const orderMatters = check("possibility-order", "order-matters");
+const possibleThenJustifier = check("possibility-order", "possible-then-justifier");
 const notInterchangeable = check("necessity-vs-possibility", "not-interchangeable");
 
 const earlierRight = [
@@ -53,6 +54,17 @@ const earlierWrong = [
 ] as const;
 
 describe("run-3 probes 8-9 scoring", () => {
+  it("accepts replies that name :Rare as made possible and BlackSwan as the justifier", () => {
+    for (const reply of [
+      ":Rare is what is made possible, and BlackSwan justifies it.",
+      "B is :Rare, the thing made possible; A is BlackSwan, which justifies it.",
+    ]) {
+      expect(possibleThenJustifier.test(reply), `possible-then-justifier should pass: ${reply}`).toBe(
+        true
+      );
+    }
+  });
+
   it("rejects claims that the meaning is identical or amounts to the same", () => {
     for (const reply of [
       "They differ only in spelling; the meaning is identical.",

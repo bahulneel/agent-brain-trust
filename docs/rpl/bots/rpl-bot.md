@@ -331,9 +331,8 @@ justifies it? Is :Rare :~ BlackSwan the same as BlackSwan :~ :Rare?
 Answer from the quoted law only.
 ```
 
-**Expected observable behaviour.** The reply treats `:Rare` as the mode and
-`BlackSwan` as the justifying existence: the swan's existence makes the
-"Rare" mode possible in the base context. It says `:Rare :~ BlackSwan` is
+**Expected observable behaviour.** The reply says `:Rare` is what is made
+possible; `BlackSwan` justifies it. It says `:Rare :~ BlackSwan` is
 not the same as `BlackSwan :~ :Rare`. It does not invert the quoted
 `B :~ A` order.
 

@@ -320,18 +320,20 @@ export const probes: Probe[] = [
     ].join("\n"),
     checks: [
       {
-        id: "mode-then-existence",
+        id: "possible-then-justifier",
         description:
-          "Treats :Rare as the mode and BlackSwan as the justifying existence (B :~ A).",
+          "Treats :Rare as what is made possible and BlackSwan as what justifies it (B :~ A).",
         test: (r) => {
-          const rareIsMode =
-            /:Rare\b[^\n.]{0,80}\bmode\b|\bmode\b[^\n.]{0,80}:Rare\b/i.test(r);
+          const rareIsPossible =
+            /:Rare\b[^\n.]{0,80}\b(?:made possible|possible|mode)\b|\b(?:made possible|possible|mode)\b[^\n.]{0,80}:Rare\b/i.test(
+              r
+            );
           const swanJustifies =
             /BlackSwan\b[^\n.]{0,100}\b(?:justif|existence|exist(?:s|ence)?|possib)/i.test(
               r
             ) ||
             /(?:justif|existence|possib)[^\n.]{0,100}BlackSwan/i.test(r);
-          return rareIsMode && swanJustifies;
+          return rareIsPossible && swanJustifies;
         },
       },
       {

@@ -22,6 +22,7 @@
     "../../packages",
     "../../dist-tooling",
     "../../scripts/assemble-rpl-bot-prompt.ts",
-    "../../scripts/smoke-rpl-bot.ts"
+    "../../scripts/smoke-rpl-bot.ts",
+    "../../scripts/prompt-test-triage.ts"
   ]
 }

@@ -19,6 +19,7 @@
   "include": [
     "./assemble-rpl-bot-prompt.ts",
     "./smoke-rpl-bot.ts",
+    "./prompt-test-triage.ts",
     "../tests/support/chat.ts",
     "../tests/support/content.ts",
     "../tests/support/content/bundles.config.ts",

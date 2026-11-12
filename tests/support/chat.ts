@@ -2,7 +2,7 @@ import type { ChatPrompt } from "@test/support/types";
 import { jsonrepair } from "jsonrepair";
 
 /** OpenAI-compatible chat completions (current backend: NVIDIA integrate). */
-const CHAT_URL = "https://integrate.api.nvidia.com/v1/chat/completions";
+export const CHAT_URL = "https://integrate.api.nvidia.com/v1/chat/completions";
 
 /**
  * Best-effort: optional markdown fence (`json` / `ndjson`), then whole string or each non-empty line

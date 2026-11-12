@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "baseUrl": "..",
+    "paths": {
+      "@test/support/types": ["tests/support/types/index.d.ts"],
+      "@test/*": ["tests/*"]
+    }
+  },
+  "include": [
+    "./assemble-rpl-bot-prompt.ts",
+    "./smoke-rpl-bot.ts",
+    "../tests/support/chat.ts",
+    "../tests/support/content.ts",
+    "../tests/support/content/bundles.config.ts",
+    "../tests/support/types/**/*.d.ts"
+  ]
+}

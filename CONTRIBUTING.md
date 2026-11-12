@@ -291,7 +291,7 @@ npm run validate:skills-ref
 
 If you edit **`scripts/**/*.ts`**, run **`npm run build:tooling`** (or **`npm run build:packages`**) and include the regenerated **`dist-tooling/`** files in your PR; CI fails if they are out of sync.
 
-When you bump the repo **`version`** in root **`package.json`**, set **`packages/brain-trust-mcp/package.json`** `version` to the same value — the build fails if they differ (npm publish and plugin **`npx`** spec stay aligned). Keep **`packages/repo-tooling/package.json`** `version` in step for consistency.
+When you bump the repo **`version`** in root **`package.json`**, set **`packages/brain-trust-mcp/package.json`** `version` to the same value — the build fails if they differ (npm publish stays aligned with the monorepo). Keep **`packages/repo-tooling/package.json`** `version` in step for consistency.
 
 Common validation failures:
 

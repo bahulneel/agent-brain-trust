@@ -2,14 +2,15 @@
 
 ## Required reading
 
-Read [../README.md](../README.md) through **Then Tighten The Same Prompt**, paying
-attention to `serve-target-time` and `meal-prep-brief`. Skim **The Complete
-Protocol** so you see how `recipe-step` aggregates into `recipe-steps`.
+Read [00-recipe-protocol.md](00-recipe-protocol.md) through **Then tighten the same
+prompt**, paying attention to `serve-target-time` and `meal-prep-brief`. Skim
+**The complete protocol** so you see how `recipe-step` aggregates into
+`recipe-steps`.
 
 ## What this enhances in the recipe prompt
 
-The README already asks the assistant to respect a target serve time and to work
-backward for long waits. Models often:
+The plain recipe prompt already asks the assistant to respect a target serve time
+and to work backward for long waits. Models often:
 
 - **flatten** timing into narrative (“meanwhile…”) without explicit ordering,
 - ignore **wall-clock anchors** when the user changes pace mid-session, or
@@ -35,10 +36,10 @@ prose or with a lightweight predicate such as `step-in-stage(?stepOrdinal,
 ### Example rules block
 
 ```rpl
-stages([& ?so ?st ?th]) <- recipe-stage(?so, ?st, ?th)
+stages([& ?so ?st ?th]) :- recipe-stage(?so, ?st, ?th)
 
 scheduled-brief(?serve, ?stages, ?steps)
-  <- serve-target-time(?serve),
+  :- serve-target-time(?serve),
      stages(?stages),
      recipe-steps(?steps)
 ```
@@ -51,12 +52,12 @@ If you do not yet collect explicit stages, omit `recipe-stage` and keep
 
 ```markdown
 What serve time are you using?
-%t(?x) <- serve-target-time(?x)
+%t(?x) :- serve-target-time(?x)
 ```
 
 ```markdown
 List stages you believe apply (ordinal, title).
-%st(?rows) <- stages(?rows)
+%st(?rows) :- stages(?rows)
 ```
 
 When the model’s schedule disagrees with the user’s clock, the bug is often in
@@ -68,7 +69,7 @@ When “feasibility” is genuinely modal (“if the oven is free by 17:00, this
 works”), you may eventually use the patterns in
 [../specification/logics.md](../specification/logics.md). This tutorial stays at
 **one advanced feature**: explicit time and stage hooks on the same recipe
-artifact you already built in the README.
+artifact you already built in [00-recipe-protocol.md](00-recipe-protocol.md).
 
 ## Where to go next
 

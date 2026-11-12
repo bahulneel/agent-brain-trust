@@ -25,12 +25,8 @@ jobs:
       max-parallel: 2
       matrix:
         model:
-          - meta/llama3-70b-instruct
-          - meta/llama3-8b-instruct
-          - mistralai/mixtral-8x7b-instruct-v0.1
-          - qwen/qwen2_5-7b-instruct
-          - deepseek-ai/deepseek-r1-distill-llama-8b
-          - deepseek-ai/deepseek-r1-distill-qwen-7b
+          - google/gemma-4-31b-it
+          - openai/gpt-oss-20b
 
     steps:
       - uses: actions/checkout@v4

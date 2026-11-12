@@ -2,16 +2,17 @@
 
 ## Required reading
 
-Read [../README.md](../README.md) through **The Complete Protocol**, including the
-branch between `%planning` and `%cookMode`. You should already understand
-`current-workflow-phase`, `recipe-step`, and how collections like
-`recipe-steps` aggregate step facts.
+Read [00-recipe-protocol.md](00-recipe-protocol.md) through **The complete
+protocol**, including the branch between `%recipe-session-planning` and
+`%recipe-session-cook`. You should
+already understand `current-workflow-phase`, `recipe-step`, and how collections
+like `recipe-steps` aggregate step facts.
 
 Normative details for lazy tools and traces: [../specification/lrpl.md](../specification/lrpl.md).
 
 ## What this enhances in the recipe prompt
 
-The README protocol already says: in cook mode, go one step at a time and answer
+The recipe protocol already says: in cook mode, go one step at a time and answer
 questions in the context of the **current** step. In practice, models still:
 
 - lose **which ordinal** is “now”,
@@ -55,7 +56,7 @@ And extend your RPL block:
 
 ```rpl
 cook-mode-anchored(?title, ?o, ?t)
-  <- current-workflow-phase("cook"),
+  :- current-workflow-phase("cook"),
      active-recipe-title(?title),
      committed-recipe-title(?title),
      current-recipe-step(?o, ?t)
@@ -68,7 +69,7 @@ the conjunction fails in review or in agent self-check.
 
 ```markdown
 What step do you treat as current?
-%cur(?o, ?t) <- current-recipe-step(?o, ?t)
+%cur(?o, ?t) :- current-recipe-step(?o, ?t)
 ```
 
 If `?o` jumps backward without user intent, fix the prose that made “helpful

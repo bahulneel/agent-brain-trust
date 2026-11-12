@@ -59,7 +59,7 @@ export function toJS(raw: string): unknown {
 }
 
 /** Default model id when no env overrides are set. */
-export const DEFAULT_MODEL = "meta/llama3-70b-instruct";
+export const DEFAULT_MODEL = "google/gemma-4-31b-it";
 
 /**
  * When `PROMPTS_LLM_RESPONSE_FORMAT_JSON` is `1`, `true`, or `on`, requests include

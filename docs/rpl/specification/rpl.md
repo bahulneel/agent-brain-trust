@@ -90,7 +90,7 @@ values and forms, not how an engine **schedules** work.
 head and pin its shape with a **constraint** (§12):
 
 ```rpl
-outer(?r, ?y) <- ... -> ?r -> inner(?x)
+outer(?r, ?y) :- ... -: ?r -: inner(?x)
 ```
 
 That is equivalent (up to unification) to `outer(inner(?x), ?y)` for the same
@@ -164,9 +164,28 @@ and with equality in §5):
 ?x / ?y          division
 ```
 
-**`<=` here is comparison only** (e.g. `?x <= ?y`). **Implication** in rules is
-**`<-`** and **constraints** use **`->`** (§10, §12), so those arrows are not
-spelled with `<=` / `=>`.
+**`<=` here is comparison only** (e.g. `?x <= ?y`). It is never implication.
+
+**Paired connectives (colon rule)** — Every paired connective is spelled `:`
+plus the sigil of its logic: the **head** side is `:x` and the **tail** side is
+`x:`.
+
+```
+:-   rule implication (HEAD :- TAIL)       §10
+-:   constraint (… -: CONSTRAINT)          §12
+:%   existential head (impulse / log)      logics.md §2
+%:   existential tail (invariant / liveness)  logics.md §2
+:~   modal possibility                     logics.md §3
+~:   modal necessity                       logics.md §3
+:@   interpretive define (language)        logics.md §4
+@:   interpretive interpret (statement)    logics.md §4
+```
+
+These replace the earlier arrows `<-` `->` `<%` `%>` `<~` `~>` `<@` `@>`. The
+arrows collided with comparison: `a <-x` also reads as `a < -x`, and `<%done`
+also reads as `< %done`, because `%name` is a goal (§15). **Spaces are required**
+around all of these operators, because `:name` is a keyword (§9): write
+`a :- b`, not `a :-b`.
 
 Structural **matching** against patterns uses the `~ PATTERN` variable form (§6),
 not bare `=`.
@@ -259,7 +278,7 @@ tuples for whatever expression `?x` denotes uses `|…|` (§5.2) on the expanded
 syntax:
 
 ```rpl
-length(?x, $l) <- $l = |#?x|
+length(?x, $l) :- $l = |#?x|
 ```
 
 `?x` is typically bound to a relation call or collection term; `#?x` supplies that
@@ -299,7 +318,8 @@ For regex patterns, named captures bind directly to lvars. Unnamed groups are
 discards.
 
 **Metadata** — `clause ^ ~ {:doc ?x}` uses the same `~ PATTERN` mechanism on the
-preceding form’s metadata (§11).
+preceding form’s metadata (§11). Map **keys** in that position are **literal** (§11
+**Literal keys**).
 
 **Sets** — unification involving a set and a non-set pattern distributes into
 **instances**; unifying with a set pattern treats the set as one value (§7).
@@ -339,7 +359,7 @@ of the outer pattern shape:
 [?a ?b]                      -- single value: positional tuple
 ```
 
-So `{:bindings {g "clarity"}}` applies directly for metadata and traces — a map
+So `{:bindings {?g "clarity"}}` applies directly for metadata and traces — a map
 is one value; a set wrapper is only needed to assert several values each matching
 the same pattern.
 
@@ -372,8 +392,8 @@ or `#` `{` … `}` in the tail. This is a **grammar-level** requirement for that
 pattern, **not** a stylistic mandate for every rule head:
 
 ```
-goal-options([& ?v]) <- valid-editing-goal(?v)
-active-ids(#{& ?id}) <- user(?id, ?status), ?status = "active"
+goal-options([& ?v]) :- valid-editing-goal(?v)
+active-ids(#{& ?id}) :- user(?id, ?status), ?status = "active"
 ```
 
 ---
@@ -404,31 +424,33 @@ All names use **kebab-case**. **Keywords** use `:` (e.g. `:tel` in arguments).
 
 **Composition** — Prefer **nested** subexpressions and **argument** lvars with
 constraints (§3): e.g. `outer(inner(?x), ?y)` or `outer(?r, ?y)` with
-`?r -> inner(?x)`. Parameterise over **expressions in argument positions**, not over
+`?r -: inner(?x)`. Parameterise over **expressions in argument positions**, not over
 the callee name.
 
 ---
 
 ## 10. Rules and Implication
 
-Rules combine **heads** and **tails** with `<-`. A **sentence** may be:
+Rules combine **heads** and **tails** with `:-`. A **sentence** may be:
 
 - an expression (tail only),
-- `HEAD <- EXPR` (implication),
-- optionally followed by `;` **abductives** (§16) and/or `->` **constraints** (§12).
+- `HEAD :- EXPR` (implication),
+- optionally followed by `;` **abductives** (§16) and/or `-:` **constraints** (§12).
 
 ```
-RULE       = [ HEAD '<-' ]? EXPR [ ';' ABDUCTIVE ]? [ '->' CONSTRAINT ]?
-NESTED-RULE = HEAD '<-' '(' RULE ')'
-EXPR       = TAIL | HEAD '<-' EXPR | '(' EXPR ')' [ '^' VAR ]?
+RULE       = [ HEAD ':-' ]? EXPR [ ';' ABDUCTIVE ]? [ '-:' CONSTRAINT ]?
+NESTED-RULE = HEAD ':-' '(' RULE ')'
+EXPR       = TAIL | HEAD ':-' EXPR | '(' EXPR ')' [ '^' VAR ]?
 HEAD       = GOAL | RELATION | TOOL
 TAIL       = CLAUSE | CLAUSE ',' TAIL | '(' TAIL ')' [ '^' VAR ]?
 ```
 
 **Conjunction** is `,`; **disjunction** is `|`; parentheses group. A **clause**
-is an atom optionally annotated with `^` / `^^` (§11).
+is an atom optionally annotated with `^` / `^^` (§11), **`LVAR '=' ASYNC-ATOM`**
+with the same optional annotations (async bind sugar, §13), or a parenthesised
+expression with optional metadata (see Appendix `CLAUSE`).
 
-**Double implication** — `HEAD <- HEAD <- TAIL` is **allowed**. It can express
+**Double implication** — `HEAD :- HEAD :- TAIL` is **allowed**. It can express
 **nested** or **method-shaped** decompositions (sometimes compared to HTN). That
 shape is **one permitted idiom**, not **the** runtime model: nothing requires
 hierarchical task networks, and planning stays agent-chosen (§18.3, §16.6).
@@ -457,13 +479,31 @@ clause ^ ~ {:doc ?x}        -- match :doc, bind ?x
 clause ^ ~ {:key ?v, ...}   -- destructure several fields
 ```
 
-The full EDN literal set is valid as map keys inside `~ PATTERN`:
+The full EDN literal set is valid as map keys inside `~ PATTERN` **on metadata**
+(see **literal keys** below).
 
 ```
 clause ^ ~ {:status ?s}     -- keyword key
 clause ^ ~ {foo ?v}         -- symbol key
 clause ^ ~ {"key" ?v}       -- string key
 ```
+
+**Literal keys (metadata maps)** — In **metadata** map patterns attached **directly**
+to a clause — `clause ^ ~ {…}`, `clause ^^ ~ {…}`, `clause ^^ {…}`, `clause
+^:bindings {…}`, and `clause ^ ~ {:bindings {…}}` — **every map key at every
+nesting level must be a literal** (`KEYWORD`, `STRING`, `SYMBOL`, `NUMBER`,
+`BOOLEAN`, or `NIL`). An **lvar** or **avar** **must not** appear in **key**
+position. This restriction applies only to these **clause-metadata** map forms, not
+to `~ PATTERN` on an lvar that already holds a map (§6).
+
+**Variable keys** — To match or enumerate by a **dynamic** key, **bind** the whole
+metadata or bindings map, then match it as an ordinary value:
+
+```rpl
+expr ^^ ?b, ?b ~ [?key, ?value]
+```
+
+(Or use multiset / rest forms as needed; `~` on `?b` follows §4 / §6.)
 
 **Single metadata key** — these are **alternative spellings** with the **same
 reading** (one field of metadata). None is the mandated normal form; rewrites
@@ -483,24 +523,25 @@ metadata (often written as its own map). These surface forms are **equivalent
 readings**; pick any. **No** required expansion of `^^` into `^:bindings` or into
 `^ ~ {:bindings …}` — each is an acceptable **terminal** form.
 
-- **`^^ ~ {…}`** — pattern over the binding map (keys = lvar **names** without
-  `?`, values = `VAR`s).
-- **`^^ {…}`** — map literal (typical in **traces**, §12).
+- **`^^ ~ {…}`** — pattern over the binding map (**literal keys only**, see above;
+  values = `VAR`s).
+- **`^^ {…}`** — map literal (typical in **traces**, §12; **literal keys only**).
 - **`^:bindings {…}`** — explicit keyword key on the outer metadata map.
-- **Single binding slot** — `^^` *name* `VAR` with bare symbol *name*, same
-  reading as `^^ ~ {name VAR}` (e.g. `^^a ?a`, `^^draft-id ?draft-id`).
+- **Single binding slot** — `^^` *lvar* `VAR`: the **lvar** is the map key and
+  *VAR* is the value, same reading as `^^ ~ {lvar VAR}` (e.g. `^^ ?a ?a`,
+  `^^ ?draft-id ?draft-id`).
 
 ```rpl
-clause ^^ ~ {a ?b, c ?d}
-clause ^:bindings {a ?b, c ?d}
-clause ^ ~ {:bindings {a ?b, c ?d}}
+clause ^^ ~ {?a ?b, ?c ?d}
+clause ^:bindings {?a ?b, ?c ?d}
+clause ^ ~ {:bindings {?a ?b, ?c ?d}}
 -- the three lines above are the same meaning (illustrative equivalence)
 
-clause ^^ {a "val1", c "val2"}           -- ground bindings (trace-shaped)
-clause ^:bindings {a "val1", c "val2"}  -- same reading
+clause ^^ {?a "val1", ?c "val2"}           -- ground bindings (trace-shaped)
+clause ^:bindings {?a "val1", ?c "val2"}  -- same reading
 
-^^a ?a
-^^ ~ {a ?a}
+^^ ?a ?a
+^^ ~ {?a ?a}
 -- same reading (single-slot binding pattern)
 ```
 
@@ -542,25 +583,25 @@ $tool ^ ~ {result ?x}      -- :result is the primary key
 
 ### 12.1 Constraint Syntax
 
-`->` expresses an **invariant**: under the **left-hand** conditions, the
+`-:` expresses an **invariant**: under the **left-hand** conditions, the
 **right-hand** side must hold (or the stated truth value). Examples:
 
 ```
-edit-brief(?d, ?g), editing-goal(?g) -> valid-editing-goal(?g)
-edit-brief(?d, ?g), editing-goal(?g), valid-editing-goal(?g) -> true
+edit-brief(?d, ?g), editing-goal(?g) -: valid-editing-goal(?g)
+edit-brief(?d, ?g), editing-goal(?g), valid-editing-goal(?g) -: true
 edit-brief(?d, ?g), editing-goal(?g), valid-editing-goal(?g)
 ```
 
 Exclusion invariant:
 
 ```
-rel1(?x, ?y), rel2(?y) -> false
+rel1(?x, ?y), rel2(?y) -: false
 ```
 
 Conditional invariant via metadata matching:
 
 ```
-edit-brief(?d, ?g, ?notes) ^ ~ {:g "publish"} -> valid-editing-goal(?g), ?notes != ""
+edit-brief(?d, ?g, ?notes) ^ ~ {:g "publish"} -: valid-editing-goal(?g), ?notes != ""
 ```
 
 ### 12.2 Constraint Grounding
@@ -587,9 +628,15 @@ Traces are fully grounded constraints. Each trace carries the binding context in
 scope at grounding, using **`^^`** (§11):
 
 ```
-editing-goal(?g) ^^ {g "publish", d "draft-0"} -> true
-%needs-edit ^^ {d "draft-0", mode "line-edit"} -> true
+editing-goal(?g) ^^ {?g "publish", ?d "draft-0"} -: true
+%needs-edit ^^ {?d "draft-0", mode "line-edit"} -: true
 %needs-discovery ^ false
+```
+
+To relate trace keys to lvars (e.g. `?g` / `?d`), bind the map and match it (§6):
+
+```rpl
+editing-goal(?g) ^^ ?b, ?b ~ {g ?g, d ?d} -: true
 ```
 
 Ordering in the trace log is **significant** — each trace holds from introduction
@@ -597,11 +644,14 @@ onward; later traces build on earlier ones.
 
 ### 12.4 Trace Retraction
 
-Retract by asserting the same constraint with `-> false`:
+Retract by asserting the same constraint with `-: false`:
 
 ```
-editing-goal(?g) ^^ {g "publish", d "draft-0"} -> false
+editing-goal(?g) ^^ {?g "publish", ?d "draft-0"} -: false
 ```
+
+(Same **literal-key** rule for `^^ {…}` as §11; use `^^ ?b` and `~` on `?b` when keys
+must be correlated with lvars.)
 
 Retraction is recorded in the trace log.
 
@@ -662,27 +712,45 @@ When an avar resolves, **async novelty** (phase 1 of §18) is a **fully grounded
 constraint — a **trace** (§12.2). Example with `^^` (§11):
 
 ```
-$query-db("select * from issues where state = 'open'") ^ ~ {:result "[{id: 1}]"} ^^ {query "select * from issues where state = 'open'"} -> true
+$query-db("select * from issues where state = 'open'") ^ ~ {:result "[{id: 1}]"} ^^ {?query "select * from issues where state = 'open'"} -: true
 ```
 
 Bare avar:
 
 ```
-$answer ^ ~ {:result "I'm fine, thanks"} -> true
+$answer ^ ~ {:result "I'm fine, thanks"} -: true
 ```
 
 Values are ground; no free variables. Traces are the **message log** for async
-history; retract with `-> false` (§12.4).
+history; retract with `-: false` (§12.4).
 
 **Relational abstraction** — match tool results with **lvars** in metadata, not
 `$` in the result position:
 
 ```
-ask(?prompt, ?answer) <- $ask(?prompt) ^ ~ {:result ?answer}
-%greet <- ask("How are you?", ?answer)
+ask(?prompt, ?answer) :- $ask(?prompt) ^ ~ {:result ?answer}
+%greet :- ask("How are you?", ?answer)
 ```
 
 The tool is implementation detail; the relation is the interface.
+
+**Async bind sugar** — In a **clause** whose atom is **only** an **equality**
+between an **lvar** and an **async relation** (a **tool** call `$…` or a bare
+**avar** `$x`, §13–§14), the surface form:
+
+```rpl
+?var = ASYNC_RELATION
+```
+
+is **sugar** for:
+
+```rpl
+ASYNC_RELATION ^ :result ?var
+```
+
+That is the same metadata reading as `ASYNC_RELATION ^ ~ {:result ?var}` (§11).
+**`ASYNC_RELATION`** stands for any such atom on the right-hand side of `=`
+(including nested grouping if the grammar permits).
 
 ---
 
@@ -721,8 +789,8 @@ $choose(?desc, ?options) ^ ~ {:result ?choice}
 Wrap in relations for goals:
 
 ```
-$ask(?prompt, ?answer) <- $ask(?prompt) ^ ~ {:result ?answer}
-$choose(?desc, ?options, ?choice) <- $choose(?desc, ?options) ^ ~ {:result ?choice}
+$ask(?prompt, ?answer) :- $ask(?prompt) ^ ~ {:result ?answer}
+$choose(?desc, ?options, ?choice) :- $choose(?desc, ?options) ^ ~ {:result ?choice}
 ```
 
 **If** a tool such as `$choose` needs a **list value** built from every answer
@@ -730,8 +798,8 @@ of another relation, build that list via a separate rule **head** (§8)—becaus
 the literal list in the tail cannot embed the relation call:
 
 ```
-goal-options([& ?v]) <- valid-editing-goal(?v)
-editing-goal(?g) <- goal-options(?options), choose("Select editing goal", ?options, ?g)
+goal-options([& ?v]) :- valid-editing-goal(?v)
+editing-goal(?g) :- goal-options(?options), choose("Select editing goal", ?options, ?g)
 ```
 
 **`$json`** — **built-in** observability tool: writes the **raw binding** of an
@@ -762,16 +830,16 @@ $json(?x)
 The **chat** carries the NDJSON payload; the trace records completion, e.g.:
 
 ```rpl
-$json(?x) ^ ~ {:tool :json} -> true
+$json(?x) ^ ~ {:tool :json} -: true
 ```
 
 **Example (goal tail)** — emit the captured binding after a choice is fixed:
 
 ```rpl
-% <- pending-choice(?value) ^^choice ?x, $json(?x)
+% :- pending-choice(?value) ^^ choice ?x, $json(?x)
 ```
 
-Here `^^choice ?x` (§11) attaches the bare key `choice` to `?x` on that clause;
+Here `^^ choice ?x` (§11) attaches the symbol key `choice` to `?x` on that clause;
 `$json(?x)` then prints the binding of `?x` to chat when the goal is pursued.
 
 #### 14.2.1 User contract examples (closed pure-RPL programs)
@@ -785,7 +853,7 @@ internal-only debug stream.
 USER:
 ```rpl
 user('foo')
-% <- user(?u), $json(?u)
+% :- user(?u), $json(?u)
 ```
 
 AGENT:
@@ -798,12 +866,12 @@ AGENT:
 USER:
 ```rpl
 user('foo')
-% <- user(?u) ^^ ?b, $json(?b)
+% :- user(?u) ^^ ?b, $json(?b)
 ```
 
 AGENT:
 ```ndjson
-{"u":"foo"}
+{"?u":"foo"}
 ```
 
 **C. Multiple value instances**
@@ -812,7 +880,7 @@ USER:
 ```rpl
 user('foo')
 user('bar')
-% <- user(?u), $json(?u)
+% :- user(?u), $json(?u)
 ```
 
 AGENT:
@@ -827,13 +895,13 @@ USER:
 ```rpl
 user('foo')
 user('bar')
-% <- user(?u) ^^ ?b, $json(?b)
+% :- user(?u) ^^ ?b, $json(?b)
 ```
 
 AGENT:
 ```ndjson
-{"u":"foo"}
-{"u":"bar"}
+{"?u":"foo"}
+{"?u":"bar"}
 ```
 
 **E. Metadata projection (single instance)**
@@ -841,12 +909,12 @@ AGENT:
 USER:
 ```rpl
 user('foo')
-% <- user(?u) ^ ?m, $json(?m)
+% :- user(?u) ^ ?m, $json(?m)
 ```
 
 AGENT:
 ```ndjson
-{":bindings":[{"u":"foo"}]}
+{":bindings":[{"?u":"foo"}]}
 ```
 
 **F. Metadata projection (multiple instances)**
@@ -855,17 +923,17 @@ USER:
 ```rpl
 user('foo')
 user('bar')
-% <- user(?u) ^ ?m, $json(?m)
+% :- user(?u) ^ ?m, $json(?m)
 ```
 
 AGENT:
 ```ndjson
-{":bindings":[{"u":"foo"},{"u":"bar"}]}
+{":bindings":[{"?u":"foo"},{"?u":"bar"}]}
 ```
 
 Completion trace (illustrative):
 ```rpl
-$json(?x) ^ ~ {:tool :json} -> true
+$json(?x) ^ ~ {:tool :json} -: true
 ```
 
 ### 14.3 Tool Headings
@@ -885,9 +953,9 @@ A **goal** is a rule whose head is in the **`%`** namespace. Goals drive executi
 ### 15.1 Goal Syntax
 
 ```
-% <- tail                     -- root goal, anonymous
-%name <- tail                 -- named goal
-%name(?a, ?b) <- tail         -- named goal with capture args
+% :- tail                     -- root goal, anonymous
+%name :- tail                 -- named goal
+%name(?a, ?b) :- tail         -- named goal with capture args
 ```
 
 Capture args attach **bindings** on the grouped tail (§11): **bare** argument
@@ -895,11 +963,11 @@ names as keys, **lvars** as values. Any of the §11 **bindings** spellings is fi
 e.g.:
 
 ```
-%name(?a, ?b) <- tail
+%name(?a, ?b) :- tail
 -- same reading, e.g.:
-%name <- (tail) ^^ ~ {a ?a, b ?b}
-%name <- (tail) ^:bindings {a ?a, b ?b}
-%name <- (tail) ^ ~ {:bindings {a ?a, b ?b}}
+%name :- (tail) ^^ ~ {?a ?a, ?b ?b}
+%name :- (tail) ^:bindings {?a ?a, ?b ?b}
+%name :- (tail) ^ ~ {:bindings {?a ?a, ?b ?b}}
 ```
 
 ### 15.2 Root Goal
@@ -908,7 +976,7 @@ The unnamed **`%`** is the root goal — first candidate when present. Multiple 
 rules **disjoin**:
 
 ```
-% <- %needs-discovery | %needs-edit
+% :- %needs-discovery | %needs-edit
 ```
 
 ### 15.3 Named Goals and Agent Choice
@@ -921,8 +989,8 @@ ease of satisfaction.
 Exclusive strategies may use **constraints** (§12):
 
 ```
-% <- %needs-discovery -> !%
-% <- %needs-edit -> !%
+% :- %needs-discovery -: !%
+% :- %needs-edit -: !%
 ```
 
 Alternatively **`@when`** on the activation clause (§16.1).
@@ -957,7 +1025,7 @@ program to be valid.
 ### 15.8 Goal Headings
 
 ```markdown
-# Needs Edit - %needs-edit(?d) <- edit-brief(?d, ?g), ?g != "unknown"
+# Needs Edit - %needs-edit(?d) :- edit-brief(?d, ?g), ?g != "unknown"
 
 Produce one revision pass for __d__ and summarize changes.
 On completion suggest trying %needs-discovery only if context is still missing.
@@ -976,8 +1044,8 @@ parsed as RPL; **all preceding** lines are **context** (prose, prior facts,
 protocol document) unless the host specifies otherwise. Leading whitespace on the
 query line is stripped before parsing.
 
-**Parse** — The query line **must** be a **goal** form (§15.1): root `% <- …`,
-named `%name <- …`, or `%name(?a, …) <- …` with optional capture arguments. The
+**Parse** — The query line **must** be a **goal** form (§15.1): root `% :- …`,
+named `%name :- …`, or `%name(?a, …) :- …` with optional capture arguments. The
 assistant **evaluates** that goal against the active store, rules, and tools as
 usual for the timestep model (§18).
 
@@ -985,7 +1053,7 @@ usual for the timestep model (§18).
 turn (excluding tool-injected chat, §13.3, §14.2):
 
 1. **Goal with capture arguments** — If the goal head declares **one or more**
-   capture **lvars** in parentheses (§15.1), e.g. `%report(?x, ?y) <- …`:
+   capture **lvars** in parentheses (§15.1), e.g. `%report(?x, ?y) :- …`:
    output **only** what those arguments denote — the **values** or **minimal
    structured result** (ground bindings, compact serialisation). **No** preamble,
    apology, or tutorial unless the query itself requires prose.
@@ -1036,8 +1104,8 @@ Activated when `tail` holds; bindings flow into the body.
 **Mutual exclusion** — e.g.:
 
 ```
-% <- %needs-discovery ; @when(!%)
-% <- %needs-edit ; @when(!%)
+% :- %needs-discovery ; @when(!%)
+% :- %needs-edit ; @when(!%)
 ```
 
 ### 16.2 @choose
@@ -1084,8 +1152,8 @@ HTN is a **familiar analogy**, not a **required** semantics.
 Example of what the surface language allows:
 
 ```
-%task(?a) <- method-one(?a) <- tail-one(?a) ; @when(!%task, precondition-one(?a))
-%task(?a) <- method-two(?a) <- tail-two(?a) ; @when(!%task, precondition-two(?a))
+%task(?a) :- method-one(?a) :- tail-one(?a) ; @when(!%task, precondition-one(?a))
+%task(?a) :- method-two(?a) :- tail-two(?a) ; @when(!%task, precondition-two(?a))
 ```
 
 ---
@@ -1118,14 +1186,14 @@ reviewable precision.
 **Partial tail:**
 
 ```
-# Human Title - rel(?arg1) <- body-rel(?arg1), ...
-# Human Title - %goal(?arg1) <- rel(?arg1), ...
+# Human Title - rel(?arg1) :- body-rel(?arg1), ...
+# Human Title - %goal(?arg1) :- rel(?arg1), ...
 ```
 
 The heading starts the rule; the body **conjoins**:
 
 ```
-head <- <heading-tail>, <body-tail>
+head :- <heading-tail>, <body-tail>
 ```
 
 ### 17.2 Body Prose
@@ -1274,18 +1342,18 @@ For surfaced runtime failures, hosts should report using `%fail(?reason,
 ## 19. Example — Collaborative Editing Session
 
 ```markdown
-% <- %needs-discovery(?d) | %needs-edit(?d)
+% :- %needs-discovery(?d) | %needs-edit(?d)
 
-# Needs Discovery - %needs-discovery(?d) <- edit-brief(?d, $focus), $focus = "unknown", draft(?d)
+# Needs Discovery - %needs-discovery(?d) :- edit-brief(?d, $focus), $focus = "unknown", draft(?d)
 
 Ask one follow-up question to identify missing context for __d__.
 Then suggest `%needs-edit`.
 
-# Needs Edit - %needs-edit(?d) <- edit-brief(?d, $focus), $focus != "unknown", draft(?d)
+# Needs Edit - %needs-edit(?d) :- edit-brief(?d, $focus), $focus != "unknown", draft(?d)
 
 Produce one revision pass for __d__ and summarize the edits.
 
-# Edit Brief - edit-brief(?d, ?focus) <- draft(?d), focus(?focus)
+# Edit Brief - edit-brief(?d, ?focus) :- draft(?d), focus(?focus)
 
 ## Draft - draft(?draft-id)
 
@@ -1319,18 +1387,20 @@ Key structural points:
 Trace sketch:
 
 ```
-(edit-brief(?d, ?focus) <-
-  (draft(?draft-id) <- ...) ^^ {draft-id "doc-42"},
-  (focus($focus) <- ...) ^^ {focus "unknown"}
-) ^^ {d "doc-42", focus "unknown"} -> true
-%needs-discovery ^^ {d "doc-42"} -> true
+(edit-brief(?d, ?focus) :-
+  (draft(?draft-id) :- ...) ^^ {?draft-id "doc-42"},
+  (focus($focus) :- ...) ^^ {?focus "unknown"}
+) ^^ {?d "doc-42", ?focus "unknown"} -: true
+%needs-discovery ^^ {?d "doc-42"} -: true
 
-(edit-brief(?d, ?focus) <-
-  (draft(?draft-id) <- ...) ^^ {draft-id "doc-42"},
-  (focus($focus) <- ...) ^^ {focus "clarity"}
-) ^^ {d "doc-42", focus "clarity"} -> true
-%needs-edit ^^ {d "doc-42"} -> true
+(edit-brief(?d, ?focus) :-
+  (draft(?draft-id) :- ...) ^^ {?draft-id "doc-42"},
+  (focus($focus) :- ...) ^^ {?focus "clarity"}
+) ^^ {?d "doc-42", ?focus "clarity"} -: true
+%needs-edit ^^ {?d "doc-42"} -: true
 ```
+
+Keys `d`, `focus`, `draft-id` in these maps are **literal** symbols (§11), not lvars.
 
 ---
 
@@ -1341,10 +1411,10 @@ Complete syntax (semantics in preceding sections).
 ```
 SENTENCE        = RULE | EXPR | NESTED-RULE
 
-RULE            = [ HEAD '<-' ]? EXPR [ ';' ABDUCTIVE ]? [ '->' CONSTRAINT ]?
-NESTED-RULE     = HEAD '<-' '(' RULE ')'
+RULE            = [ HEAD ':-' ]? EXPR [ ';' ABDUCTIVE ]? [ '-:' CONSTRAINT ]?
+NESTED-RULE     = HEAD ':-' '(' RULE ')'
 EXPR            = TAIL
-                | HEAD '<-' EXPR
+                | HEAD ':-' EXPR
                 | '(' EXPR ')' [ '^' VAR ]?
 
 ABDUCTIVE       = WHEN-ACT
@@ -1366,8 +1436,10 @@ TAIL            = CLAUSE
                 | CLAUSE ',' TAIL
                 | '(' TAIL ')' [ '^' VAR ]?
 CLAUSE          = ATOM [ '^' VAR ]? [ '^^' VAR ]?
+                | LVAR '=' ASYNC-ATOM [ '^' VAR ]? [ '^^' VAR ]?
 ATOM            = RELATION | GOAL | TOOL | VAR | LITERAL | EXPANSION
                 | '(' EXPR ')'
+ASYNC-ATOM      = TOOL | ASYNC-VAR
 BINDING         = CLAUSE | CLAUSE ',' BINDING
 STEP            = CLAUSE | CLAUSE ',' STEP
 
@@ -1396,6 +1468,13 @@ MAP-EXPR        = MAP-ENTRY [ ',' MAP-ENTRY ]*
                 | MAP-ENTRY '.' MAP-EXPR
                 | MAP-ENTRY '&' VAR
 MAP-ENTRY       = ELEMENT ELEMENT
+
+METADATA-MAP    = '{' METADATA-ENTRY [ ',' METADATA-ENTRY ]* '}'
+METADATA-ENTRY  = METADATA-KEY ELEMENT
+METADATA-KEY    = LITERAL
+-- METADATA-MAP is the map form in clause ^ ~ {…}, clause ^^ ~ {…}, clause ^^ {…},
+-- clause ^:bindings {…}, and clause ^ ~ {:bindings {…}} (§11). Keys must be
+-- METADATA-KEY (literal only); use EXPR ^^ ?b then match ?b for variable keys.
 
 LITERAL         = STRING | NUMBER | KEYWORD | BOOLEAN | NIL | SYMBOL
 BOOLEAN         = 'true' | 'false'

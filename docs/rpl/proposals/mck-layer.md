@@ -106,6 +106,8 @@ listed first; a compound key is written `(a, b)`.
 | `memory-item(?item, ?description, ?stratum)` | `?item` | A remembered item and its stratum. |
 | `memory-item-record(?item, ?record)` | `(?item, ?record)` | A trace, handoff, or persisted record that grounds the item. |
 | `confidence-report(?report, ?turn, ?claim, ?level, ?basis)` | `?report` | A confidence report uttered in a turn. |
+| `graph-store(?store, ?host, ?durability)` | `?store` | A store the host provides for session graphs: `"persistent"` or `"session-only"`. |
+| `session-graph-store(?session, ?store)` | `?session` | The store a session's graph lives in. |
 
 ## Entities
 
@@ -138,6 +140,9 @@ Each entity with the relations that describe it, key first. All names are
 - **Confidence report** (`?report`):
   `confidence-report(?report, ?turn, ?claim, ?level, ?basis)`.
 - **Posture**: `session-posture(?session, ?posture)`, one row per session.
+- **Graph store** (`?store`): `graph-store(?store, ?host, ?durability)`;
+  referenced by `session-graph-store(?session, ?store)`, one row per
+  session (mck.19).
 
 A change of state (a pop, a cession, a new holder) is recorded as a
 retraction of the old row (`… -: false`) and a new row, so the history is
@@ -154,6 +159,7 @@ Proposed vocabularies, also **for Bahul to decide**:
 - Initiative cession reasons: `"user-choice"`, `"coordination"`, `"missing-ground"`,
   `"uncertain-scope"`.
 - Memory strata: `"short-term"`, `"long-term"`.
+- Store durability: `"persistent"`, `"session-only"`.
 - Confidence levels: `"high"`, `"medium"`, `"low"`, `"none"`. Basis:
   `"ground"`, `"judgment"`.
 - Speakers and parties: `"user"`, `"agent"`, or a party a host names.
@@ -696,6 +702,13 @@ and the message carries no trace or handoff, the long-term stratum is
 empty. Residual memory of another chat is not long-term ground unless
 it is such a record.
 
+**Inferred.** When the session's graph lives in a `"persistent"` store
+(mck.19), long-term means persisted there: a long-term item is one whose
+record is in that store, and an earlier session's items are long-term
+ground only if that store holds them. When the store is `"session-only"`,
+nothing the session writes becomes long-term by being written; only a
+trace or handoff carried into the session counts.
+
 **FOL reading.** *Comment.* A partition of what may be cited as ground.
 Related to, but not the same as, the turn-to-turn stratification in
 [cognition.md](../cognition.md) §III.
@@ -865,11 +878,17 @@ dislikes("x")
 The earlier `likes("x")` remains in the history; the retraction is the
 record that it no longer holds.
 
+**Inferred.** When the session's graph lives in a `"persistent"` store
+(mck.19), the retraction record and the earlier record both persist
+there, so a later session sees that the fact no longer holds and when it
+was retracted. In a `"session-only"` store they last only as long as the
+session.
+
 **Not.** A new erase operator, and not a licence to drop traces.
 Whether a host may additionally offer an erase mode (for example, to
-remove personal data from a store the host controls) is an open
-question; it is not the default of this layer, and it is not specified
-here.
+remove personal data from a store the host controls, including a
+persistent store under mck.19) is an open question; it is not the
+default of this layer, and it is not specified here.
 
 ---
 
@@ -920,6 +939,56 @@ in order to make the check look grounded.
 
 ---
 
+### mck.19 — Provisioning the session graph into a store
+
+**Law.** **Inferred.** Every session's graph (the facts, frames,
+intents, checks, traces, and retraction records of this layer) lives in
+exactly one graph store. When the host provides a `"persistent"` store,
+the session's graph is provisioned into it and the agent uses it. When
+the host provides none, the agent falls back to a `"session-only"` store
+that lasts as long as the session. The agent does not claim persistence
+it does not have: with a `"session-only"` store, nothing it writes is
+long-term ground for a later session (mck.13).
+
+This law is storage-agnostic. It names no database, file format, or
+product; how a host realises a store is outside the layer.
+
+**FOL reading.** *Comment.* Where facts are kept, not what they mean. A
+fact means the same in either kind of store.
+
+**Surface.** Both are **PROPOSED NAME, for Bahul to decide**:
+
+- `graph-store(?store, ?host, ?durability)` — `?durability` is
+  `"persistent"` or `"session-only"`.
+- `session-graph-store(?session, ?store)` — one row per session.
+
+**Grounding.** Bahul, 12 Nov 2026: the graph should be provisionable
+into a persistent place when one is available. [cognition.md](../cognition.md)
+§I and §III (a later session needs recorded ground);
+[`rpl.6`](../bootstrap/rpl.md) (traces are ordinary relations); mck.13
+and mck.17.
+
+**Example.** A host with a persistent store:
+
+```rpl
+session("s1", "host-a")
+graph-store("g1", "host-a", "persistent")
+session-graph-store("s1", "g1")
+```
+
+A host with none, so the agent falls back:
+
+```rpl
+session("s2", "host-b")
+graph-store("g2", "host-b", "session-only")
+session-graph-store("s2", "g2")
+```
+
+**Not.** A specific database or product. Not a licence to treat residual
+model memory as a store. Not an erase mode (mck.17 leaves that open).
+
+---
+
 ## What this would change in the bot's system prompt
 
 Nothing in this section is in force until the proposal is accepted and
@@ -953,8 +1022,9 @@ If `mck` were taken:
    contradict a law in a taken layer).
 
 4. **Set posture and authority as session facts.** A test run would
-   assert `session("s1", ?host)`, `session-posture("s1", "test")` and
-   `session-authority("s1", "user")` at the start of the prompt, so probes 1–6 can expect the surfaces
+   assert `session("s1", ?host)`, `session-posture("s1", "test")`,
+   `session-authority("s1", "user")` and the session's
+   `session-graph-store` (mck.19) at the start of the prompt, so probes 1–6 can expect the surfaces
    rather than improvised prose.
 
 5. **Do not add `mck` to `docs/rpl/bootstrap/` or to
@@ -989,5 +1059,7 @@ These are for Bahul, not settled by this document:
   leave it optional.
 - Whether `cognition.md` should be loaded into the test bot's prompt
   once mck.13 cites it, or whether the layer text is enough.
+- Whether a host's persistent store (mck.19) should be shared across
+  sessions of one user, or one store per session.
 - Whether a host may offer an erase mode in addition to the default
   record-and-keep-history behaviour of "forget" (mck.17).

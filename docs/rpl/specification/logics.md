@@ -205,8 +205,8 @@ These logics can be used separately or combined—yielding a "physics of informa
 - **Forward Projection** (`A ~: B`):  
   "Given A, the mode of B must be satisfied." (fact requirement)
 
-- **Backward Mapping** (`A :~ B`):  
-  "The presence of mode B justifies A." (provenance for proof)
+- **Backward Mapping** (`B :~ A`):  
+  "The presence of A justifies B." (provenance for proof)
 
 With existential anchors, precise assertions arise:
 
@@ -251,7 +251,7 @@ Combine existential impulse, modal projection, and base relation.
 ### 6.2 The Invariant Proof of Possibility
 
 **Form:**  
-`true %: (A :~ B) :- C`
+`true %: (B :~ A) :- C`
 
 Anchors modal possibility as structural invariant.
 

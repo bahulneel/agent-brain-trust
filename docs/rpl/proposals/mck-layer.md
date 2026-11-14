@@ -107,10 +107,12 @@ hidden in the name.
 | `retraction(?fact)` | The agent proposes retracting a recorded fact. |
 | `can(?capability)` | **ABT proposal.** The agent has the capability. Capabilities are keywords such as `:read`, `:write`. |
 | `%checks` | **ABT proposal.** An example goal (law 5) that writes the bindings of the law 2 invariant's left side to chat in `:test`. |
-| `chosen(?x, …)` | **ABT proposal.** The shape a reply is read as in a clarification. |
 
 Names used only inside examples (`recommended`, `locked`, `options`, `dinner`,
-`recipe`, method names such as `clarify`) are illustrations, not proposals.
+`recipe`, `picked`, and method names such as `method`, `pick` and `recall`) are
+illustrations, not proposals. In particular McK defines no clarification goal,
+method or relation (Bahul, 14 Nov 18:06): clarification is only a pattern, shown
+under [Methods](#methods).
 
 ---
 
@@ -177,24 +179,30 @@ clause: `; @when(C)` makes a rule ineligible, "not blocked, not waiting"
 (rpl.md §16). Whether `-: C` or `; @when(C)` should be the spelling is an open
 decision.
 
-**Clarification** is a method, written per goal where handing back makes sense
-(not as a universal rule over all goals), as the last method of its set:
+**Handing back is a pattern, not McK vocabulary** (Bahul, 14 Nov 18:06: McK must
+not encode clarification directly). A goal may have a method whose body is
+`$yield`, written where handing back makes sense for that goal (not as a
+universal rule over all goals). The following is an **example only**; the
+method name and the shape in `~ …` belong to the goal, and McK defines neither:
 
 ```rpl
-%dinner(?dish) :- recommend(?dish) :- recommended(?dish)
-%dinner(?dish) :- clarify(?dish) :- $yield @: english(~ chosen(?dish))
+%goal(?x) :- method(?x) :- $yield
+
+%dinner(?dish) :- method(?dish) :- recommended(?dish)
+%dinner(?dish) :- method(?dish) :- $yield @: english(~ picked(?dish))
 ```
 
-The method name `clarify` says what the hand-back is for. The trace of
-`clarify` resolving is the record that this goal was solved by asking. "Last"
-is a position, not a condition. The only order in the specification is
+The trace of the `$yield` method resolving is the record that the goal was
+solved by handing back. "Last", if it is written last, is a position, not a
+condition. The only order in the specification is
 rpl.md §18.4 step 4, an order of trying, which is exactly what McK does not
 add (gap 6).
 
 ### Async interpretation (proposed sugar)
 
-`$yield @: english(~ chosen(?dish, ?kind))` reads the user's reply as that
-shape without naming the reply. It is proposed sugar, specified in
+`$avar @: lang(~ Pattern)` reads the user's reply as a shape the goal chooses,
+without naming the reply. For example `$yield @: english(~ picked(?dish, ?kind))`
+(an example shape, not McK vocabulary). It is proposed sugar, specified in
 [Proposed specification additions](#proposed-specification-additions).
 
 ---
@@ -593,7 +601,8 @@ locked(:recipe-a)
 ```
 
 Where the log has no `locked` fact, `recall` does not hold, and the goal's
-other methods, such as `clarify` (see [Yielding](#yielding)), still apply.
+other methods of the goal, such as one that hands back with `$yield` (see
+[Yielding](#yielding)), still apply.
 
 **Not.** A claim that model weights are a store. A substitute for the trace.
 
@@ -612,14 +621,15 @@ options([& ?v]) :- candidate(?v)
 %dinner(?dish) :-
   pick(?dish, ?options) :-
     options(?options),
-    $yield @: english(~ chosen(?dish)),
+    $yield @: english(~ picked(?dish)),
     ?dish in ?options
 ```
 
 **Absent ground, as a method of the goal** (the `recall` method is in law 9).
+An example pattern, with a shape specific to this goal:
 
 ```rpl
-%recipe(?dish) :- clarify(?dish) :- $yield @: english(~ chosen(?dish))
+%recipe(?dish) :- method(?dish) :- $yield @: english(~ picked(?dish))
 ```
 
 **Coordination.** Retraction is a coordination step
@@ -730,20 +740,20 @@ so that the reply is suspended on and interpreted without being named. For
 example,
 
 ```rpl
-clarify(?x, ?y) :- $yield @: english(~ chosen(?x, ?y))
+method(?x, ?y) :- $yield @: english(~ picked(?x, ?y))
 ```
 
 means
 
 ```rpl
-clarify(?x, ?y, ?reply) :- ?reply = $yield, #?reply @: english(~ chosen(?x, ?y))
+method(?x, ?y, ?reply) :- ?reply = $yield, #?reply @: english(~ picked(?x, ?y))
 ```
 
 The reading holds only if the reply fits the pattern, and the pattern binds
 `?y`. Logics §4.2 writes `~ $de @: german(?i)`, but that puts an avar under
 `~` (an in-place match), not the bare avar proposed here, so it is not a
 precedent. Precedence of `@:` against `,` and `-:` is not in rpl.md §5.6, so
-`$yield @: english(~ chosen(?dish))` followed by `, ?dish in ?options` or by
+`$yield @: english(~ picked(?dish))` followed by `, ?dish in ?options` or by
 `-: C` has no stated grouping (gap 4).
 
 ### Safety is judged after rewriting
@@ -769,15 +779,16 @@ Standard safety already allows variables that occur only in the body
 (vision.md, "head variables in body"; see
 [vision.md](../vision.md#design-principles)), so a body-only alias needs no
 exemption on its own. What the rule adds concerns the desugared head argument:
-the sugar form and the desugared form `clarify(?x, ?y, ?reply)` are one rule
+the sugar form and the desugared form `method(?x, ?y, ?reply)` are one rule
 (the sugar hides `?reply`), and hiding it does not break the arity rule. This is a rule about
 rpl.md §10 and §3, which today carries safety only as a design principle.
 
 **Arity (open).** The two spellings differ in arity, three arguments against
 two. Which argument list callers see, whether a caller may refer to `?reply`,
-and so whether `clarify/2` and `clarify/3` are one predicate or two, is an open
-decision. This document's examples write the sugar form only for brevity and
-choose nothing.
+and so whether a method under the sugar and its desugared form are one
+predicate or two, is an open decision about method arity in general, not about
+any particular method. This document's examples write the sugar form only for
+brevity and choose nothing.
 
 ### `$yield` as a reserved avar (rpl.md §13)
 
@@ -913,7 +924,8 @@ For Bahul, not settled by this document. The first block matters most.
   what a non-material guess leads to.
 - Evaluation order: how the yield-first ruling fits §12.2 and §18.3.
 - Safety: whether the after-rewriting rule is needed beyond the standard rule,
-  and whether `clarify/2` and `clarify/3` are one predicate or two.
+  and whether a method under the async sugar and its desugared form (one more
+  argument) are one predicate or two.
 - Whether `$yield` is ever gated on a capability.
 
 **Coverage**

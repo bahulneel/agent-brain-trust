@@ -8,7 +8,7 @@ collected in [Proposed specification additions](#proposed-specification-addition
 and are not made in the specification files.
 
 **Proposed layer name.** `mck` ("metacognitive kernel"), written McK in
-prose. Bahul agreed the McK prose form on 11 Nov 2026; the code name `mck`
+prose. Bahul suggested the McK prose form on 11 Nov 2026 ("would McK be better, in prose"); the code name `mck`
 stays lowercase like `fol`, `rpl` and `agent`. If accepted, this file becomes
 `bootstrap/mck.md`, and law N in it is `mck.N`, cited as the document anchor
 `mck.md#N`.
@@ -106,6 +106,7 @@ hidden in the name.
 | `changes(?slot, ?outcome)` | The slot's value would change the outcome. |
 | `retraction(?fact)` | The agent proposes retracting a recorded fact. |
 | `can(?capability)` | **ABT proposal.** The agent has the capability. Capabilities are keywords such as `:read`, `:write`. |
+| `%checks` | **ABT proposal.** An example goal (law 5) that writes the bindings of the law 2 invariant's left side to chat in `:test`. |
 | `chosen(?x, …)` | **ABT proposal.** The shape a reply is read as in a clarification. |
 
 Names used only inside examples (`recommended`, `locked`, `options`, `dinner`,
@@ -313,7 +314,7 @@ active frame is a frame that is not resolved and whose children are all
 resolved. At most one frame is active. Which frame is active moves by
 retraction (rpl.md §12.4) and a new `active` fact, per instance.
 
-**FOL reading.** *Comment.* Session structure, as three invariants. There is no
+**FOL reading.** *Comment.* Session structure, as four invariants. There is no
 push or pop operator, and no negation: `not` would read a missing `resolved`
 fact as proof of `not resolved`, which `fol.5` does not allow.
 
@@ -343,10 +344,14 @@ frame(:dinner, nil)
 frame(:no-dairy, :dinner)
 active(:no-dairy)
 intent(:constraint, :no-dairy)
-resolved(:no-dairy)
 active(:no-dairy) -: false
+resolved(:no-dairy)
 active(:dinner)
 ```
+
+The retraction of `active(:no-dairy)` comes before `resolved(:no-dairy)` is
+asserted, so the second invariant is never violated; the trace log is ordered
+(rpl.md §12.3).
 
 The dairy constraint still applies to later recipes.
 
@@ -400,7 +405,7 @@ The cap is not clearly replaced, so it holds.
 **ABT proposal, pending Bahul.** A user's own correction skips the yield, and
 only agent-proposed retractions yield (`retraction(?fact) -: $yield`, see
 [Yielding](#yielding)). The reading is that the user's correction is itself the
-acceptance. KE has asked Bahul.
+acceptance. ABT is asking Bahul.
 
 **Not.** A rule that every correction wipes the session. A new retraction
 operator.
@@ -492,9 +497,10 @@ the agent has no ground for.
 guess(?slot, ?value), changes(?slot, ?outcome) -: $yield
 ```
 
-This is the only McK initiative law, **as an ABT proposal pending Bahul**: his
-ruling is that the old yield triggers become plain RPL using `$yield`; that
-nothing else of the earlier law survives is this document's proposal. The
+This is the only McK initiative law, **as an ABT proposal pending Bahul**: ABT's
+reading of Bahul's ruling is that the old yield triggers become plain RPL using
+`$yield`; that nothing else of the earlier law survives is also ABT's
+proposal. The
 triggers are in [Yielding](#yielding). A guessed `reaches`, `alias` or
 `replaces` is a `guess` in the same way.
 
@@ -627,10 +633,11 @@ retraction(?fact) -: $yield
 authority over a retraction without any authority relation.
 
 A reply that does not fit the `~` pattern does not satisfy the method. What
-happens next is not specified: §18.6 names only "user declines arg" (a
-`%fail`), and a reply that fits no pattern is not the same as declining
-(gap 3). A reply of "stop" is not an answer to the pattern; it is the user
-ending the run (§15.6, §18.5).
+happens next is not specified: §18.6 has the row "No rule is eligible: emit
+`%fail(reason, explanation)`; ask user", which may cover a reply that fits no
+pattern, and the row "User declines arg", which does not (a non-fitting reply
+is not a decline). Which applies is open (gap 3). A reply of "stop" is not an
+answer to the pattern; it is the user ending the run (§15.6, §18.5).
 
 ---
 
@@ -743,6 +750,9 @@ Bahul's rule (13 Nov, 23:09–23:11): a body variable that only provides an alia
 is safe; safety is judged after rewriting; any variable the rewrite drops is
 exempt; the desugared form keeps `?reply` in the head, and the sugar hides it.
 
+The next three items are Bahul's rule with ABT's elaboration of the terms;
+Bahul has not defined *alias* or *rewriting* himself.
+
 - An **alias** is an lvar that the body binds once, by
   `?v = ASYNC_RELATION` (rpl.md §13.3), and then only passes on within the same
   body. It names a value; it adds nothing else. `?reply` above is one.
@@ -757,15 +767,15 @@ Standard safety already allows variables that occur only in the body
 (vision.md, "head variables in body"; see
 [vision.md](../vision.md#design-principles)), so a body-only alias needs no
 exemption on its own. What the rule adds concerns the desugared head argument:
-`clarify(?x, ?y, ?reply)` and `clarify(?x, ?y)` are one rule, the sugar hides
-`?reply`, and hiding it does not break the arity rule. This is a rule about
+the sugar form and the desugared form `clarify(?x, ?y, ?reply)` are one rule
+(the sugar hides `?reply`), and hiding it does not break the arity rule. This is a rule about
 rpl.md §10 and §3, which today carries safety only as a design principle.
 
-**Arity.** The two spellings differ in arity, three arguments against two.
-This document treats the sugar's argument list as the callers' view, since
-callers do not name `?reply`. Whether a caller may refer to `?reply`, and so
-whether `clarify/2` and `clarify/3` are one predicate or two, is an open
-decision.
+**Arity (open).** The two spellings differ in arity, three arguments against
+two. Which argument list callers see, whether a caller may refer to `?reply`,
+and so whether `clarify/2` and `clarify/3` are one predicate or two, is an open
+decision. This document's examples write the sugar form only for brevity and
+choose nothing.
 
 ### `$yield` as a reserved avar (rpl.md §13)
 
@@ -795,8 +805,9 @@ anchors either.
    [Safety is judged after rewriting](#safety-is-judged-after-rewriting).
 2. **§17.7** `file.md#rel` is not valid under the grammar (above).
 3. **Non-fitting reply and stop.** The spec has no case for a reply that
-   fits no pattern (§18.6 has "user declines arg" only). A reply of "stop" is
-   routed via §15.6 and §18.5.
+   fits no pattern. §18.6's "No rule is eligible" row may cover it and its
+   "User declines arg" row does not; which applies is open. A reply of "stop"
+   is routed via §15.6 and §18.5.
 4. **`-:` as a method qualifier.**
    - Bahul's "holds if `C`" reading conflicts with `rpl.4`, rpl.md §12.1–12.2
      and §18.6, where `-:` is a checked obligation whose violation is `%fail`.
@@ -814,7 +825,8 @@ anchors either.
    `fol.3` also says a comma is not sequencing.
 6. **"Last method of a set"** is a position, not a condition. Taken as an
    order of trying, it contradicts the no-try-order stance; the only order in
-   the spec is §18.4 step 4, "first valid resolution", by syntactic order.
+   the spec is rpl.md §18.4 step 4 ("Eligible rules: syntactic order"); "first
+   valid resolution" is only a design principle (vision.md:131).
 7. **Capabilities.** §14 defines tools but does not say how the agent learns
    which tools it has, or whether tool headings (§14.3) are the declaration.
 8. **Traces as values.** Part of this is answered: rpl.md §14.2.1 B writes the
@@ -827,8 +839,8 @@ anchors either.
 10. **`$yield` gating.** This document uses it ungated; the specification does
     not say whether it is always available.
 11. **Who asserts `reply`, and when.** Candidate or final is undecided (law 2).
-12. **Frames and posture.** Multiple or no active frame (law 3), and an absent
-    `posture` (law 5).
+12. **Frames and posture.** Multiple or no active frame, and who asserts
+    `active` (law 3); an absent `posture` (law 5).
 13. **Intents.** A command against a constraint, a constraint against a
     constraint, an unconsumed `declined`, and the overlap of `conflicts` with
     `reaches` (law 1).
@@ -867,8 +879,10 @@ If `mck` were taken:
    the habits.
 3. **Shrink the role preamble.** Visibility comes from `posture(:test)` and
    laws 5 and 6, not from a paragraph that invents the protocol. In test
-   posture the bot utters `intent`, `active`, `confidence` and the check
-   traces, and still obeys [`agent.1`](../bootstrap/agent.md).
+   posture the bot utters `intent`, `active` and `confidence`. The `%checks`
+   block of law 5 writes the bindings of the law 2 invariant's left side, not
+   the check traces, because the spec has no form for selecting those (gap 8).
+   The bot still obeys [`agent.1`](../bootstrap/agent.md).
 4. **Set posture and capabilities as facts** at the start of a test run:
    `posture(:test)` and the `can(…)` facts of the host.
 5. **Do not add `mck` to `docs/rpl/bootstrap/` or to
@@ -888,7 +902,7 @@ For Bahul, not settled by this document. The first block matters most.
 **Direction and semantics**
 
 - Which retractions yield: ABT proposes that a user's correction does not and
-  an agent-proposed retraction does (law 4, Yielding). KE has asked.
+  an agent-proposed retraction does (law 4, Yielding). ABT is asking.
 - The `-:` method qualifier: Bahul's "holds if `C`" against the specification's
   checked-obligation reading; what a false, absent or undetermined `can` means
   (this draft: the method is not established, no `%fail`); and `-: C` against

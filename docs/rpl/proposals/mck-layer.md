@@ -175,7 +175,9 @@ The reply is meant to be the result of `yield!`; how a rule-defined tool
 delivers its `:result` is not specified (gap 19).
 
 **A family of escape hatches.** `name!` forms a family: `google-it!`, or
-`config!`, which loads a config file. A zero-argument call may be the same each
+`config!`, which loads a config file. `google-it!` and `$lookup` (a way to find an
+agent) are illustrative names that Bahul invented to demonstrate a point; they are
+not proposed tools. A zero-argument call may be the same each
 time, depend on context, or be anything else the language can do with no
 arguments, at the top of a proof or elsewhere. Context awareness is only a
 property of a prompt generator if its definition has one.
@@ -968,11 +970,10 @@ anchors either.
 17. **Erase.** The long-term log is append-only (lrpl.md §7.1), which mostly
     answers it; the spec does not say whether erasure for personal data is
     allowed.
-18. **Names not in the specification.** `$consult` is proposed above.
-    `$lookup`, which Bahul mentioned as a source of `?agent`, is in neither
-    rpl.md §14.2 nor lrpl.md §5, and nothing here proposes it; `$choose` is
-    available. Where the spec lists reserved tool names is itself unclear:
-    lrpl.md's `STDLIB` does not list `$ask` or `$choose`.
+18. **Reserved tool names.** `$consult` is proposed above and its name would be
+    reserved, but where the spec lists reserved tool names is unclear:
+    lrpl.md's `STDLIB` does not list `$ask` or `$choose`, which rpl.md §14.2
+    treats as built in.
 19. **Result of a rule-defined tool.** `?v = yield!` is `yield!` with
     `^:result ?v` (rpl.md §13.3), but the spec does not say how a rule that
     defines a tool, such as `$yield() :- …`, sets that `:result`. This document
@@ -1038,8 +1039,8 @@ For Bahul, not settled by this document. The first block matters most.
 - Whether `yield!`, or the `$consult` under it, is ever gated on a capability.
 - Whether `yield!` is a built-in or a library definition, and the wording of its
   one fixed instruction (Bahul gave it as "roughly" so).
-- Whether `$lookup` (which Bahul mentioned) should be specified, and how a
-  rule-defined tool sets its `:result` (gaps 18 and 19).
+- How a rule-defined tool sets its `:result` (gap 19), and where reserved tool
+  names are listed (gap 18).
 
 **Coverage**
 

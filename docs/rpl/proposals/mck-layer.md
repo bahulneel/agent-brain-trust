@@ -362,6 +362,8 @@ The dairy constraint still applies to later recipes.
 - No active frame at all, for example before the first frame or once the base
   is resolved: the invariants do not require one, and an existence requirement
   would need negation.
+- Who asserts `active`: the invariants only check it, and nothing says whether
+  the agent asserts it, or on what basis.
 - Frame-local scratch (an open question, a superseded plan item) is not covered.
 
 **Not.** A linear chat log treated as the stack. A rule that drops a
@@ -498,7 +500,7 @@ guess(?slot, ?value), changes(?slot, ?outcome) -: $yield
 ```
 
 This is the only McK initiative law, **as an ABT proposal pending Bahul**: ABT's
-reading of Bahul's ruling is that the old yield triggers become plain RPL using
+reading of Bahul's `$yield` examples is that the old yield triggers become plain RPL using
 `$yield`; that nothing else of the earlier law survives is also ABT's
 proposal. The
 triggers are in [Yielding](#yielding). A guessed `reaches`, `alias` or
@@ -928,8 +930,8 @@ For Bahul, not settled by this document. The first block matters most.
 - Every name in the [name table](#proposed-names), the keyword vocabularies,
   and how an intent's content is represented.
 - Who asserts `reply` and when (candidate or final).
-- Multiple or no active frame, and whether a constraint may be tagged
-  frame-local (law 3).
+- Multiple or no active frame, who asserts `active`, and whether a constraint
+  may be tagged frame-local (law 3).
 - Command or constraint against a constraint; what consumes `declined`; whether
   `conflicts` is derived from `reaches` (law 1).
 - How confidence relates to a guess; the default posture; how "asked by the

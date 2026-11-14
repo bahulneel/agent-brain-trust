@@ -59,21 +59,27 @@ only what the specification does not already give, and writes it as logic.
   when the agent does it, in what order, or what it falls back to. How the
   solving is done is the agent's business (rpl.md §18.3).
 - **Only goals and predicates are referenced by name.** Instances are
-  identified by traces (rpl.md §12.2–12.5), rules by metadata (§11), and
-  laws and documents by anchors (`mck.md#19`). There are no instance ids,
-  rule names or law ids inside the programs.
-- **Every name in a program is a placeholder for Bahul** unless it comes from
-  the specification or from his rulings (`$yield`, `%` goals, `@:`, `english`,
-  `chosen`). The [name table](#proposed-names) lists them. Hyphenated names
-  are avoided because they tend to hide an argument that was left out.
+  identified by traces (rpl.md §12.2–12.5), rules by metadata (§11), and laws
+  and documents by anchors. There are no instance ids, rule names or law ids
+  inside the programs. Keywords such as `:no-dairy` in examples stand for
+  contents, not ids (how contents are represented is an open decision).
+- **Who said what.** Bahul's words are cited with their date. Anything marked
+  **ABT proposal** is this document's suggestion, pending Bahul. Every name in
+  a program is a placeholder for Bahul unless it comes from the specification
+  (`$yield` and `@:` are Bahul's, `english` is in logics.md §4.2). The
+  [name table](#proposed-names) lists them. Hyphenated names are avoided
+  because they tend to hide an argument that was left out.
 - **Law shape.** Each law uses the bootstrap fields: **Law**, **FOL reading**
   (or *comment*), **Surface**, **Grounding**, **Example**, **Not**. There is no
   **Spec** field, because nothing here is in the specification.
   **Inferred** marks a claim the cited documents do not state.
 - Connectives are the colon forms already in `rpl` (`:-`, `-:`, `@:`).
   Variables are `?lvars`. Constants such as kinds and postures are keywords.
-  Law headings start with a digit (`## 3. Frames`), and a law's prefix is the
-  basename, so law 3 is `mck.3`.
+- **Citing laws.** Law headings start with a digit (`## 3. Frames`), and a
+  law's prefix is the basename, so law 3 is `mck.3`, cited as the document
+  anchor `mck.md#3`. That is a citation convention only: GitHub would anchor
+  `## 3. Frames` as `#3-frames`, and `mck.md#3` is not an RPL label (see
+  [§17.7](#177-uses-a-dot-that-name-does-not-allow)).
 
 ## Proposed names
 
@@ -86,7 +92,7 @@ hidden in the name.
 | `intent(?kind, ?content)` | The utterance carries an intent of that kind. Kinds: `:command`, `:query`, `:constraint`, `:instruction`, `:analogy`, `:suggestion`. |
 | `conflicts(?x, ?y)` | `?x` cannot be honoured together with `?y`. Judgment. |
 | `declined(?x)` | `?x` is not honoured. |
-| `reply(?content)` | `?content` is what the agent says. |
+| `reply(?content)` | `?content` is a reply the agent has put forward (law 2). |
 | `contains(?content, ?item)` | The content has that item in it. |
 | `reaches(?constraint, ?item)` | The constraint rules the item out. Judgment. |
 | `alias(?name, ?item)` | `?name` is the item under another name. Judgment. |
@@ -98,8 +104,9 @@ hidden in the name.
 | `confidence(?claim, ?level)` | Levels: `:high`, `:medium`, `:low`, `:none`. |
 | `guess(?slot, ?value)` | The agent has only a guess for the slot. |
 | `changes(?slot, ?outcome)` | The slot's value would change the outcome. |
-| `retraction(?fact)` | A retraction of a recorded fact is proposed. |
-| `can(?capability)` | The agent has the capability. Capabilities are keywords such as `:yield`, `:read`, `:write`. |
+| `retraction(?fact)` | The agent proposes retracting a recorded fact. |
+| `can(?capability)` | **ABT proposal.** The agent has the capability. Capabilities are keywords such as `:read`, `:write`. |
+| `chosen(?x, …)` | **ABT proposal.** The shape a reply is read as in a clarification. |
 
 Names used only inside examples (`recommended`, `locked`, `options`, `dinner`,
 `recipe`, method names such as `clarify`) are illustrations, not proposals.
@@ -110,21 +117,36 @@ Names used only inside examples (`recommended`, `locked`, `options`, `dinner`,
 
 ### `$yield`
 
-`$yield` is a single bare avar. It takes no arguments and has no variants. It
-passes the initiative to the user: the agent decides what to say, interprets
-the reply, and the user may reply "stop" (rpl.md §15.6, §18.5). Valid uses:
+`$yield` is a single bare avar (Bahul, 13 Nov). It takes no arguments and has
+no variants. It passes the initiative to the user: the agent decides what to
+say and interprets the reply. The user may reply "stop"; termination is the
+user's (rpl.md §15.6, §18.5). Valid uses:
 
 ```rpl
 % :- $yield
 foo('Bar') -: $yield
-admin(?person) :- $yield
+admin(?person) :- ?person = $yield
 ?person = $yield          -- same as: $yield ^:result ?person (rpl.md §13.3)
 ```
 
-Conjunction is `,`. The constraint side of `A :- B -: $yield` is evaluated
-first, so the rule yields before `B`; `$yield` in the body yields as part of
-`B`. McK writes laws for **when** to yield (law 7), never for **how**. Whether
-and how the agent hands over is `agent.1` judgment.
+Conjunction is `,`.
+
+**Evaluation order.** Bahul's ruling is only that the yield case exploits
+evaluation order: the yield occurs first. This document uses that for a
+constraint that needs no body bindings, such as `-: $yield`: in
+`A :- B -: $yield` the yield occurs before `B`. It claims nothing more general
+about when a `-:` constraint is evaluated relative to a body (gap 5).
+
+**ABT proposal.** A `$yield` in the body, as in `A :- B, $yield`, yields as part
+of `B`; it does not have to come first.
+
+**Gating.** `$yield` is used ungated everywhere in this document: it is taken
+to be always available unless the specification says otherwise. Whether a host
+with no user turn (a batch run, say) needs it gated on a capability is an open
+decision.
+
+McK writes laws for **when** to yield (law 7), never for **how**. Whether and
+how the agent hands over is `agent.1` judgment.
 
 ### Methods
 
@@ -136,23 +158,37 @@ rpl.md §10, with the HTN-shaped reading of §16.6:
 ```
 
 The middle predicate names the method. The goal's arguments are what other
-rules refer to, so the method's arguments include **all** of them. A method
-may add an argument only if its body binds it. `A :- B -: C` states that the
-rule `A :- B` holds if `C`. Writing a capability as `C` (law 8) makes the
-method exist only where the agent has that capability.
+rules refer to, so the method's arguments include **all** of them. A method may
+add an argument only if its body binds it.
 
-Clarification is a method, written per goal where handing back makes sense
+**The `-:` qualifier.** Bahul (13 Nov, 22:41): `A :- B -: C` means "the rule
+`A :- B` holds if `C`", and `C` is read as a capability, so a method exists
+only where the agent has that capability (law 8). That is the reading this
+document uses; it is not the spelling of an existing rule (rpl.md §10 gives the
+`-:` position, not this meaning). It conflicts with how the specification reads
+`-:` elsewhere, as a checked obligation whose violation is `%fail`
+(rpl.md §12.1–12.2, §18.6; `rpl.4`). That conflict is for Bahul (gap 4).
+
+When `C` is false, absent or undetermined, this document means one thing in
+all three cases: the method is not established. It is not `%fail`, and nothing
+is concluded about `C` itself (`fol.5`). The effect is that of an activation
+clause: `; @when(C)` makes a rule ineligible, "not blocked, not waiting"
+(rpl.md §16). Whether `-: C` or `; @when(C)` should be the spelling is an open
+decision.
+
+**Clarification** is a method, written per goal where handing back makes sense
 (not as a universal rule over all goals), as the last method of its set:
 
 ```rpl
 %dinner(?dish) :- recommend(?dish) :- recommended(?dish)
-%dinner(?dish) :- clarify(?dish) :- $yield @: english(~ chosen(?dish)) -: can(:yield)
+%dinner(?dish) :- clarify(?dish) :- $yield @: english(~ chosen(?dish))
 ```
 
 The method name `clarify` says what the hand-back is for. The trace of
-`clarify` resolving is the record that this goal was solved by asking.
-"Last" here is only the document order of rpl.md §18.4 step 4; McK adds no
-order (gap 6).
+`clarify` resolving is the record that this goal was solved by asking. "Last"
+is a position, not a condition. The only order in the specification is
+rpl.md §18.4 step 4, an order of trying, which is exactly what McK does not
+add (gap 6).
 
 ### Async interpretation (proposed sugar)
 
@@ -194,14 +230,26 @@ suggestion. `conflicts` is judgment ([`agent.3`](../bootstrap/agent.md)).
 **Example.**
 
 ```rpl
-intent(:command, "make a sandwich")
-intent(:constraint, "no mayonnaise")
-intent(:analogy, "like a chef")
-intent(:instruction, "say briefly what you will make")
+intent(:command, :make-sandwich)
+intent(:constraint, :no-mayonnaise)
+intent(:analogy, :like-a-chef)
+intent(:instruction, :say-what-you-will-make)
 ```
 
 The analogy may shape bread, layering and seasoning. It does not introduce
 mayonnaise, so a chef's aioli that conflicts with the constraint is declined.
+
+**Open (design, not decided here).**
+
+- Nothing in McK consumes `declined`. What the agent does with a declined
+  intent, such as telling the user, is not specified.
+- The law covers a suggestion or an analogy against a constraint. A command or
+  an instruction against a constraint, and a constraint against a constraint,
+  are not covered. A constraint conflict is an `agent.2` coordination step; no
+  rule here says so.
+- `conflicts(?s, ?c)` and `reaches(?c, ?item)` (law 2) overlap: a suggestion
+  that contains an item the constraint reaches conflicts with it. Whether
+  `conflicts` should be derived from `reaches` and `contains` is open.
 
 **Not.** A collapse of two kinds into one. An axiomatised reading of the
 utterance.
@@ -223,9 +271,17 @@ reply(?r), contains(?r, ?item), intent(:constraint, ?c), reaches(?c, ?item) -: f
 reaches(?c, ?alias) :- reaches(?c, ?item), alias(?alias, ?item)
 ```
 
-The invariant is a live check until it grounds (rpl.md §12.2). While it has
-no grounding it is neither true nor false (`fol.5`). A violated check is
-`%fail` (rpl.md §15.7, §18.6), so no verdict relation is needed.
+The invariant is a live check until it grounds (rpl.md §12.2); a violated
+check is `%fail` (§15.7, §18.6). So no verdict relation is needed, and a check
+that has not grounded is simply still live. `fol.5` adds that a missing fact is
+not a proof of `not P`, so an absent `contains` fact does not show the reply is
+clean.
+
+**Who asserts `reply`.** The agent asserts `reply(?content)` for a reply it has
+put forward. Whether that is a candidate it is still weighing, or only the
+final reply, is not decided: if candidates count, a violating candidate raises
+`%fail` before anything is said, and if only the final reply counts, the check
+comes too late. This is an open decision.
 
 **Grounding.** Live probe 1, gap (b) (does aioli count as mayonnaise?); probe
 2 (does "no shellfish" reach crab?); probe 4 (does one guest's dairy
@@ -234,14 +290,16 @@ constraint reach shared courses?); the cross-probe gaps for linking and reach.
 **Example.**
 
 ```rpl
-intent(:constraint, "no mayonnaise")
-reaches("no mayonnaise", "mayonnaise")
-alias("aioli", "mayonnaise")
+intent(:constraint, :no-mayonnaise)
+reaches(:no-mayonnaise, :mayonnaise)
+alias(:aioli, :mayonnaise)
+contains(:chicken-with-aioli, :aioli)
+reply(:chicken-with-aioli)
 ```
 
-`reaches("no mayonnaise", "aioli")` follows. A reply that contains aioli
-violates the invariant. A reach the agent can only guess, which would change
-the reply, is a material guess (law 7).
+`reaches(:no-mayonnaise, :aioli)` follows, so the reply violates the invariant
+and `%fail` results. A reach the agent can only guess, which would change the
+reply, is a guess (law 7).
 
 **Not.** A food ontology. `reaches` and `alias` are judgment.
 
@@ -250,78 +308,99 @@ the reply, is a material guess (law 7).
 ## 3. Frames
 
 **Law.** Work is a tree of frames, not a linear history. The base frame has
-parent `nil`. A tangent is a frame whose parent is the frame it interrupts.
-The active frame is the one that is not resolved and has no unresolved child.
-Intents are not scoped by a frame, so resolving a frame changes which frame is
-active and nothing else.
+parent `nil`. A tangent is a frame whose parent is the frame it interrupts. The
+active frame is a frame that is not resolved and whose children are all
+resolved. At most one frame is active. Which frame is active moves by
+retraction (rpl.md §12.4) and a new `active` fact, per instance.
 
-**FOL reading.** *Comment.* Session structure, defined by a stratified rule.
-There is no push or pop: asserting `frame` and `resolved` facts moves
-`active`, and the earlier facts remain.
+**FOL reading.** *Comment.* Session structure, as three invariants. There is no
+push or pop operator, and no negation: `not` would read a missing `resolved`
+fact as proof of `not resolved`, which `fol.5` does not allow.
 
 **Surface.** `frame`, `resolved`, `active`.
 
 ```rpl
-active(?f) :-
-  frame(?f, _),
-  not resolved(?f),
-  not (frame(?g, ?f), not resolved(?g))
+active(?f) -: frame(?f, _)
+active(?f), resolved(?f) -: false
+active(?f), frame(?g, ?f) -: resolved(?g)
+active(?f), active(?g) -: ?f = ?g
 ```
+
+**Constraints and frames.** **Inferred.** `intent` has no frame argument, so a
+constraint stated while a frame is active is not a fact about that frame.
+Resolving a frame changes which frame is active and nothing else. Whether a
+constraint may be tagged as frame-local is an open decision, so this is the
+default pending that decision.
 
 **Grounding.** [agent-mck.md](../agent-mck.md), "Context Stacking"; live probe
 4 (no surface for the stack; a constraint added on a tangent stayed in force
-after the pop, because dropping it silently is worse). **Inferred:** that
-constraints survive. `not` here is read as failure to prove (gap 11).
+after the pop, because dropping it silently is worse).
 
 **Example.**
 
 ```rpl
-frame("plan a vegetarian dinner for two", nil)
-frame("no dairy for one guest", "plan a vegetarian dinner for two")
-intent(:constraint, "no dairy for one guest")
-resolved("no dairy for one guest")
+frame(:dinner, nil)
+frame(:no-dairy, :dinner)
+active(:no-dairy)
+intent(:constraint, :no-dairy)
+resolved(:no-dairy)
+active(:no-dairy) -: false
+active(:dinner)
 ```
 
-`active("plan a vegetarian dinner for two")` holds, and the dairy constraint
-still applies to later recipes. Frame-local scratch is not covered (open
-decision).
+The dairy constraint still applies to later recipes.
+
+**Open (design, not decided here).**
+
+- Two unresolved siblings under one frame: the parent cannot be active, and
+  nothing says which sibling is.
+- No active frame at all, for example before the first frame or once the base
+  is resolved: the invariants do not require one, and an existence requirement
+  would need negation.
+- Frame-local scratch (an open question, a superseded plan item) is not covered.
 
 **Not.** A linear chat log treated as the stack. A rule that drops a
-constraint at a pop.
+constraint when a frame is resolved.
 
 ---
 
 ## 4. Corrections
 
 **Law.** **Inferred.** A correction replaces exactly what it clearly replaces.
-What it replaces no longer holds, and is retracted in the trace
-(rpl.md §12.4). Nothing else changes.
+When `replaces(?new, ?old)` holds, the retraction of what `?old` stood for
+(rpl.md §12.4) is licensed, and the agent may assert it for that instance. Only
+that is licensed; everything else stays.
 
-**FOL reading.** *Comment.* Scope of a retraction. Retraction is
-non-monotonic and stays under [`agent.2`](../bootstrap/agent.md).
+**FOL reading.** *Comment.* Retraction is non-monotonic (`fol.9`,
+[`agent.2`](../bootstrap/agent.md)), so it cannot be a standing rule. A rule
+such as `replaces(?new, ?old), intent(?kind, ?old) -: false` would be an
+exclusion invariant (rpl.md §12.1), not a retraction, and it would `%fail` as
+soon as `replaces` was asserted. The retraction is a trace asserted per
+instance.
 
 **Surface.** `replaces`.
 
-```rpl
-replaces(?new, ?old), intent(?kind, ?old) -: false
-```
-
 **Grounding.** Live run 2, probe B: "comfort matters more" clearly replaces
 "cheapest", and leaves open whether a £100 cap still holds. An open case is a
-material guess (law 7), not a silent keep or drop. Whether a retraction
-records or erases history is already answered by rpl.md §12.4 and
-lrpl.md §7.1 (see the covered table); live run 2, probe C.
+guess (law 7), not a silent keep or drop. Whether a retraction records or
+erases history is answered by rpl.md §12.4 and lrpl.md §7.1 (see the covered
+table); live run 2, probe C.
 
 **Example.**
 
 ```rpl
-intent(:constraint, "budget cap of £100")
-intent(:suggestion, "cheapest option")
-replaces("comfort matters more", "cheapest option")
-intent(:suggestion, "cheapest option") -: false
+intent(:constraint, :budget-cap)
+intent(:suggestion, :cheapest)
+replaces(:comfort-first, :cheapest)
+intent(:suggestion, :cheapest) -: false     -- the §12.4 retraction, for this instance
 ```
 
 The cap is not clearly replaced, so it holds.
+
+**ABT proposal, pending Bahul.** A user's own correction skips the yield, and
+only agent-proposed retractions yield (`retraction(?fact) -: $yield`, see
+[Yielding](#yielding)). The reading is that the user's correction is itself the
+acceptance. KE has asked Bahul.
 
 **Not.** A rule that every correction wipes the session. A new retraction
 operator.
@@ -333,24 +412,34 @@ operator.
 **Law.** A session has a posture, `:test` or `:production`. The traces of the
 invariant checks exist in both (`rpl.6`). In `:test` they are written to chat
 ([`rpl.12`](../bootstrap/rpl.md), `$json`); in `:production` they are
-inspectable structure and are not written unless asked. Confidence (law 6)
-follows the same posture.
+inspectable structure and are not written unless the user asks. Confidence
+(law 6) follows the same posture.
 
 **FOL reading.** *Comment.* A host fact about what is shown, not a second
 meaning of `-:`.
 
 **Surface.** `posture(:test)`, `posture(:production)`.
 
-**Grounding.** [bots/rpl-bot.md](../bots/rpl-bot.md) gap 3; live probe 2 (a
-silent check against an inspectable trace); [agent-mck.md](../agent-mck.md),
-"The Invisible Architecture". **Inferred.** There is no rule here, because the
-specification has no form for "the traces of these checks" as a value (gap 8).
-
-**Example.**
-
 ```rpl
 posture(:test)
+%checks :-
+  posture(:test),
+  (reply(?r), contains(?r, ?item), intent(:constraint, ?c), reaches(?c, ?item)) ^^ ?b,
+  $json(?b)
 ```
+
+The goal writes the bindings of the left side of the law 2 invariant, in the
+`^^ ?b, $json(?b)` form of rpl.md §14.2.1 B. That is the violating instances
+(none when the check holds), not the trace itself. Selecting the traces of one
+family of checks is still open (gap 8).
+
+**Grounding.** [bots/rpl-bot.md](../bots/rpl-bot.md) gap 3; live probe 2 (a
+silent check against an inspectable trace); [agent-mck.md](../agent-mck.md),
+"The Invisible Architecture".
+
+**Open (design, not decided here).** If no `posture` fact is present, nothing
+says which posture holds. The law says "unless the user asks" and does not say
+how a request is recognised.
 
 **Not.** A licence to skip the check, or the trace, in production.
 
@@ -366,16 +455,22 @@ posture(:test)
 **FOL reading.** *Comment.* A report about a claim. Not a probability, not a
 connective.
 
-**Surface.** `confidence(?claim, ?level)`.
+**Surface.** `confidence(?claim, ?level)`. There is no rule here: the criteria
+are judgment, and a rule would need names for "depends on" and "absent" that
+nobody has chosen.
 
 **Grounding.** Live probe 6 and probe 1, gap (f); [bots/rpl-bot.md](../bots/rpl-bot.md).
 
 **Example.**
 
 ```rpl
-confidence(locked("recipe from a previous session"), :none)
-confidence(reaches("no dairy for one guest", "bread"), :medium)
+confidence(locked(:recipe), :none)
+confidence(reaches(:no-dairy, :bread), :medium)
 ```
+
+**Open (design, not decided here).** How confidence relates to a guess (law 7)
+is not stated: a `:medium` claim resting on a default, and a `guess`, describe
+overlapping situations.
 
 **Not.** A numeric score. A substitute for the trace.
 
@@ -383,8 +478,10 @@ confidence(reaches("no dairy for one guest", "bread"), :medium)
 
 ## 7. A material guess
 
-**Law.** **Inferred.** If a value would change the outcome and the agent has
-only a guess for it, the initiative passes to the user.
+**Law.** **ABT proposal.** If a value would change the outcome and the agent
+has only a guess for it, the initiative passes to the user. A *default* is a
+value the agent uses for a slot the user did not give; a *guess* is a default
+the agent has no ground for.
 
 **FOL reading.** *Comment.* An obligation (`rpl.4`) whose right-hand side is
 `$yield`.
@@ -395,9 +492,11 @@ only a guess for it, the initiative passes to the user.
 guess(?slot, ?value), changes(?slot, ?outcome) -: $yield
 ```
 
-This is the only McK initiative law. The cases the earlier draft listed as
-separate triggers are plain RPL, shown in [Yielding](#yielding) below. A
-guessed `reaches`, `alias` or `replaces` is a `guess` in the same way.
+This is the only McK initiative law, **as an ABT proposal pending Bahul**: his
+ruling is that the old yield triggers become plain RPL using `$yield`; that
+nothing else of the earlier law survives is this document's proposal. The
+triggers are in [Yielding](#yielding). A guessed `reaches`, `alias` or
+`replaces` is a `guess` in the same way.
 
 **Grounding.** [agent-mck.md](../agent-mck.md), "Autonomy vs Turn-Taking" (the
 habit is named, with no rule); live probe 1, gap (c) (a default filling that
@@ -406,12 +505,16 @@ was not given); live probe 6.
 **Example.**
 
 ```rpl
-guess(:filling, "chicken")
-changes(:filling, "the sandwich")
+guess(:filling, :chicken)
+changes(:filling, :the-sandwich)
 ```
 
 "Like a chef, make me a sandwich, but no mayo" has no material guess: nothing
 is open, so nothing yields.
+
+**Open (design, not decided here).** A guess that would *not* change the
+outcome: nothing says what the agent does with it. This document adds no
+fallback, because any fallback would be a step.
 
 **Not.** A fixed number for "a few" options ([`agent.1`](../bootstrap/agent.md)).
 
@@ -419,17 +522,18 @@ is open, so nothing yields.
 
 ## 8. Capabilities
 
-**Law.** The agent has capabilities, and they are facts it can reason over like
-any other. A method qualified with `-: can(…)` exists only where the capability
-holds. A capability can follow from others.
+**Law.** **ABT proposal.** The agent has capabilities, and they are facts it can
+reason over like any other. A method qualified with `-: can(…)` is established
+only where the capability holds. A capability can follow from others.
 
-**FOL reading.** *Comment.* Facts and Horn rules. `-:` as the qualifier of
-a rule is `A :- B -: C` (rpl.md §10).
+**FOL reading.** *Comment.* Facts and Horn rules. The `-:` qualifier is
+Bahul's reading of 13 Nov (22:41), "`A :- B` holds if `C`", with `C` read as a
+capability; see [Methods](#methods) for the conflict with `rpl.4` and for what
+a false, absent or undetermined `can` means.
 
 **Surface.** `can`.
 
 ```rpl
-can(:yield)
 can(:read)
 can(:write)
 can(:remember) :- can(:write), can(:read)
@@ -437,16 +541,16 @@ can(:remember) :- can(:write), can(:read)
 %remember(?fact) :- commit(?fact) :- $write(?fact, ".rpl/long-term.log") -: can(:write)
 ```
 
-The agent asks about its own capabilities with an ordinary query
-(`% :- can(?c), $json(?c)`).
+`$yield` is not gated: no `can(:yield)` appears anywhere. The agent asks about
+its own capabilities with an ordinary query (`% :- can(?c), $json(?c)`).
 
-**Grounding.** Bahul's ruling of 14 Nov 2026. [lrpl.md §7](../specification/lrpl.md#7-session-persistence-rpl-memory-files-and-rplrc):
-durable output only on hosts that offer it. **Inferred:** the names. The path
-is the spec's non-normative example (§7.2).
+**Grounding.** Bahul's capabilities ruling, 13 Nov 2026.
+[lrpl.md §7](../specification/lrpl.md#7-session-persistence-rpl-memory-files-and-rplrc):
+durable output only on hosts that offer it. **Inferred:** the names. The path is
+the spec's non-normative example (§7.2).
 
-**Not.** A claim that a missing `can` fact means "cannot" (`fol.5`); where a
-capability is unknown the agent has a guess (law 7). How the agent comes to
-know its capabilities is a gap (gap 7).
+**Not.** A claim that a missing `can` fact means "cannot" (`fol.5`). How the
+agent comes to know its capabilities is a gap (gap 7).
 
 ---
 
@@ -469,11 +573,19 @@ lrpl.md §5.2.
 
 **Grounding.** [agent-mck.md](../agent-mck.md), "Memory Stratification";
 [cognition.md](../cognition.md) §I and §III; live probe 6. See
-[Memory configuration](#memory-configuration) for exactly what the
-specification fixes and what it leaves to the host.
+[Memory configuration](#memory-configuration) for what the specification fixes
+and what it leaves to the host.
 
-**Example.** Where the log has no `locked` fact, the recipe goal is solved by
-asking, not by naming a recipe (see [Yielding](#yielding)).
+**Example.** The log holds a `locked` fact, and the recipe goal has a method
+that uses it:
+
+```rpl
+locked(:recipe-a)
+%recipe(?dish) :- recall(?dish) :- locked(?dish)
+```
+
+Where the log has no `locked` fact, `recall` does not hold, and the goal's
+other methods, such as `clarify` (see [Yielding](#yielding)), still apply.
 
 **Not.** A claim that model weights are a store. A substitute for the trace.
 
@@ -481,8 +593,8 @@ asking, not by naming a recipe (see [Yielding](#yielding)).
 
 ## Yielding
 
-These are plain RPL, not McK laws. Each hands over by using `$yield`. The
-old draft listed them as triggers; here each is what the program says.
+These are plain RPL, not McK laws. Each hands over by using `$yield`. The old
+draft listed them as triggers; here each is what the program says.
 
 **A choice or stop point the user set** ("give me a few options, then we will
 pick"). The method takes one extra argument, `?options`, which its body binds.
@@ -496,49 +608,54 @@ options([& ?v]) :- candidate(?v)
     ?dish in ?options
 ```
 
-**Absent ground, as a method of the goal.**
+**Absent ground, as a method of the goal** (the `recall` method is in law 9).
 
 ```rpl
-%recipe(?dish) :- recall(?dish) :- locked(?dish)
-%recipe(?dish) :- clarify(?dish) :- $yield @: english(~ chosen(?dish)) -: can(:yield)
+%recipe(?dish) :- clarify(?dish) :- $yield @: english(~ chosen(?dish))
 ```
 
 **Coordination.** Retraction is a coordination step
-([`agent.2`](../bootstrap/agent.md)), and the user decides it. A violated
+([`agent.2`](../bootstrap/agent.md)). **ABT proposal:** a retraction the agent
+proposes yields, and a user's own correction does not (law 4). A violated
 invariant surfaces as `%fail` and the user decides (rpl.md §18.6).
 
 ```rpl
 retraction(?fact) -: $yield
 ```
 
-Only the user's turn resolves `$yield`, so the user is the authority over a
-retraction without any authority relation.
+**ABT proposal.** Only the user's turn resolves `$yield`, so the user is the
+authority over a retraction without any authority relation.
+
+A reply that does not fit the `~` pattern does not satisfy the method. What
+happens next is not specified: §18.6 names only "user declines arg" (a
+`%fail`), and a reply that fits no pattern is not the same as declining
+(gap 3). A reply of "stop" is not an answer to the pattern; it is the user
+ending the run (§15.6, §18.5).
 
 ---
 
 ## Memory configuration
 
-McK adds nothing to how memory is configured. This section only enumerates
-what [lrpl.md §7](../specification/lrpl.md#7-session-persistence-rpl-memory-files-and-rplrc)
-says, so laws 8 and 9 have something to cite. The memory files exist only on
-**hosts that give durable file output** (at minimum `$write`); the
-specification does not require a filesystem.
+McK adds nothing to how this is configured. This section only lists what
+[lrpl.md §7](../specification/lrpl.md#7-session-persistence-rpl-memory-files-and-rplrc)
+says, so laws 8 and 9 have something to cite. The files exist only on **hosts
+that give durable file output** (at minimum `$write`); core LRPL does not
+require a filesystem. The words *should*, *may* and *must* are the
+specification's. Bahul may prefer other terms than "memory" for this (for
+example knowledge or beliefs); that is an open decision, and §7 uses "memory".
 
-| Part | What the specification fixes | Left to the host |
+| Part | What the specification says | Left to the host |
 | --- | --- | --- |
-| **Long-term log** (§7.1, §7.3) | One append-only, tail-only log of fully grounded ground truths: traces (rpl.md §12.2–12.3) and stable conclusions. Earlier lines are never rewritten. Intermediate or memo-only state **must not** go in it. New ground **should** be appended as it becomes a trace. | Path (e.g. `.rpl/long-term.log` or `.rpl/ground.ndjson`). Encoding (NDJSON, EDN, or one RPL sentence per line), stable enough for `$index`/`$read` to reload if the host advertises that. |
-| **Short-term stores** (§7.1, §7.4) | One or more files under `.rpl`, separate from the log. They hold open constraint checks, DNF memos ([§3](../specification/lrpl.md#3-constraint-memos)), candidate worlds not yet realised, partial bindings and scratch derivations. Hosts **may** merge, truncate, rotate or discard them at task end, session end, or satisfactory quiescence; settled ground outcomes **should** then be appended to the log. | How files are split (by goal, topic or stratum, e.g. `.rpl/short-term/` or `.rpl/constraints-*.ndjson`). |
-| **`.rpl` directory** (§7.2) | The home of both, at the workspace root (or the host's nearest equivalent). | Exact paths and suffixes. |
-| **`.rplrc`** (§7.5) | Read at the start of every session, before user messages are applied and after the programme loads. Carries **preferences** (tone, defaults, tool choices) and **background knowledge** between sessions, without duplicating them in the log. Later traces and user assertions win over it unless the host documents another policy. | Search order (workspace root, then documented fallbacks such as the user's home). Format (prose, markdown, EDN/RPL fragments, a structured block). How it merges into the initial store or metadata. |
-| **`$write`** (§5.4, §7.6) | The natural surface for commits. A trace stratum written with `$write` is a valid `$index` source for a later stratum. | Whether `$write` targets under `.rpl` are mapped automatically or by explicit path. |
+| **Long-term log** (§7.1, §7.3) | Long-term memory **is** an append-only record of ground truths: fully grounded facts and constraints (rpl.md §12), traces, stable conclusions. Each committed line is one append to a single tail-only log; earlier lines are never rewritten. When the agent can write files it **should** append newly established ground truths as they become traces. It **must not** put intermediate or unrealised memo-only state in it. | Path (e.g. `.rpl/long-term.log` or `.rpl/ground.ndjson`). Encoding (NDJSON, EDN, or one RPL sentence per line), which **must** be stable enough for `$index` or `$read` to reload in a later session if the host advertises that workflow. |
+| **Short-term stores** (§7.1, §7.4) | Short-term memory **holds** intermediate material: open constraint checks, partial memo state ([§3](../specification/lrpl.md#3-constraint-memos)), candidate worlds not yet realised, scratch derivations. When the agent can write files it **should** persist constraint and memo intermediates (DNF memos, open invariants, partial bindings) to short-term files under `.rpl`, not to the log. Hosts **may** split these across one or more files and **may** truncate, rotate, merge or discard them when a task completes, a session ends, or satisfactory quiescence settles the bindings. The ground outcomes **should** then be appended to the long-term log. | How files are split (by goal, topic or stratum, e.g. `.rpl/short-term/` or `.rpl/constraints-*.ndjson`). |
+| **`.rpl` directory** (§7.2) | Conforming hosts that implement file-backed memory **should** place these artifacts under `.rpl` at the workspace root, or the host's nearest equivalent. The normative requirements are an append-only long-term log and separate short-term store(s), both under `.rpl`. | Exact paths and suffixes. |
+| **`.rplrc`** (§7.5) | Hosts **should** read it at the start of every session, before user messages are applied and after the programme loads. Its purpose is to carry **preferences** (tone, defaults, tool choices) and **background knowledge** between sessions without duplicating them in the log. Later traces and user assertions win over it unless the host documents another policy. | Search order (a common rule: workspace root, then documented fallbacks such as the user's home). Format (prose, markdown, EDN/RPL fragments, a structured block), and how it merges into the initial store or metadata. |
+| **`$write`** (§5.4, §7.6) | The natural surface for these commits. A trace stratum written with `$write` is a valid `$index` source for a later stratum. Behaviour in §7.1–7.5 **should** hold when file output is available. | Hosts **may** map `$write` targets under `.rpl` automatically or expose explicit paths. |
 
 **Gaps in this part of the specification** (see also the gap list below):
 
 - It does not say what long-term memory is on a host with no durable file
   output, such as a plain chat. That case is the one the probes exercise.
-- It does not say whether a constraint the user states belongs in the log, in
-  short-term files, or in `.rplrc`. `.rplrc` names preferences and background
-  knowledge only.
 - It says nothing about sharing a log or `.rplrc` between workspaces, agents
   or users, so there is no spec ground for composing two stores.
 - `#?facts :- $read(…)` (lrpl.md §5.2) needs every expanded result to be a
@@ -557,16 +674,16 @@ removed, with no relation of its own.
 | `session`, `session-authority`, `turn`, instance ids, law ids, rule names | Not needed. Traces identify instances (rpl.md §12.2–12.5); metadata names rules (§11); documents are cited by anchor. |
 | mck.1–3, 16 (intent kinds, precedence, later preference) | Law 1. |
 | mck.4–5 (context stack, survives a pop) | Law 3. |
-| mck.6, 18 (`invariant-check`, verdicts, "unchecked") | An invariant is a live check until grounded, then a trace (rpl.md §12.2–12.3; `rpl.4`, `rpl.6`). A failed check is `%fail` (§15.7, §18.6). "Unchecked" is a check still ungrounded, which `fol.5` already separates from true and false. Law 2 puts invariants over `reply`. |
+| mck.6, 18 (`invariant-check`, verdicts, "unchecked") | An invariant is a live check until grounded, then a trace (rpl.md §12.2–12.3; `rpl.4`, `rpl.6`). A failed check is `%fail` (§15.7, §18.6). "Unchecked" is a check that has not grounded, still live. `fol.5` adds that a missing fact is not a proof of `not P`. Law 2 puts invariants over `reply`. |
 | mck.7 (silent check, visible report) | Law 5. |
 | mck.8, 9 (`restriction-enforced-by`, `restriction-covers`) | Law 2: derivation replaces the link. |
 | mck.10 (`coordination-point`, `repair-option`) | `agent.2`; `%fail(?reason, ?explanation)`; the user decides (§18.6). Ordering options is not selecting one; the user does. |
-| mck.11 (`session-authority`, `repair-acceptance`) | `agent.2`, and only the user's turn resolves `$yield` ([Yielding](#yielding)). |
-| mck.12 (`initiative`, `initiative-holder`, `initiative-ceded`, reasons) | `$yield`. Three triggers are plain RPL ([Yielding](#yielding)); the only law left is law 7. |
+| mck.11 (`session-authority`, `repair-acceptance`) | `agent.2`, and (ABT proposal) only the user's turn resolves `$yield` ([Yielding](#yielding)). |
+| mck.12 (`initiative`, `initiative-holder`, `initiative-ceded`, reasons) | `$yield`. Three triggers are plain RPL ([Yielding](#yielding)); the one law proposed in their place is law 7 (ABT proposal). |
 | mck.13 (`memory-item`, strata) | lrpl.md §7 ([Memory configuration](#memory-configuration)); law 9. |
 | mck.14 | Law 6. |
 | mck.15 (correction scope) | Law 4. |
-| mck.17 ("forget" records) | rpl.md §12.4: retraction is recorded in the trace log, and the log is ordered and append-only (lrpl.md §7.1). The spec records and keeps history. Whether a host may also **erase** (for personal data, say) stays open. |
+| mck.17 ("forget" records) | rpl.md §12.4: retraction is recorded in the trace log, and the long-term log is append-only (lrpl.md §7.1). Mostly answered; whether a host may also erase, for personal data say, stays open. |
 | mck.19 (`graph-store`, durability) | The store is the `.rpl` directory or the host's equivalent (lrpl.md §7.2). Provisioning is host-defined. |
 | mck.20 (`fact-provenance`, graphs, topics) | Provenance is metadata (rpl.md §11, `:file`, `:user`, `:relation`). A "graph" is the program and its log; the spec has no further concept. |
 | mck.21 (composing graphs) | Loading more sentences. The Horn theory is monotonic (`fol.9`); `$read` brings them in (lrpl.md §5.2). |
@@ -574,8 +691,9 @@ removed, with no relation of its own.
 | mck.23 (composition conflicts) | A violated invariant (`rpl.4`) is `%fail`; candidate worlds are lrpl.md §3 memos; non-monotonic repair is `agent.2` and `-: $yield`. |
 
 Knowledge sharing between stores (Bahul, 12 Nov) therefore has no McK law of
-its own. The one thing the specification does not cover is composing two
-separate stores (gap in Memory configuration).
+its own here. Whether that is acceptable, given he asked for graph composition
+and conflict resolution, is an open decision. The spec does not cover composing
+two separate stores.
 
 ---
 
@@ -592,8 +710,8 @@ An avar may stand as the Statement of `@:`:
 $avar @: lang(~ Pattern)
 ```
 
-It desugars to a fresh lvar bound by the async bind sugar of rpl.md §13.3,
-read as syntax:
+It desugars to a fresh lvar bound by the async bind sugar of rpl.md §13.3, read
+as syntax:
 
 ```rpl
 ?reply = $avar, #?reply @: lang(~ Pattern)
@@ -613,27 +731,50 @@ clarify(?x, ?y, ?reply) :- ?reply = $yield, #?reply @: english(~ chosen(?x, ?y))
 ```
 
 The reading holds only if the reply fits the pattern, and the pattern binds
-`?y`. A reply that does not fit does not satisfy the method. Logics §4.2
-already writes an avar in statement position (`~ $de @: german(?i)`) without
-defining it.
+`?y`. Logics §4.2 writes `~ $de @: german(?i)`, but that puts an avar under
+`~` (an in-place match), not the bare avar proposed here, so it is not a
+precedent. Precedence of `@:` against `,` and `-:` is not in rpl.md §5.6, so
+`$yield @: english(~ chosen(?dish))` followed by `, ?dish in ?options` or by
+`-: C` has no stated grouping (gap 4).
 
 ### Safety is judged after rewriting
 
-A rule is safe when every variable in its head is bound by its body **after
-rewriting**. Any variable the rewrite drops, such as an alias that only names a
-value bound elsewhere in the body (`?reply` above), need not be in the head,
-because rewriting substitutes what it stands for. This is general, not special
-to async interpretation. It belongs in rpl.md §10 or §3; today it appears only
-as a design principle in [vision.md](../vision.md#design-principles) ("head
-variables in body").
+Bahul's rule (13 Nov, 23:09–23:11): a body variable that only provides an alias
+is safe; safety is judged after rewriting; any variable the rewrite drops is
+exempt; the desugared form keeps `?reply` in the head, and the sugar hides it.
+
+- An **alias** is an lvar that the body binds once, by
+  `?v = ASYNC_RELATION` (rpl.md §13.3), and then only passes on within the same
+  body. It names a value; it adds nothing else. `?reply` above is one.
+- **Rewriting** is the move between the sugar form and the desugared form:
+  expanding the sugar introduces the alias, and substituting what the alias
+  stands for removes it.
+- The rule is that safety, and the method arity rule (the goal's arguments plus
+  extras the body binds), are judged on the rewritten rule. A variable the
+  rewrite drops is exempt.
+
+Standard safety already allows variables that occur only in the body
+(vision.md, "head variables in body"; see
+[vision.md](../vision.md#design-principles)), so a body-only alias needs no
+exemption on its own. What the rule adds concerns the desugared head argument:
+`clarify(?x, ?y, ?reply)` and `clarify(?x, ?y)` are one rule, the sugar hides
+`?reply`, and hiding it does not break the arity rule. This is a rule about
+rpl.md §10 and §3, which today carries safety only as a design principle.
+
+**Arity.** The two spellings differ in arity, three arguments against two.
+This document treats the sugar's argument list as the callers' view, since
+callers do not name `?reply`. Whether a caller may refer to `?reply`, and so
+whether `clarify/2` and `clarify/3` are one predicate or two, is an open
+decision.
 
 ### `$yield` as a reserved avar (rpl.md §13)
 
 `$yield` is a bare avar, reserved like `%fail` (rpl.md §15.7). It takes no
-arguments and has no variants. It resolves when the user next speaks, and
-the agent interprets that reply. `?v = $yield` is the §13.3 sugar for
-`$yield ^:result ?v`. Evaluation order: the constraint side of `A :- B -: C`
-is evaluated before `B`.
+arguments and has no variants. It resolves when the user next speaks, and the
+agent interprets that reply. `?v = $yield` is the §13.3 sugar for
+`$yield ^:result ?v`. When a constraint needs no body bindings (`-: $yield`),
+the yield occurs first (Bahul's ruling); nothing more general about
+evaluation order is proposed.
 
 ### §17.7 uses a dot that `NAME` does not allow
 
@@ -641,49 +782,67 @@ rpl.md §17.7 shows `file.md#rel` and `%file.md#goal`. In the Appendix,
 `LABEL = NAME | NS '#' NAME` and `NAME = [a-z] [a-z0-9\-]*`, so `file.md` is
 not a `NAME`. Either the grammar allows a dot in a namespace segment, or §17.7
 should drop the extension, or it should say these forms are informal. The
-document anchors this proposal uses, `mck.md#19`, are citations, not RPL
-labels (they have a dot, and `19` does not start with `a–z`).
+document anchors this proposal uses, `mck.md#19`, are citations, not RPL labels
+(they have a dot, and `19` does not start with `a–z`), and they are not GitHub
+anchors either.
 
 ---
 
 ## Spec gaps found
 
-1. **Safety** is only a design principle in vision.md; rpl.md has no rule.
+1. **Safety** is only a design principle in vision.md; rpl.md has no rule. The
+   proposed rule, and the arity of a method whose sugar hides an alias, are in
+   [Safety is judged after rewriting](#safety-is-judged-after-rewriting).
 2. **§17.7** `file.md#rel` is not valid under the grammar (above).
-3. **`~ PATTERN`** allows a map, list, set, string or regex in the Appendix,
-   but logics.md §4.1, §4.3 and the proposed sugar write `~ foo(_)` (a relation
-   call).
-4. **Logics operators** (`@:`, `:@`, …) are outside rpl.md's Appendix grammar by
-   design, so the avar sugar needs a grammar home in logics.md.
-5. **Order of `-:` constraint and body** is Bahul's ruling; the specification
-   does not state it (§12.2 is about grounding, §16 about activation), and
-   `fol.3` says a comma is not sequencing.
-6. **"Last method of a set"** relies on §18.4 step 4 ("syntactic order"),
-   which is an order of trying. It sits against the no-try-order stance,
-   and `fol.4` leaves which alternative is tried first to `agent` and
-   `rpl-runtime`.
-7. **Capabilities.** The specification does not say how the agent learns which
-   tools and capabilities it has.
-8. **Traces as values.** rpl.md §12.5 says traces are queryable, with no form
-   for selecting the traces of one family of checks (for example to `$json`
-   them).
-9. **Memory** gaps in [Memory configuration](#memory-configuration): hosts
-   with no file output, where a stated constraint lives, sharing between
-   stores, and the reload of a log of traces.
-10. **`$yield` and safety.** In `admin(?person) :- $yield` the body binds
-    `?person` only through the agent's reading of the reply. It is unclear
-    whether that satisfies the safety rule, or `$yield` needs the sugar.
-11. **`not`** (`fol.5`) is not classified as classical or failure to prove;
-    law 3 reads it as failure to prove.
-12. **`%fail`** has `?reason` and `?explanation` and no slot for repair
-    options.
-13. **Erase.** The specification records retractions and keeps history. It does
-    not say whether a host may erase.
-14. **Name syntax in sketches.** `someGoal` and `clarifyX` are not valid
-    `NAME`s (lowercase kebab only); this draft uses `dinner`, `clarify`.
-15. In the spelled-out expansion, `?reply` appears in the method head to make the
-    rewrite explicit; under the safety rule above it is dropped after
-    rewriting. The two readings should be stated together.
+3. **Non-fitting reply and stop.** The spec has no case for a reply that
+   fits no pattern (§18.6 has "user declines arg" only). A reply of "stop" is
+   routed via §15.6 and §18.5.
+4. **`-:` as a method qualifier.**
+   - Bahul's "holds if `C`" reading conflicts with `rpl.4`, rpl.md §12.1–12.2
+     and §18.6, where `-:` is a checked obligation whose violation is `%fail`.
+   - The specification does not say what a `-:` constraint means when its
+     condition is false, absent or undetermined.
+   - It overlaps `; @when(…)` (§16), which already makes a rule ineligible.
+   - `~ PATTERN` allows a map, list, set, string or regex in the Appendix, but
+     logics.md §4.1 and §4.3 and the proposed sugar write `~ foo(_)`.
+   - The logics operators (`@:`, `:@`, …) are outside rpl.md's Appendix grammar
+     by design, and their precedence against `,` and `-:` (§5.6) is not stated,
+     so the avar sugar has no grammar home.
+5. **Evaluation order.** Bahul's yield-first ruling conflicts with rpl.md
+   §12.2 and §18.3 phase 3, where constraints are checked at quiescence, and
+   with §18.3 phase 8, where avars are dispatched after the plan progresses.
+   `fol.3` also says a comma is not sequencing.
+6. **"Last method of a set"** is a position, not a condition. Taken as an
+   order of trying, it contradicts the no-try-order stance; the only order in
+   the spec is §18.4 step 4, "first valid resolution", by syntactic order.
+7. **Capabilities.** §14 defines tools but does not say how the agent learns
+   which tools it has, or whether tool headings (§14.3) are the declaration.
+8. **Traces as values.** Part of this is answered: rpl.md §14.2.1 B writes the
+   binding map as `^^ ?b, $json(?b)`, as law 5 does. What is open is selecting
+   the traces of one family of checks (for example the invariant checks) rather
+   than the bindings of one conjunction.
+9. **Memory** gaps in [Memory configuration](#memory-configuration): a host with
+   no file output such as a plain chat, sharing between stores, and the reload
+   of a log of traces.
+10. **`$yield` gating.** This document uses it ungated; the specification does
+    not say whether it is always available.
+11. **Who asserts `reply`, and when.** Candidate or final is undecided (law 2).
+12. **Frames and posture.** Multiple or no active frame (law 3), and an absent
+    `posture` (law 5).
+13. **Intents.** A command against a constraint, a constraint against a
+    constraint, an unconsumed `declined`, and the overlap of `conflicts` with
+    `reaches` (law 1).
+14. **Guess and confidence.** How they relate, and what a non-material guess
+    leads to (laws 6 and 7).
+15. **Retraction.** How `replaces`, the §12.4 retraction and
+    `retraction(?fact) -: $yield` relate: law 4 licenses the first to allow the
+    second per instance, and which retractions yield is an ABT proposal.
+16. **Strings as ids.** An intent's content has no id, and an utterance string
+    would tie identity to wording. Examples use keywords; the representation of
+    content is open.
+17. **Erase.** The long-term log is append-only (lrpl.md §7.1), which mostly
+    answers it; the spec does not say whether erasure for personal data is
+    allowed.
 
 ---
 
@@ -724,16 +883,48 @@ If `mck` were taken:
 
 ## Open decisions
 
-For Bahul, not settled by this document:
+For Bahul, not settled by this document. The first block matters most.
 
-- Every name in the [name table](#proposed-names), and the keyword vocabularies.
-- Whether `mck` should depend on `interpretive` and `lrpl`, or whether the
-  `@:` and `$read`/`$write` uses should be left to the host.
-- Whether a constraint always survives a frame being resolved (law 3), or may
-  be tagged as frame-local.
+**Direction and semantics**
+
+- Which retractions yield: ABT proposes that a user's correction does not and
+  an agent-proposed retraction does (law 4, Yielding). KE has asked.
+- The `-:` method qualifier: Bahul's "holds if `C`" against the specification's
+  checked-obligation reading; what a false, absent or undetermined `can` means
+  (this draft: the method is not established, no `%fail`); and `-: C` against
+  `; @when(C)`.
+- Whether law 7 (a material guess) should be the only McK initiative law, and
+  what a non-material guess leads to.
+- Evaluation order: how the yield-first ruling fits §12.2 and §18.3.
+- Safety: whether the after-rewriting rule is needed beyond the standard rule,
+  and whether `clarify/2` and `clarify/3` are one predicate or two.
+- Whether `$yield` is ever gated on a capability.
+
+**Coverage**
+
+- Graph composition and conflict resolution, which Bahul asked for on 12 Nov,
+  are covered here only by existing spec mechanisms. Is that enough?
+- Whether to use more of the logics (existential, modal) than interpretive.
+- Which of Bahul's two source kinds McK is (KE's review, 14 Nov); this
+  proposal does not decide.
+- Whether to avoid the word "memory" (knowledge, beliefs).
+
+**Design details**
+
+- Every name in the [name table](#proposed-names), the keyword vocabularies,
+  and how an intent's content is represented.
+- Who asserts `reply` and when (candidate or final).
+- Multiple or no active frame, and whether a constraint may be tagged
+  frame-local (law 3).
+- Command or constraint against a constraint; what consumes `declined`; whether
+  `conflicts` is derived from `reaches` (law 1).
+- How confidence relates to a guess; the default posture; how "asked by the
+  user" is recognised (laws 5–7).
 - Whether a host may offer an erase mode in addition to record-and-keep-history.
+- Whether `mck` should depend on `interpretive` and `lrpl`, or leave `@:` and
+  `$read`/`$write` to the host.
 - Whether instantiation **RPL** should eventually include `mck`, or leave it
   optional.
-- Whether `cognition.md` should be loaded into the test bot's prompt once law
-  9 cites it, or the layer text is enough.
-- Where the spec additions above go, and how to fix §17.7.
+- Whether `cognition.md` should be loaded into the test bot's prompt once law 9
+  cites it.
+- Where the spec additions go, and how to fix §17.7.

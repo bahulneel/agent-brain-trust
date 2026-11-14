@@ -172,7 +172,7 @@ $yield() :-
 ```
 
 The `$consult` result is not captured, so by Bahul's rule (14 Nov 20:24, see
-[Proposed specification additions](#uncaptured-async-results-propagate-to-the-head))
+[Proposed specification additions](#uncaptured-async-results-propagate-to-the-head-rplmd-13-14))
 it is the `:result` of `$yield()`, and so of `yield!`.
 
 **A family of escape hatches.** `name!` forms a family: `google-it!`, or

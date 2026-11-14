@@ -66,7 +66,7 @@ only what the specification does not already give, and writes it as logic.
 - **Who said what.** Bahul's words are cited with their date. Anything marked
   **ABT proposal** is this document's suggestion, pending Bahul. Every name in
   a program is a placeholder for Bahul unless it comes from the specification
-  (`$yield` and `@:` are Bahul's, `english` is in logics.md §4.2). The
+  (`yield!`, `$consult`, `name!` and `@:` are Bahul's; `$generate` is lrpl.md §5.3 and `english` is in logics.md §4.2). The
   [name table](#proposed-names) lists them. Hyphenated names are avoided
   because they tend to hide an argument that was left out.
 - **Law shape.** Each law uses the bootstrap fields: **Law**, **FOL reading**
@@ -105,6 +105,9 @@ hidden in the name.
 | `guess(?slot, ?value)` | The agent has only a guess for the slot. |
 | `changes(?slot, ?outcome)` | The slot's value would change the outcome. |
 | `retraction(?fact)` | The agent proposes retracting a recorded fact. |
+| `yield!` | **Bahul's design (14 Nov).** Hands the initiative to the user; defined from `$consult` and `$generate` (see [Forms used](#yield-consult-and-the-name-notation)). |
+| `$consult(?agent, ?prompt)` | **Bahul's design (14 Nov).** An async call that messages another agent; the reply is the result. |
+| `name!` | **Bahul's design (14 Nov).** The same as `$name()`: a zero-argument async call. |
 | `can(?capability)` | **ABT proposal.** The agent has the capability. Capabilities are keywords such as `:read`, `:write`. |
 | `%checks` | **ABT proposal.** An example goal (law 5) that writes the bindings of the law 2 invariant's left side to chat in `:test`. |
 
@@ -118,38 +121,69 @@ under [Methods](#methods).
 
 ## Forms used
 
-### `$yield`
+### `yield!`, `$consult` and the `name!` notation
 
-`$yield` is a single bare avar (Bahul, 13 Nov). It takes no arguments and has
-no variants. It passes the initiative to the user: the agent decides what to
-say and interprets the reply. The user may reply "stop"; termination is the
-user's (rpl.md §15.6, §18.5). Valid uses:
+This is Bahul's design of 14 Nov. It replaces his 13 Nov form of `$yield` as a
+single bare avar. Anything marked ABT is this document's elaboration.
+
+**`$consult(?agent, ?prompt)`** is a new async call. It messages another agent
+from a rule, and the reply is the result (`?r = $consult(?agent, ?prompt)`, the
+§13.3 async bind sugar). `?prompt` can itself come from a generator, for example
+`$prompt = $generate("construct a prompt that …")`, with the string
+interpolation of bound variables, tables, or naming variables that the agent
+knows how to do. `?agent` can come from `$lookup`, `$choose` and the like.
+
+**`name!`** is the same as `$name()`: a zero-argument async call, an async
+thunk, or void relation. "Thunk" is apt because the async momentarily gives
+evaluation a direction. A postfix `!` does not clash with `!=` or with the
+prefix `!%goal` (rpl.md §15.5).
+
+**`yield!` is not a special case.** It is built from `$consult` with `:user` as
+the agent, and from `$generate` given one fixed instruction, roughly "given the
+location of the yield and whatever method best fits, do what you think is
+right". That one instruction covers both what to hand off and what to do with the
+response: the two are duals of initiative passing. `$consult` carries only the
+generated message, never the meta-instruction. An illustrative definition (the
+syntax is illustrative, as Bahul gave it):
 
 ```rpl
-% :- $yield
-foo('Bar') -: $yield
-admin(?person) :- ?person = $yield
-?person = $yield          -- same as: $yield ^:result ?person (rpl.md §13.3)
+$yield() :- $consult(:user, $msg), $msg = $generate("...")   -- illustrative
+```
+
+**A family of escape hatches.** `name!` forms a family: `google-it!`, or
+`config!`, which loads a config file. A zero-argument call may be the same each
+time, depend on context, or be anything else the language can do with no
+arguments, at the top of a proof or elsewhere. Context awareness is only a
+property of a prompt generator if its definition has one.
+
+**Uses.** The user may reply "stop"; termination is the user's
+(rpl.md §15.6, §18.5). Valid uses:
+
+```rpl
+% :- yield!
+foo('Bar') -: yield!
+admin(?person) :- ?person = yield!
+?person = yield!          -- same as: $yield() ^:result ?person (rpl.md §13.3)
 ```
 
 Conjunction is `,`.
 
-**Evaluation order.** Bahul's ruling is only that the yield case exploits
-evaluation order: the yield occurs first. This document uses that for a
-constraint that needs no body bindings, such as `-: $yield`: in
-`A :- B -: $yield` the yield occurs before `B`. It claims nothing more general
+**Evaluation order.** Bahul's ruling (13 Nov) is only that the yield case
+exploits evaluation order: the yield occurs first. This document uses that for a
+constraint that needs no body bindings, such as `-: yield!`: in
+`A :- B -: yield!` the yield occurs before `B`. It claims nothing more general
 about when a `-:` constraint is evaluated relative to a body (gap 5).
 
-**ABT proposal.** A `$yield` in the body, as in `A :- B, $yield`, yields as part
+**ABT proposal.** A `yield!` in the body, as in `A :- B, yield!`, yields as part
 of `B`; it does not have to come first.
 
-**Gating.** `$yield` is used ungated everywhere in this document: it is taken
+**Gating.** `yield!` is used ungated everywhere in this document: it is taken
 to be always available unless the specification says otherwise. Whether a host
-with no user turn (a batch run, say) needs it gated on a capability is an open
-decision.
+with no user turn (a batch run, say) needs `yield!`, or the `$consult` under it,
+gated on a capability is an open decision.
 
-McK writes laws for **when** to yield (law 7), never for **how**. Whether and
-how the agent hands over is `agent.1` judgment.
+McK writes laws for **when** to yield (law 7), never for **how**. The how is the
+definition of `yield!` above, which is not a McK definition.
 
 ### Methods
 
@@ -181,29 +215,32 @@ decision.
 
 **Handing back is a pattern, not McK vocabulary** (Bahul, 14 Nov 18:06: McK must
 not encode clarification directly). A goal may have a method whose body is
-`$yield`, written where handing back makes sense for that goal (not as a
+`yield!`, written where handing back makes sense for that goal (not as a
 universal rule over all goals). The following is an **example only**; the
 method name and the shape in `~ …` belong to the goal, and McK defines neither:
 
 ```rpl
-%goal(?x) :- method(?x) :- $yield
+%goal(?x) :- method(?x) :- yield!
 
 %dinner(?dish) :- method(?dish) :- recommended(?dish)
-%dinner(?dish) :- method(?dish) :- $yield @: english(~ picked(?dish))
+%dinner(?dish) :- method(?dish) :- yield! @: english(~ picked(?dish))
 ```
 
-The trace of the `$yield` method resolving is the record that the goal was
+The trace of the `yield!` method resolving is the record that the goal was
 solved by handing back. "Last", if it is written last, is a position, not a
 condition. The only order in the specification is
 rpl.md §18.4 step 4, an order of trying, which is exactly what McK does not
 add (gap 6).
 
-### Async interpretation (proposed sugar)
+### Async interpretation (sugar accepted by Bahul)
 
-`$avar @: lang(~ Pattern)` reads the user's reply as a shape the goal chooses,
-without naming the reply. For example `$yield @: english(~ picked(?dish, ?kind))`
-(an example shape, not McK vocabulary). It is proposed sugar, specified in
-[Proposed specification additions](#proposed-specification-additions).
+`$avar @: lang(~ Pattern)` reads an async reply as a shape the goal chooses,
+without naming the reply. Bahul accepted it (14 Nov). For example
+`yield! @: english(~ picked(?dish, ?kind))` (an example shape, not McK
+vocabulary). It is specified in
+[Proposed specification additions](#proposed-specification-additions). Writing
+it with `yield!`, which is an async call and not an avar, is ABT's reading (gap
+19).
 
 ---
 
@@ -413,7 +450,7 @@ intent(:suggestion, :cheapest) -: false     -- the §12.4 retraction, for this i
 The cap is not clearly replaced, so it holds.
 
 **ABT proposal, pending Bahul.** A user's own correction skips the yield, and
-only agent-proposed retractions yield (`retraction(?fact) -: $yield`, see
+only agent-proposed retractions yield (`retraction(?fact) -: yield!`, see
 [Yielding](#yielding)). The reading is that the user's correction is itself the
 acceptance. ABT is asking Bahul.
 
@@ -499,17 +536,17 @@ value the agent uses for a slot the user did not give; a *guess* is a default
 the agent has no ground for.
 
 **FOL reading.** *Comment.* An obligation (`rpl.4`) whose right-hand side is
-`$yield`.
+`yield!`.
 
-**Surface.** `guess`, `changes`, `$yield`.
+**Surface.** `guess`, `changes`, `yield!`.
 
 ```rpl
-guess(?slot, ?value), changes(?slot, ?outcome) -: $yield
+guess(?slot, ?value), changes(?slot, ?outcome) -: yield!
 ```
 
 This is the only McK initiative law, **as an ABT proposal pending Bahul**: ABT's
-reading of Bahul's `$yield` examples is that the old yield triggers become plain RPL using
-`$yield`; that nothing else of the earlier law survives is also ABT's
+reading of Bahul's yield examples is that the old yield triggers become plain RPL using
+`yield!`; that nothing else of the earlier law survives is also ABT's
 proposal. The
 triggers are in [Yielding](#yielding). A guessed `reaches`, `alias` or
 `replaces` is a `guess` in the same way.
@@ -557,7 +594,7 @@ can(:remember) :- can(:write), can(:read)
 %remember(?fact) :- commit(?fact) :- $write(?fact, ".rpl/long-term.log") -: can(:write)
 ```
 
-`$yield` is not gated: no `can(:yield)` appears anywhere. The agent asks about
+`yield!` is not gated: no `can(:yield)` appears anywhere. The agent asks about
 its own capabilities with an ordinary query (`% :- can(?c), $json(?c)`).
 
 **Grounding.** Bahul's capabilities ruling, 13 Nov 2026.
@@ -601,7 +638,7 @@ locked(:recipe-a)
 ```
 
 Where the log has no `locked` fact, `recall` does not hold, and the goal's
-other methods of the goal, such as one that hands back with `$yield` (see
+other methods of the goal, such as one that hands back with `yield!` (see
 [Yielding](#yielding)), still apply.
 
 **Not.** A claim that model weights are a store. A substitute for the trace.
@@ -610,7 +647,7 @@ other methods of the goal, such as one that hands back with `$yield` (see
 
 ## Yielding
 
-These are plain RPL, not McK laws. Each hands over by using `$yield`. The old
+These are plain RPL, not McK laws. Each hands over by using `yield!`. The old
 draft listed them as triggers; here each is what the program says.
 
 **A choice or stop point the user set** ("give me a few options, then we will
@@ -621,7 +658,7 @@ options([& ?v]) :- candidate(?v)
 %dinner(?dish) :-
   pick(?dish, ?options) :-
     options(?options),
-    $yield @: english(~ picked(?dish)),
+    yield! @: english(~ picked(?dish)),
     ?dish in ?options
 ```
 
@@ -629,7 +666,7 @@ options([& ?v]) :- candidate(?v)
 An example pattern, with a shape specific to this goal:
 
 ```rpl
-%recipe(?dish) :- method(?dish) :- $yield @: english(~ picked(?dish))
+%recipe(?dish) :- method(?dish) :- yield! @: english(~ picked(?dish))
 ```
 
 **Coordination.** Retraction is a coordination step
@@ -638,10 +675,10 @@ proposes yields, and a user's own correction does not (law 4). A violated
 invariant surfaces as `%fail` and the user decides (rpl.md §18.6).
 
 ```rpl
-retraction(?fact) -: $yield
+retraction(?fact) -: yield!
 ```
 
-**ABT proposal.** Only the user's turn resolves `$yield`, so the user is the
+**ABT proposal.** Only the user's turn resolves `yield!`, so the user is the
 authority over a retraction without any authority relation.
 
 A reply that does not fit the `~` pattern does not satisfy the method. What
@@ -697,8 +734,8 @@ removed, with no relation of its own.
 | mck.7 (silent check, visible report) | Law 5. |
 | mck.8, 9 (`restriction-enforced-by`, `restriction-covers`) | Law 2: derivation replaces the link. |
 | mck.10 (`coordination-point`, `repair-option`) | `agent.2`; `%fail(?reason, ?explanation)`; the user decides (§18.6). Ordering options is not selecting one; the user does. |
-| mck.11 (`session-authority`, `repair-acceptance`) | `agent.2`, and (ABT proposal) only the user's turn resolves `$yield` ([Yielding](#yielding)). |
-| mck.12 (`initiative`, `initiative-holder`, `initiative-ceded`, reasons) | `$yield`. Three triggers are plain RPL ([Yielding](#yielding)); the one law proposed in their place is law 7 (ABT proposal). |
+| mck.11 (`session-authority`, `repair-acceptance`) | `agent.2`, and (ABT proposal) only the user's turn resolves `yield!` ([Yielding](#yielding)). |
+| mck.12 (`initiative`, `initiative-holder`, `initiative-ceded`, reasons) | `yield!`. Three triggers are plain RPL ([Yielding](#yielding)); the one law proposed in their place is law 7 (ABT proposal). |
 | mck.13 (`memory-item`, strata) | lrpl.md §7 ([Memory configuration](#memory-configuration)); law 9. |
 | mck.14 | Law 6. |
 | mck.15 (correction scope) | Law 4. |
@@ -707,7 +744,7 @@ removed, with no relation of its own.
 | mck.20 (`fact-provenance`, graphs, topics) | Provenance is metadata (rpl.md §11, `:file`, `:user`, `:relation`). A "graph" is the program and its log; the spec has no further concept. |
 | mck.21 (composing graphs) | Loading more sentences. The Horn theory is monotonic (`fol.9`); `$read` brings them in (lrpl.md §5.2). |
 | mck.22 (topic alignment) | Interpretation: two statements share a reading when their RPL readings unify (logics.md §4.2). |
-| mck.23 (composition conflicts) | A violated invariant (`rpl.4`) is `%fail`; candidate worlds are lrpl.md §3 memos; non-monotonic repair is `agent.2` and `-: $yield`. |
+| mck.23 (composition conflicts) | A violated invariant (`rpl.4`) is `%fail`; candidate worlds are lrpl.md §3 memos; non-monotonic repair is `agent.2` and `-: yield!`. |
 
 Knowledge sharing between stores (Bahul, 12 Nov) therefore has no McK law of
 its own here. Whether that is acceptable, given he asked for graph composition
@@ -718,10 +755,11 @@ two separate stores.
 
 ## Proposed specification additions
 
-These are proposals for Bahul to approve. None is made in the specification
-files here.
+Two are **accepted by Bahul** (14 Nov): the async interpretation sugar and the
+§17.7 dot bug. The rest are proposals for him to approve. None is made in the
+specification files here.
 
-### Async interpretation (rpl.md §13, logics.md §4)
+### Async interpretation (rpl.md §13, logics.md §4) — accepted by Bahul, 14 Nov
 
 An avar may stand as the Statement of `@:`:
 
@@ -740,48 +778,55 @@ so that the reply is suspended on and interpreted without being named. For
 example,
 
 ```rpl
-method(?x, ?y) :- $yield @: english(~ picked(?x, ?y))
+method(?x, ?y) :- yield! @: english(~ picked(?x, ?y))
 ```
 
 means
 
 ```rpl
-method(?x, ?y, ?reply) :- ?reply = $yield, #?reply @: english(~ picked(?x, ?y))
+method(?x, ?y, ?reply) :- ?reply = yield!, #?reply @: english(~ picked(?x, ?y))
 ```
+
+Here `yield!` stands where `$avar` does. The accepted sugar is stated for an
+avar and `yield!` is the async call `$yield()`, so this use is ABT's reading
+(gap 19).
 
 The reading holds only if the reply fits the pattern, and the pattern binds
 `?y`. Logics §4.2 writes `~ $de @: german(?i)`, but that puts an avar under
-`~` (an in-place match), not the bare avar proposed here, so it is not a
+`~` (an in-place match), not the bare avar of the accepted sugar, so it is not a
 precedent. Precedence of `@:` against `,` and `-:` is not in rpl.md §5.6, so
-`$yield @: english(~ picked(?dish))` followed by `, ?dish in ?options` or by
+`yield! @: english(~ picked(?dish))` followed by `, ?dish in ?options` or by
 `-: C` has no stated grouping (gap 4).
 
-### Safety is judged after rewriting
+### Aliases and safety
 
-Bahul's rule (13 Nov, 23:09–23:11): a body variable that only provides an alias
-is safe; safety is judged after rewriting; any variable the rewrite drops is
-exempt; the desugared form keeps `?reply` in the head, and the sugar hides it.
+Bahul's rulings: on 13 Nov (23:09–23:11), a body variable that only provides an
+alias is safe, and the desugared form keeps `?reply` in the head while the sugar
+hides it. On 14 Nov, safety is **not** a property of rewriting. Rewriting is a
+potentially cheap way to know whether a variable is an alias. It is not the only
+way, and it will not always work, because the grammar may have no form for it.
+It stays as a pedagogical device that explains why such variables need not be in
+the args.
 
-The next three items are Bahul's rule with ABT's elaboration of the terms;
-Bahul has not defined *alias* or *rewriting* himself.
+ABT's elaboration of the terms (Bahul has not defined them):
 
 - An **alias** is an lvar that the body binds once, by
   `?v = ASYNC_RELATION` (rpl.md §13.3), and then only passes on within the same
   body. It names a value; it adds nothing else. `?reply` above is one.
-- **Rewriting** is the move between the sugar form and the desugared form:
-  expanding the sugar introduces the alias, and substituting what the alias
-  stands for removes it.
-- The rule is that safety, and the method arity rule (the goal's arguments plus
-  extras the body binds), are judged on the rewritten rule. A variable the
-  rewrite drops is exempt.
+- **Rewriting**, as a device, is the move between the sugar form and the
+  desugared form: expanding the sugar introduces the alias, and substituting what
+  the alias stands for removes it. Where such a substitution exists it shows a
+  variable is an alias. It is not the criterion.
+- The method arity rule (the goal's arguments plus extras the body binds) does
+  not require an alias to appear in the args.
 
 Standard safety already allows variables that occur only in the body
 (vision.md, "head variables in body"; see
 [vision.md](../vision.md#design-principles)), so a body-only alias needs no
-exemption on its own. What the rule adds concerns the desugared head argument:
-the sugar form and the desugared form `method(?x, ?y, ?reply)` are one rule
-(the sugar hides `?reply`), and hiding it does not break the arity rule. This is a rule about
-rpl.md §10 and §3, which today carries safety only as a design principle.
+exemption on its own. What the ruling adds concerns the desugared head argument:
+the sugar form and the desugared form `method(?x, ?y, ?reply)` are one rule (the
+sugar hides `?reply`), and hiding it does not break the arity rule. rpl.md §10
+and §3 carry safety today only as a design principle.
 
 **Arity (open).** The two spellings differ in arity, three arguments against
 two. Which argument list callers see, whether a caller may refer to `?reply`,
@@ -790,21 +835,27 @@ predicate or two, is an open decision about method arity in general, not about
 any particular method. This document's examples write the sugar form only for
 brevity and choose nothing.
 
-### `$yield` as a reserved avar (rpl.md §13)
+### `yield!` and `$consult` (rpl.md §13, §14)
 
-`$yield` is a bare avar, reserved like `%fail` (rpl.md §15.7). It takes no
-arguments and has no variants. It resolves when the user next speaks, and the
-agent interprets that reply. `?v = $yield` is the §13.3 sugar for
-`$yield ^:result ?v`. When a constraint needs no body bindings (`-: $yield`),
-the yield occurs first (Bahul's ruling); nothing more general about
-evaluation order is proposed.
+Bahul's design of 14 Nov, described under
+[Forms used](#yield-consult-and-the-name-notation). It is not marked accepted.
+It would add to the specification:
 
-### §17.7 uses a dot that `NAME` does not allow
+- `$consult(?agent, ?prompt)` as an async call, next to `$ask` and `$choose`
+  (rpl.md §14.2) and `$generate` (lrpl.md §5.3);
+- the notation `name!` for `$name()`, with a grammar form for it (gap 18);
+- `yield!` as defined from those, not as a reserved name.
+
+Evaluation order is not proposed for the specification beyond Bahul's ruling
+that the yield case exploits it (above, gap 5).
+
+### §17.7 uses a dot that `NAME` does not allow — accepted by Bahul, 14 Nov as a bug
 
 rpl.md §17.7 shows `file.md#rel` and `%file.md#goal`. In the Appendix,
 `LABEL = NAME | NS '#' NAME` and `NAME = [a-z] [a-z0-9\-]*`, so `file.md` is
 not a `NAME`. Either the grammar allows a dot in a namespace segment, or §17.7
 should drop the extension, or it should say these forms are informal. The
+fix is not chosen: the three options above are open. The
 document anchors this proposal uses, `mck.md#19`, are citations, not RPL labels
 (they have a dot, and `19` does not start with `a–z`), and they are not GitHub
 anchors either.
@@ -813,10 +864,11 @@ anchors either.
 
 ## Spec gaps found
 
-1. **Safety** is only a design principle in vision.md; rpl.md has no rule. The
-   proposed rule, and the arity of a method whose sugar hides an alias, are in
-   [Safety is judged after rewriting](#safety-is-judged-after-rewriting).
-2. **§17.7** `file.md#rel` is not valid under the grammar (above).
+1. **Safety** is only a design principle in vision.md; rpl.md has no rule. What
+   Bahul's alias ruling adds, and the arity of a method whose sugar hides an
+   alias, are in [Aliases and safety](#aliases-and-safety).
+2. **§17.7** `file.md#rel` is not valid under the grammar (above). Bahul accepted
+   it as a bug (14 Nov); the choice of fix is open.
 3. **Non-fitting reply and stop.** The spec has no case for a reply that
    fits no pattern. §18.6's "No rule is eligible" row may cover it and its
    "User declines arg" row does not; which applies is open. A reply of "stop"
@@ -849,7 +901,7 @@ anchors either.
 9. **Memory** gaps in [Memory configuration](#memory-configuration): a host with
    no file output such as a plain chat, sharing between stores, and the reload
    of a log of traces.
-10. **`$yield` gating.** This document uses it ungated; the specification does
+10. **`yield!` gating.** This document uses it ungated; the specification does
     not say whether it is always available.
 11. **Who asserts `reply`, and when.** Candidate or final is undecided (law 2).
 12. **Frames and posture.** Multiple or no active frame, and who asserts
@@ -860,7 +912,7 @@ anchors either.
 14. **Guess and confidence.** How they relate, and what a non-material guess
     leads to (laws 6 and 7).
 15. **Retraction.** How `replaces`, the §12.4 retraction and
-    `retraction(?fact) -: $yield` relate: law 4 licenses the first to allow the
+    `retraction(?fact) -: yield!` relate: law 4 licenses the first to allow the
     second per instance, and which retractions yield is an ABT proposal.
 16. **Strings as ids.** An intent's content has no id, and an utterance string
     would tie identity to wording. Examples use keywords; the representation of
@@ -868,6 +920,21 @@ anchors either.
 17. **Erase.** The long-term log is append-only (lrpl.md §7.1), which mostly
     answers it; the spec does not say whether erasure for personal data is
     allowed.
+18. **`name!` has no grammar form.** `ASYNC-ATOM = TOOL | ASYNC-VAR` and
+    `TOOL = '$' LABEL '(' … ')'`; a postfix `LABEL '!'` for `$LABEL()` has to be
+    added. Bahul's `google-it!` and `config!` are valid under `NAME`, which
+    allows hyphens.
+19. **Async calls as the Statement of `@:`.** The accepted sugar is stated for
+    an avar. `yield!` is an async call (`$yield()`), so `yield! @: lang(~ …)` is
+    ABT's reading; rpl.md §13.3's bind sugar already accepts a tool call or an
+    avar.
+20. **`$consult`, `$lookup` and `$generate` as Bahul writes them.** `$consult` and
+    `$lookup` are not in the specification (lrpl.md §5 and rpl.md §14.2 do not
+    list them, and lrpl.md's `STDLIB` names cannot be redefined by users).
+    Bahul's `$prompt = $generate(…)` and `$msg = $generate(…)` put an avar on the
+    left of `=`; the §13.3 sugar needs an lvar there
+    (`?msg = $generate(…)`, or `$generate(…) ^:result ?msg` per lrpl.md §5.3).
+    Bahul gave the syntax as illustrative.
 
 ---
 
@@ -903,7 +970,7 @@ If `mck` were taken:
    wait on acceptance and on the names. This document stays under
    `docs/rpl/proposals/`.
 6. **Probes can later be restated against the surfaces** (for example, expect
-   a `$yield` on probe 5, and `confidence(?claim, :none)` on probe 6). That
+   a `yield!` on probe 5, and `confidence(?claim, :none)` on probe 6). That
    restatement is not part of this proposal.
 
 ---
@@ -923,10 +990,12 @@ For Bahul, not settled by this document. The first block matters most.
 - Whether law 7 (a material guess) should be the only McK initiative law, and
   what a non-material guess leads to.
 - Evaluation order: how the yield-first ruling fits §12.2 and §18.3.
-- Safety: whether the after-rewriting rule is needed beyond the standard rule,
-  and whether a method under the async sugar and its desugared form (one more
-  argument) are one predicate or two.
-- Whether `$yield` is ever gated on a capability.
+- Method arity under the async sugar: whether a method and its desugared form
+  (one more argument) are one predicate or two, and whether a caller may refer
+  to the hidden alias.
+- Whether `yield!`, or the `$consult` under it, is ever gated on a capability.
+- Whether `yield!` is a built-in or a library definition, and the wording of its
+  one fixed instruction (Bahul gave it as "roughly" so).
 
 **Coverage**
 
@@ -955,4 +1024,5 @@ For Bahul, not settled by this document. The first block matters most.
   optional.
 - Whether `cognition.md` should be loaded into the test bot's prompt once law 9
   cites it.
-- Where the spec additions go, and how to fix §17.7.
+- Which §17.7 fix to take (Bahul accepted the bug), and where the accepted async
+  sugar and the proposed `$consult` and `name!` go in the specification.

@@ -22,6 +22,7 @@ reasoning state is easier to inspect, question, and improve.
 | [specification/rpl.md](specification/rpl.md) | Normative base spec: syntax, semantics, runtime, grammar |
 | [specification/lrpl.md](specification/lrpl.md) | Normative LRPL delta (lazy expressions, memos, stdlib) |
 | [specification/logics.md](specification/logics.md) | Additional logics: existential, modal, interpretive (`:@`, `@:`) |
+| [glyphs.md](glyphs.md) | Presentation glyphs for the logic-pair connectives (ASCII stays canonical) |
 | [tutorial/](tutorial/) | Continuations of the worked example (full recipe protocol, cook mode, kitchen context, scheduling, handoff) |
 
 The sections below walk through one **worked example**: a single-chat
@@ -225,7 +226,7 @@ one capability.
 | [tutorial/03-scheduling.md](tutorial/03-scheduling.md) | Serve-time targets and stage-shaped prep |
 | [tutorial/04-handoff.md](tutorial/04-handoff.md) | Trace parking and continuation in a new session |
 
-LRPL builtins such as `$json`, `$write`, and `$index` are specified in
+`$json` is a base RPL built-in ([specification/rpl.md](specification/rpl.md) §14.2; [`rpl.12`](bootstrap/rpl.md)). LRPL builtins such as `$write` and `$index` are specified in
 [specification/lrpl.md](specification/lrpl.md). Optional interpretive and modal
 operators are in [specification/logics.md](specification/logics.md).
 
@@ -284,6 +285,7 @@ RPL is a protocol language, not a programming language:
 - [specification/rpl.md](specification/rpl.md) — Base specification: syntax, semantics, execution model, grammar.
 - [specification/lrpl.md](specification/lrpl.md) — LRPL delta: lazy evaluation, memos, satisfactory quiescence, stdlib.
 - [specification/logics.md](specification/logics.md) — Additional logic frameworks: existential, modal, and interpretive operators.
+- [glyphs.md](glyphs.md) — Presentation glyphs for the logic-pair connectives; ASCII remains canonical.
 - [tutorial/](tutorial/) — Full recipe protocol, cook mode, kitchen context, scheduling, handoff.
 - [scope.md](scope.md) — Scope, boundaries, and document map.
 - [enterprise.md](enterprise.md) — Enterprise boundary: non-fit for long-running systems, fit as HCI with business artifacts.
@@ -292,3 +294,12 @@ RPL is a protocol language, not a programming language:
 - [bootstrapping.md](bootstrapping.md) — Incomplete agent-habit sketch; do not use as language definition.
 - [agent-mck.md](agent-mck.md) — RPL as an internal metacognitive layer for stable, principled agent behaviour.
 - [bots/rpl-bot.md](bots/rpl-bot.md) — Starting brief for the RPL test bot that exercises the metacognitive kernel.
+- [protocols/expert-opinion.md](protocols/expert-opinion.md) — canonical RPL
+  reimplementation of the single-expert protocol
+- [protocols/brain-trust-technical-dialectic.md](protocols/brain-trust-technical-dialectic.md) —
+  canonical RPL reimplementation of the technical Brain Trust protocol
+- [protocols/brain-trust-editorial-room.md](protocols/brain-trust-editorial-room.md) —
+  canonical RPL reimplementation of the editorial Brain Trust protocol
+- [protocols/experience-report.md](protocols/experience-report.md) — expressivity
+  gaps, ambiguities, and frictions encountered while reimplementing the
+  protocols

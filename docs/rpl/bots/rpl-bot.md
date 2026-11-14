@@ -1,6 +1,6 @@
 # RPL bot — starting brief
 
-This is the starting brief for a bot called **RPL**. The bot exists so we can
+This is the starting brief for **the RPL bot**. The bot exists so we can
 test RPL's metacognitive layer and adjust it. It is not a user-facing product
 assistant.
 
@@ -280,6 +280,122 @@ recipe as known. It says that there is no prior trace, handoff, or long-term
 record in this session (or equivalent). It reports low confidence or
 explicit uncertainty.
 
+### 7. Combined sentence `A :- B -: C`
+
+**Sources.** [`rpl.4`](../bootstrap/rpl.md) (`LEFT -: RIGHT` is a checked
+invariant, not a generator); [`rpl.5`](../bootstrap/rpl.md) (canonical form
+`true :- expr -: true`); [specification/rpl.md](../specification/rpl.md) §10
+(`RULE = [ HEAD ':-' ]? EXPR [ ';' ABDUCTIVE ]? [ '-:' CONSTRAINT ]?`).
+
+**Prompt.**
+
+```text
+Parse this RPL sentence and explain each part. Do not invent syntax.
+
+recommend(?d) :- in-season(?d) -: vegetarian(?d)
+
+Name the rule head, the body (the implication tail), and the constraint.
+Say whether -: generates the head or only checks an invariant.
+Say what must hold for the sentence to be satisfied.
+```
+
+**Expected observable behaviour.** The reply names `recommend(?d)` as the
+rule head, `in-season(?d)` as the body (implication tail), and
+`vegetarian(?d)` as the constraint (invariant). It treats `-:` as a checked
+obligation, not as a generator of the head. Satisfaction requires the body
+to support the head and the constraint to hold under those conditions.
+
+### 8. `:~` argument order `B :~ A`
+
+**Sources.** [`modal.1`](../bootstrap/modal.md); [logics.md](../specification/logics.md)
+§3.1 and §3.2 (`B :~ A`, example `:Rare :~ BlackSwan`). The `modal` layer is
+not in the RPL closure loaded by this bot
+([language-bootstrap.md](../language-bootstrap.md), "Instantiations"; this
+brief, "Layer closure and load order"). The prompt therefore quotes the law
+as material to interpret, and says not to treat that as taking the layer.
+
+**Prompt.**
+
+```text
+The modal layer is not in this bot's loaded closure. The following law is
+quoted from docs/rpl/bootstrap/modal.md (modal.1) and logics.md §3 so you
+can interpret the form. Do not treat this as taking the layer. Do not
+invent a different argument order.
+
+Law: A ~: B projects A into the mode of B (necessity in that world-view).
+B :~ A maps B back to the base context (possibility justified by A).
+Example: :Rare :~ BlackSwan
+
+What does :Rare :~ BlackSwan mean? Which argument is made possible and which
+justifies it? Is :Rare :~ BlackSwan the same as BlackSwan :~ :Rare?
+Answer from the quoted law only.
+```
+
+**Expected observable behaviour.** The reply says `:Rare` is what is made
+possible; `BlackSwan` justifies it. It says `:Rare :~ BlackSwan` is
+not the same as `BlackSwan :~ :Rare`. It does not invert the quoted
+`B :~ A` order.
+
+### 9. Telling `~:` from `:~`
+
+**Sources.** Same as probe 8. [`modal.1`](../bootstrap/modal.md);
+[logics.md](../specification/logics.md) §3 (`~:` necessity, `:~`
+possibility; `BlackSwan ~: :Australia` vs `:Rare :~ BlackSwan`).
+
+**Prompt.**
+
+```text
+The modal layer is not in this bot's loaded closure. The following law is
+quoted from docs/rpl/bootstrap/modal.md (modal.1) and logics.md §3 so you
+can interpret the forms. Do not treat this as taking the layer.
+
+Law: A ~: B projects A into the mode of B (necessity in that world-view).
+B :~ A maps B back to the base context (possibility justified by A).
+Examples: BlackSwan ~: :Australia    and    :Rare :~ BlackSwan
+
+Contrast those two sentences. Which operator is necessity and which is
+possibility? Does BlackSwan ~: :Australia mean the same as BlackSwan :~ :Australia?
+Keep the two operators distinct.
+```
+
+**Expected observable behaviour.** The reply labels `~:` as necessity and
+`:~` as possibility. It contrasts `BlackSwan ~: :Australia` (the swan is
+asserted in the Australia mode) with `:Rare :~ BlackSwan` (possibility of
+the Rare mode, justified by the swan). It does not treat
+`BlackSwan ~: :Australia` as the same as `BlackSwan :~ :Australia`.
+
+### 10. Domain fact not auto-linked to an invariant
+
+**Sources.** Run-1 gap: no rule links a domain fact such as
+`dietary-restriction` to the invariants that would use it
+([rpl-bot-live-run-1.md](rpl-bot-live-run-1.md)). [`rpl.4`](../bootstrap/rpl.md)
+(`LEFT -: RIGHT` is the invariant form); [`rpl.5`](../bootstrap/rpl.md) (a
+bare fact is asserted and required to hold, and is not itself that
+invariant form); [`agent.1`](../bootstrap/agent.md) (judgment where the
+language does not pin behaviour). Do not invent a linking law, and do not
+use relation names proposed in the mck layer discussion.
+
+**Prompt.**
+
+```text
+These session facts are already in force. There is no other rule or invariant.
+
+dietary-restriction("no-shellfish")
+
+I fancy a shrimp pasta tonight. Does the language, as taken, forbid
+recommending shrimp? Say what the recorded fact actually is, and whether
+any invariant connects it to a dish or an ingredient. Do not invent a
+linking law. If the language does not pin a unique answer, treat that as
+judgment and say so.
+```
+
+**Expected observable behaviour.** The reply cites
+`dietary-restriction("no-shellfish")` and does not invent an invariant
+that would connect that fact to shrimp or to a recommended dish. It does
+not claim the language already forbids recommending shrimp. It notes that
+no invariant links the fact to a dish or ingredient, or that the language
+does not pin a unique answer and that any refusal would be judgment.
+
 ## Starting the bot
 
 Assemble the system prompt:
@@ -295,7 +411,10 @@ bot config, or a hosted runtime in this repository; those are later work
 (**inferred** from their absence).
 
 A first smoke run of these probes against a model is `scripts/smoke-rpl-bot.ts`.
-It is a manual check, not part of `npm test`.
+It is a manual check, not part of `npm test`. With no `--out`, it writes the
+report to stdout (the same default as `scripts/assemble-rpl-bot-prompt.ts`).
+Pass `--out path.md` to write a file, for example a live-run log under
+`docs/rpl/bots/`.
 
 ## Gaps for later adjustment
 
@@ -317,20 +436,19 @@ metacognitive layer. They are the natural follow-ups after this brief.
    the trace is not optional debug output, and [cognition.md](../cognition.md)
    treats structure as inspectable. A test bot needs a visible check; a
    production posture may not. The docs do not reconcile the two.
-4. **Stale agent sketch.** [bootstrapping.md](../bootstrapping.md) is the
-   only worked intent-tracking example, but it is incomplete, not a source,
-   and still written with Prolog-style `X, Y` variables and trailing periods
-   rather than `?x` and the colon-style connectives.
-5. **Stale `$json` grouping.** [README.md](../README.md) (tutorial table
-   lead-out) still groups `$json` with LRPL builtins. [`rpl.12`](../bootstrap/rpl.md)
-   and [specification/rpl.md](../specification/rpl.md) §14.2 place `$json` in
-   base RPL. Not a kernel issue, but it can confuse a runner that assembles
-   the wrong closure.
+4. **Stale agent sketch (spelling addressed).** [bootstrapping.md](../bootstrapping.md) is the
+   only worked intent-tracking example. It remains incomplete and is not a
+   source. Its examples now use `?lvars` and colon-style connectives.
+5. **Stale `$json` grouping (addressed).** [README.md](../README.md) (tutorial table
+   lead-out) and [tutorial/00-recipe-protocol.md](../tutorial/00-recipe-protocol.md)
+   now place `$json` in base RPL, per [`rpl.12`](../bootstrap/rpl.md) and
+   [specification/rpl.md](../specification/rpl.md) §14.2. `$write` and `$index`
+   remain LRPL builtins.
 6. **Three "bootstraps".** Language bootstrap, session bootstrap
    ([README.md](../README.md), "Bootstrap RPL"), and the kernel essay can be
    mistaken for one procedure. Nothing says how they are combined when
    starting this bot; this brief is the first combination, and it is
    **inferred**.
-7. **No bot host in-repo.** "Start a bot called RPL" is not specified as a
+7. **No bot host in-repo.** Starting the RPL bot is not specified as a
    skill, a Cursor/Claude bot, or a shell-mode host. This brief only
    assembles a system prompt.

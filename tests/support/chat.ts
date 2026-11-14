@@ -2,7 +2,7 @@ import type { ChatPrompt } from "@test/support/types";
 import { jsonrepair } from "jsonrepair";
 
 /** OpenAI-compatible chat completions (current backend: NVIDIA integrate). */
-const CHAT_URL = "https://integrate.api.nvidia.com/v1/chat/completions";
+export const CHAT_URL = "https://integrate.api.nvidia.com/v1/chat/completions";
 
 /**
  * Best-effort: optional markdown fence (`json` / `ndjson`), then whole string or each non-empty line
@@ -59,7 +59,7 @@ export function toJS(raw: string): unknown {
 }
 
 /** Default model id when no env overrides are set. */
-export const DEFAULT_MODEL = "meta/llama3-70b-instruct";
+export const DEFAULT_MODEL = "google/gemma-4-31b-it";
 
 /**
  * When `PROMPTS_LLM_RESPONSE_FORMAT_JSON` is `1`, `true`, or `on`, requests include

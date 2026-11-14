@@ -168,11 +168,12 @@ normalised; the instruction wording is illustrative, since Bahul gave it as
 ```rpl
 $yield() :-
   ?msg = $generate("given where this yield sits and whatever method fits best, hand over what you think should be handed over, and interpret and act on the reply as you think is right"),
-  ?reply = $consult(:user, ?msg)
+  $consult(:user, ?msg)
 ```
 
-The reply is meant to be the result of `yield!`; how a rule-defined tool
-delivers its `:result` is not specified (gap 19).
+The `$consult` result is not captured, so by Bahul's rule (14 Nov 20:24, see
+[Proposed specification additions](#uncaptured-async-results-propagate-to-the-head))
+it is the `:result` of `$yield()`, and so of `yield!`.
 
 **A family of escape hatches.** `name!` forms a family: `google-it!`, or
 `config!`, which loads a config file. `google-it!` and `$lookup` (a way to find an
@@ -882,6 +883,28 @@ relation), and it is valid wherever `TOOL` is: as a `HEAD`, an `ATOM`, or the
 note: §5.1 already requires spaces around operators, so `name! = ?x` and
 `name != ?x` are told apart by the space.
 
+### Uncaptured async results propagate to the head (rpl.md §13, §14)
+
+**Bahul's rule (14 Nov 20:24):** if an async rule calls an async, any uncaptured
+result propagates to the head. This resolves how a rule-defined tool such as
+`$yield() :- …` gets its `:result`: the result of the `$consult` call in its
+body is uncaptured, so it is the `:result` of `$yield()`, and `?v = yield!` binds
+it (rpl.md §13.3).
+
+ABT's gloss: a result is *captured* when the call has a `?v = …` bind or a
+`^:result …` / `^ ~ {:result …}` metadata match (rpl.md §11, §13.3), and
+*uncaptured* otherwise. ABT's open edge cases, not decided here:
+
+- A body with more than one uncaptured async result: which one propagates, or
+  whether that is an error.
+- Whether the rule also applies to a non-async rule, where a body call with an
+  uncaptured result could propagate to the head in the same way.
+
+**Nested-call sugar (Bahul's separate, pending idea; not proposed here).** He
+described `A(B(?c))` as the same as `A(?b), ?b = B(?c)`, which would allow
+`$consult(:user, $generate("…"))`. This is recorded as a gap (gap 19), not as a
+rule.
+
 ### `$consult` and `yield!` (rpl.md §14, lrpl.md §5)
 
 Bahul's design of 14 Nov, described under
@@ -974,10 +997,12 @@ anchors either.
     reserved, but where the spec lists reserved tool names is unclear:
     lrpl.md's `STDLIB` does not list `$ask` or `$choose`, which rpl.md §14.2
     treats as built in.
-19. **Result of a rule-defined tool.** `?v = yield!` is `yield!` with
-    `^:result ?v` (rpl.md §13.3), but the spec does not say how a rule that
-    defines a tool, such as `$yield() :- …`, sets that `:result`. This document
-    assumes the reply of the `$consult` inside it is the result.
+19. **Nested calls as arguments.** rpl.md §9 permits a nested relation call as an
+    argument (`ARG` includes `RELATION`), and §3 shows `outer(?r, ?y)` with
+    `?r -: inner(?x)`, but no desugaring is stated, and none for an async call.
+    `ARG` has no `TOOL`, so `$consult(:user, $generate("…"))` is not valid
+    today. Bahul's `A(B(?c))` as `A(?b), ?b = B(?c)` is a pending idea; nothing
+    here proposes it.
 
 ---
 
@@ -1039,8 +1064,10 @@ For Bahul, not settled by this document. The first block matters most.
 - Whether `yield!`, or the `$consult` under it, is ever gated on a capability.
 - Whether `yield!` is a built-in or a library definition, and the wording of its
   one fixed instruction (Bahul gave it as "roughly" so).
-- How a rule-defined tool sets its `:result` (gap 19), and where reserved tool
-  names are listed (gap 18).
+- Where reserved tool names are listed (gap 18).
+- Bahul's nested-call sugar `A(B(?c))` as `A(?b), ?b = B(?c)` (gap 19), and
+  ABT's edge cases for uncaptured results: more than one in a body, and whether
+  the rule applies to a non-async rule.
 
 **Coverage**
 

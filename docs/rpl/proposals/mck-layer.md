@@ -3,23 +3,30 @@
 **Status.** Proposal only. This document is not a language layer, is not part
 of any instantiation, and is not in force. It must not be loaded as if it
 lived under [`bootstrap/`](../bootstrap/). It does not change an existing
-layer or the specification.
+layer or the specification. Its proposed changes to the specification are
+collected in [Proposed specification additions](#proposed-specification-additions)
+and are not made in the specification files.
 
 **Proposed layer name.** `mck` ("metacognitive kernel"), written McK in
 prose. Bahul agreed the McK prose form on 11 Nov 2026; the code name `mck`
-stays lowercase like `fol`, `rpl` and `agent`. Law ids stay `mck.1` and so on.
+stays lowercase like `fol`, `rpl` and `agent`. If accepted, this file becomes
+`bootstrap/mck.md`, and law N in it is `mck.N`, cited as the document anchor
+`mck.md#N`.
 
-**Provides.** *(candidate)* Laws and surfaces for the five metacognitive
-habits named in [agent-mck.md](../agent-mck.md), so those habits no longer
-rest only on a test-role preamble.
+**Provides.** *(candidate)* Laws for the five metacognitive habits named in
+[agent-mck.md](../agent-mck.md), written as logic programs: statements of
+what holds, with no steps, fallbacks or try-order.
 
-**Depends on.** [`agent`](../bootstrap/agent.md) (and so [`rpl`](../bootstrap/rpl.md),
-[`fol`](../bootstrap/fol.md)).
+**Depends on.** [`agent`](../bootstrap/agent.md) (and so
+[`rpl`](../bootstrap/rpl.md), [`fol`](../bootstrap/fol.md)). *(candidate)*
+It also uses [`interpretive`](../bootstrap/interpretive.md) (`@:`) and
+[`lrpl`](../bootstrap/lrpl.md) (`$read`, `$write`, the `.rpl` memory files).
 
 **Not provided.** New `fol` or `rpl` connectives. A rewrite of
 [`agent.1`](../bootstrap/agent.md)–[`agent.3`](../bootstrap/agent.md). A host
 or start procedure for the bot. A domain ontology (what counts as
-mayonnaise, what counts as shellfish).
+mayonnaise, what counts as shellfish). Anything the specification already
+says (see [What the specification already covers](#what-the-specification-already-covers)).
 
 ---
 
@@ -27,1276 +34,706 @@ mayonnaise, what counts as shellfish).
 
 [language-bootstrap.md](../language-bootstrap.md) says the language bootstrap
 is not a metacognitive kernel. [agent-mck.md](../agent-mck.md) names five
-habits and gives them no laws, no surface, and no start procedure. The
-[`agent`](../bootstrap/agent.md) layer is only the judgment remainder,
-coordination points, and a warning not to axiomatise interpretation. The
-RPL test bot therefore had to invent a preamble that makes the habits
-visible ([bots/rpl-bot.md](../bots/rpl-bot.md), gaps 1–3).
+habits and gives them no laws. The [`agent`](../bootstrap/agent.md) layer is
+only the judgment remainder, coordination points, and a warning not to
+axiomatise interpretation. The RPL test bot therefore invented a preamble
+that makes the habits visible ([bots/rpl-bot.md](../bots/rpl-bot.md), gaps 1–3).
 
-The first live run of that bot passed all six probes, and every pass still
-rested on the preamble ([bots/rpl-bot-live-run-1.md](../bots/rpl-bot-live-run-1.md)).
-The cross-probe gaps were: no rule linking a restriction fact to the
-invariants that use it; no rule for how far a constraint reaches; no
-protocol for presenting a coordination point, or for who may retract and
-when; and no surface for any of the habits.
+Two live runs
+([run 1](../bots/rpl-bot-live-run-1.md), [run 2](../bots/rpl-bot-live-run-2.md))
+passed their probes, with every pass resting on the preamble. They left
+these gaps: no rule linking a restriction fact to the invariants that use
+it; none for how far a constraint reaches; none for how far a correction
+retracts or whether a later preference outranks a constraint; none for
+what counts as long-term ground; and none for when the agent should hand
+the turn to the user.
 
-A second live run of edge cases
-([bots/rpl-bot-live-run-2.md](../bots/rpl-bot-live-run-2.md)) raised four
-further gaps: how far a correction retracts; whether a later preference
-outranks a constraint still in force; whether "forget" erases or records
-(the default proposed here is to record and keep the history); and a
-third verdict, `"unchecked"`, for an invariant check that has no ground
-([`fol.5`](../bootstrap/fol.md)). Those are mck.15–mck.18.
-
-Bahul then asked (12 Nov 2026) for the graph to be provisionable into a
-persistent store when the host offers one, and for rules on composing
-graphs and resolving their conflicts, that is, knowledge sharing. Those
-are mck.19–mck.23, all **Inferred**.
-
-This proposal is a candidate layer that would close those gaps. Names are
-for Bahul to decide. Acceptance, and any later move into `bootstrap/`, are
-separate steps.
+An earlier draft of this proposal answered with a relational schema: ids for
+sessions, turns, checks, options and graphs, and rules written as steps. It
+re-stated much of the specification. This draft drops all of that. It keeps
+only what the specification does not already give, and writes it as logic.
 
 ## How to read this document
 
-Each candidate law uses the bootstrap shape: **Law**, **FOL reading** (or
-*comment*), **Surface**, **Grounding**, **Example**, **Not**. There is no
-**Spec** field, because nothing here is in the specification.
-**Grounding** cites the document or probe gap the law answers.
-
-Claims marked **inferred** are not stated in those documents. Every
-proposed relation or operator name is marked **PROPOSED NAME, for Bahul
-to decide**. Relation labels stay kebab-case and declarative
-([`rpl.1`](../bootstrap/rpl.md)). Connectives in examples are the colon-style
-forms already in `rpl` (`:-`, `-:`). Variables are `?lvars`. No new
-paired operator is proposed.
-
-**Relational shape.** Each core concept is a reified entity with its own
-id, described by keyed binary or n-ary relations, in the style of a
-normalised SQL schema: the first argument of an entity relation is its
-key, every row is a fact, and session- or turn-scoped facts carry the
-session or turn as an argument. There are no unary state flags and no
-imperative names. Ids in examples are plain strings (`"s1"`, `"t1"`,
-`"f1"`). Parties (`"user"`, `"agent"`, or a host-named party) are plain
-strings and are not reified here.
+- **Rules say what holds.** A rule defines what something is. It does not say
+  when the agent does it, in what order, or what it falls back to. How the
+  solving is done is the agent's business (rpl.md §18.3).
+- **Only goals and predicates are referenced by name.** Instances are
+  identified by traces (rpl.md §12.2–12.5), rules by metadata (§11), and
+  laws and documents by anchors (`mck.md#19`). There are no instance ids,
+  rule names or law ids inside the programs.
+- **Every name in a program is a placeholder for Bahul** unless it comes from
+  the specification or from his rulings (`$yield`, `%` goals, `@:`, `english`,
+  `chosen`). The [name table](#proposed-names) lists them. Hyphenated names
+  are avoided because they tend to hide an argument that was left out.
+- **Law shape.** Each law uses the bootstrap fields: **Law**, **FOL reading**
+  (or *comment*), **Surface**, **Grounding**, **Example**, **Not**. There is no
+  **Spec** field, because nothing here is in the specification.
+  **Inferred** marks a claim the cited documents do not state.
+- Connectives are the colon forms already in `rpl` (`:-`, `-:`, `@:`).
+  Variables are `?lvars`. Constants such as kinds and postures are keywords.
+  Law headings start with a digit (`## 3. Frames`), and a law's prefix is the
+  basename, so law 3 is `mck.3`.
 
 ## Proposed names
 
-All of the following are **PROPOSED NAME, for Bahul to decide**. Keys are
-listed first; a compound key is written `(a, b)`.
+All **PROPOSED NAME, for Bahul to decide**. Arguments are listed so none is
+hidden in the name.
 
-| Name | Key | Role |
-| --- | --- | --- |
-| `mck` | — | Layer name in code (McK in prose). |
-| `session(?session, ?host)` | `?session` | A session and the host running it. |
-| `session-authority(?session, ?party)` | `?session` | Who may accept a retraction in that session. |
-| `session-posture(?session, ?posture)` | `?session` | `"test"` or `"production"` visibility for that session. |
-| `turn(?turn, ?session, ?position, ?speaker)` | `?turn` | A turn: its session, its position in order, and who spoke. |
-| `intent(?intent, ?turn, ?kind, ?content)` | `?intent` | An intent found in the utterance of a turn. |
-| `context-frame(?frame, ?session, ?objective)` | `?frame` | A frame on a session's context stack. |
-| `frame-parent(?frame, ?parent)` | `?frame` | The frame a tangent interrupts. |
-| `active-frame(?session, ?frame)` | `?session` | The frame currently in force in a session. |
-| `initiative(?initiative, ?session, ?purpose)` | `?initiative` | A unit of initiative: who drives the next step, and to what end. |
-| `initiative-holder(?initiative, ?party)` | `?initiative` | Who holds the initiative now. |
-| `initiative-ceded(?initiative, ?turn, ?party, ?reason)` | `(?initiative, ?turn)` | The initiative was ceded at a turn, to a party, for a reason. |
-| `invariant(?invariant, ?session, ?rule)` | `?invariant` | Names a session invariant; `?rule` is its `LEFT -: RIGHT` form. |
-| `restriction(?restriction, ?session, ?statement)` | `?restriction` | A recorded restriction, as stated. |
-| `restriction-enforced-by(?restriction, ?invariant)` | `(?restriction, ?invariant)` | Link from a restriction to an invariant that enforces it. |
-| `restriction-covers(?restriction, ?item)` | `(?restriction, ?item)` | Judged scope of a restriction. |
-| `invariant-check(?check, ?turn, ?invariant, ?verdict)` | `?check` | The pre-output check of one invariant in one turn, and its verdict. |
-| `invariant-check-grounding(?check, ?grounding)` | `?check` | The bindings the check was grounded on; absent when there were none. |
-| `coordination-point(?point, ?turn, ?kind, ?conflict)` | `?point` | A non-monotonic step presented in a turn. |
-| `repair-option(?option, ?point, ?proposal)` | `?option` | One option at a coordination point. |
-| `repair-acceptance(?option, ?turn, ?party)` | `?option` | The session authority accepted that option in a turn. |
-| `memory-item(?item, ?description, ?stratum)` | `?item` | A remembered item and its stratum. |
-| `memory-item-record(?item, ?record)` | `(?item, ?record)` | A trace, handoff, or persisted record that grounds the item. |
-| `confidence-report(?report, ?turn, ?claim, ?level, ?basis)` | `?report` | A confidence report uttered in a turn. |
-| `graph-store(?store, ?host, ?durability)` | `?store` | A store the host provides for graphs: `"persistent"` or `"session-only"`. |
-| `knowledge-graph(?graph, ?store, ?agent)` | `?graph` | A graph of facts, the store it lives in, and the agent that keeps it. |
-| `session-graph(?session, ?graph)` | `?session` | The graph a session works in. |
-| `session-graph-store(?session, ?store)` | `?session` | Derived: the store a session's graph lives in. |
-| `topic(?topic, ?graph, ?label)` | `?topic` | A topic in a graph, with its label. |
-| `topic-alignment(?topic, ?other, ?basis)` | `(?topic, ?other)` | Two topics are taken to be the same, on a basis. |
-| `fact-provenance(?fact, ?graph, ?session, ?agent)` | `(?fact, ?graph)` | Where a fact came from: graph, session, and agent. |
-| `graph-composition(?composition, ?session, ?target)` | `?composition` | A composition of graphs into a target graph, in a session. |
-| `composition-source(?composition, ?graph)` | `(?composition, ?graph)` | A graph composed in. |
-| `composition-conflict(?conflict, ?composition, ?kind, ?point)` | `?conflict` | A clash found in a composition, and the coordination point that presents it. |
-| `conflict-fact(?conflict, ?fact)` | `(?conflict, ?fact)` | A fact taking part in the clash. |
-| `conflict-resolution(?conflict, ?option)` | `?conflict` | The accepted repair option that resolves the clash. |
+| Name | Reads as |
+| --- | --- |
+| `mck` | The layer, in code. |
+| `intent(?kind, ?content)` | The utterance carries an intent of that kind. Kinds: `:command`, `:query`, `:constraint`, `:instruction`, `:analogy`, `:suggestion`. |
+| `conflicts(?x, ?y)` | `?x` cannot be honoured together with `?y`. Judgment. |
+| `declined(?x)` | `?x` is not honoured. |
+| `reply(?content)` | `?content` is what the agent says. |
+| `contains(?content, ?item)` | The content has that item in it. |
+| `reaches(?constraint, ?item)` | The constraint rules the item out. Judgment. |
+| `alias(?name, ?item)` | `?name` is the item under another name. Judgment. |
+| `frame(?objective, ?parent)` | A line of work, and the one it interrupts (`nil` for the base). |
+| `resolved(?objective)` | That line of work is finished. |
+| `active(?objective)` | That line of work is the one in force. |
+| `replaces(?new, ?old)` | A correction clearly replaces an earlier statement. |
+| `posture(?posture)` | `:test` or `:production`. |
+| `confidence(?claim, ?level)` | Levels: `:high`, `:medium`, `:low`, `:none`. |
+| `guess(?slot, ?value)` | The agent has only a guess for the slot. |
+| `changes(?slot, ?outcome)` | The slot's value would change the outcome. |
+| `retraction(?fact)` | A retraction of a recorded fact is proposed. |
+| `can(?capability)` | The agent has the capability. Capabilities are keywords such as `:yield`, `:read`, `:write`. |
 
-## Entities
-
-Each entity with the relations that describe it, key first. All names are
-**PROPOSED NAME, for Bahul to decide**.
-
-- **Session** (`?session`): `session(?session, ?host)`;
-  `session-authority(?session, ?party)`; `session-posture(?session, ?posture)`;
-  `active-frame(?session, ?frame)`.
-- **Turn** (`?turn`): `turn(?turn, ?session, ?position, ?speaker)`.
-- **Initiative** (`?initiative`): `initiative(?initiative, ?session, ?purpose)`;
-  `initiative-holder(?initiative, ?party)`;
-  `initiative-ceded(?initiative, ?turn, ?party, ?reason)`.
-- **Frame** (`?frame`): `context-frame(?frame, ?session, ?objective)`;
-  `frame-parent(?frame, ?parent)`; referenced by `active-frame`.
-- **Intent** (`?intent`): `intent(?intent, ?turn, ?kind, ?content)`.
-- **Invariant** (`?invariant`): `invariant(?invariant, ?session, ?rule)`.
-- **Restriction** (`?restriction`): `restriction(?restriction, ?session, ?statement)`;
-  `restriction-enforced-by(?restriction, ?invariant)`;
-  `restriction-covers(?restriction, ?item)`.
-- **Invariant check** (`?check`): `invariant-check(?check, ?turn, ?invariant, ?verdict)`;
-  `invariant-check-grounding(?check, ?grounding)`.
-- **Coordination point** (`?point`): `coordination-point(?point, ?turn, ?kind, ?conflict)`.
-- **Repair option** (`?option`): `repair-option(?option, ?point, ?proposal)`;
-  `repair-acceptance(?option, ?turn, ?party)`.
-- **Session authority**: `session-authority(?session, ?party)`, one row per
-  session.
-- **Memory item** (`?item`): `memory-item(?item, ?description, ?stratum)`;
-  `memory-item-record(?item, ?record)`.
-- **Confidence report** (`?report`):
-  `confidence-report(?report, ?turn, ?claim, ?level, ?basis)`.
-- **Posture**: `session-posture(?session, ?posture)`, one row per session.
-- **Graph store** (`?store`): `graph-store(?store, ?host, ?durability)`
-  (mck.19).
-- **Knowledge graph** (`?graph`): `knowledge-graph(?graph, ?store, ?agent)`;
-  `session-graph(?session, ?graph)`, one row per session; derived
-  `session-graph-store(?session, ?store)` (mck.19, mck.20).
-- **Topic** (`?topic`): `topic(?topic, ?graph, ?label)`;
-  `topic-alignment(?topic, ?other, ?basis)` (mck.22).
-- **Provenance** (`(?fact, ?graph)`):
-  `fact-provenance(?fact, ?graph, ?session, ?agent)` (mck.20).
-- **Composition** (`?composition`):
-  `graph-composition(?composition, ?session, ?target)`;
-  `composition-source(?composition, ?graph)` (mck.21).
-- **Conflict** (`?conflict`):
-  `composition-conflict(?conflict, ?composition, ?kind, ?point)`;
-  `conflict-fact(?conflict, ?fact)`; `conflict-resolution(?conflict, ?option)`
-  (mck.23).
-
-A change of state (a pop, a cession, a new holder) is recorded as a
-retraction of the old row (`… -: false`) and a new row, so the history is
-kept under mck.17.
-
-Proposed vocabularies, also **for Bahul to decide**:
-
-- Intent kinds, from [agent-mck.md](../agent-mck.md): `"command"`,
-  `"query"`, `"constraint"`, `"instruction"`, `"analogy"`, `"suggestion"`.
-- Posture: `"test"`, `"production"`.
-- Coordination kinds, from [`agent.2`](../bootstrap/agent.md):
-  `"retraction"`, `"forced-choice"`, `"constraint-conflict"`,
-  `"non-monotonic-schema-change"`.
-- Initiative cession reasons: `"user-choice"`, `"coordination"`, `"missing-ground"`,
-  `"uncertain-scope"`.
-- Memory strata: `"short-term"`, `"long-term"`.
-- Store durability: `"persistent"`, `"session-only"`.
-- Topic alignment basis: `"same-id"`, `"declared"`, `"judgment"`.
-- Composition conflict kinds: `"constraint"`, `"decision"`, `"term"`.
-- Confidence levels: `"high"`, `"medium"`, `"low"`, `"none"`. Basis:
-  `"ground"`, `"judgment"`.
-- Speakers and parties: `"user"`, `"agent"`, or a party a host names.
-- Invariant-check verdicts, also **PROPOSED NAME, for Bahul to decide**:
-  `"holds"`, `"fails"`, `"unchecked"`.
+Names used only inside examples (`recommended`, `locked`, `options`, `dinner`,
+`recipe`, method names such as `clarify`) are illustrations, not proposals.
 
 ---
 
-### mck.1 — Intent kinds
+## Forms used
 
-**Law.** An utterance may carry several distinct intents at once. Each
-intent has one kind from the vocabulary in [agent-mck.md](../agent-mck.md):
-command, query, constraint, instruction, analogy, or suggestion.
+### `$yield`
 
-**FOL reading.** *Comment.* A classification of input, not a connective.
-
-**Surface.** `intent(?intent, ?turn, ?kind, ?content)` — **PROPOSED
-NAME, for Bahul to decide**. `?turn` is the turn whose utterance carries
-the intent (`turn`, see Entities).
-
-**Grounding.** [agent-mck.md](../agent-mck.md), "Contextual Intent
-Tracking"; [bots/rpl-bot.md](../bots/rpl-bot.md) gap 2; live probe 1.
-
-**Example.**
+`$yield` is a single bare avar. It takes no arguments and has no variants. It
+passes the initiative to the user: the agent decides what to say, interprets
+the reply, and the user may reply "stop" (rpl.md §15.6, §18.5). Valid uses:
 
 ```rpl
-turn("t1", "s1", 1, "user")
-intent("i1", "t1", "command", "make a sandwich")
-intent("i2", "t1", "constraint", "no mayonnaise")
-intent("i3", "t1", "analogy", "like a chef")
-intent("i4", "t1", "instruction", "say briefly what you will make")
+% :- $yield
+foo('Bar') -: $yield
+admin(?person) :- $yield
+?person = $yield          -- same as: $yield ^:result ?person (rpl.md §13.3)
 ```
 
-**Not.** Collapsing two kinds into one. A constraint is not a suggestion.
-An analogy is not an instruction.
+Conjunction is `,`. The constraint side of `A :- B -: $yield` is evaluated
+first, so the rule yields before `B`; `$yield` in the body yields as part of
+`B`. McK writes laws for **when** to yield (law 7), never for **how**. Whether
+and how the agent hands over is `agent.1` judgment.
+
+### Methods
+
+A goal is solved by methods. The shape is the double implication of
+rpl.md §10, with the HTN-shaped reading of §16.6:
+
+```rpl
+%goal(?x) :- method(?x, ?extra) :- body
+```
+
+The middle predicate names the method. The goal's arguments are what other
+rules refer to, so the method's arguments include **all** of them. A method
+may add an argument only if its body binds it. `A :- B -: C` states that the
+rule `A :- B` holds if `C`. Writing a capability as `C` (law 8) makes the
+method exist only where the agent has that capability.
+
+Clarification is a method, written per goal where handing back makes sense
+(not as a universal rule over all goals), as the last method of its set:
+
+```rpl
+%dinner(?dish) :- recommend(?dish) :- recommended(?dish)
+%dinner(?dish) :- clarify(?dish) :- $yield @: english(~ chosen(?dish)) -: can(:yield)
+```
+
+The method name `clarify` says what the hand-back is for. The trace of
+`clarify` resolving is the record that this goal was solved by asking.
+"Last" here is only the document order of rpl.md §18.4 step 4; McK adds no
+order (gap 6).
+
+### Async interpretation (proposed sugar)
+
+`$yield @: english(~ chosen(?dish, ?kind))` reads the user's reply as that
+shape without naming the reply. It is proposed sugar, specified in
+[Proposed specification additions](#proposed-specification-additions).
 
 ---
 
-### mck.2 — Criteria for classifying intents
+## 1. Intents
 
-**Law.** **Inferred.** Classify an intent by the role it plays in the
-request:
+**Law.** An utterance may carry several intents at once, each of one kind. A
+suggestion or an analogy that conflicts with a constraint is declined.
 
-- *command* — a request that the agent do or produce something; often
-  the primary objective.
+- *command* — a request that the agent do or produce something.
 - *query* — a request for information, a recommendation, or a yes/no.
-- *constraint* — a hard bound on what is allowed; it is not traded away
-  for preference.
-- *instruction* — a direction about manner, order, or the form of the
-  reply.
-- *analogy* — a comparison or style cue; it changes how work is done,
-  not what is allowed.
-- *suggestion* — a preference or inclination; it may be declined when it
-  conflicts with a constraint or an invariant.
+- *constraint* — a hard bound on what is allowed.
+- *instruction* — a direction about manner, order, or the form of the reply.
+- *analogy* — a comparison or style cue: it changes how, not what is allowed.
+- *suggestion* — a preference, which may be declined.
 
-When two readings are open and the difference is material, treat the
-ambiguity as a coordination point (mck.10), not as a silent pick.
+**FOL reading.** *Comment.* A classification of input, plus one Horn rule.
 
-**FOL reading.** *Comment.* Kernel classification, under `agent`. Not a
-theorem of `fol` or `rpl`.
+**Surface.** `intent`, `conflicts`, `declined`.
 
-**Surface.** The kinds used in `intent` (mck.1).
+```rpl
+declined(?s) :-
+  (intent(:suggestion, ?s) | intent(:analogy, ?s)),
+  intent(:constraint, ?c),
+  conflicts(?s, ?c)
+```
 
-**Grounding.** Live probe 1, gap (a): the essay lists kinds but gives no
-criteria. [bots/rpl-bot.md](../bots/rpl-bot.md) gap 2.
-
-**Example.** "I fancy a shrimp pasta tonight" is a suggestion.
-"What should I cook?" is a query. "No mayo" is a constraint.
-"Like a chef" is an analogy. "Say briefly what you will make" is an
-instruction. "Make me a sandwich" is a command.
-
-**Not.** A domain ontology, and not a licence to axiomatise
-interpretation ([`agent.3`](../bootstrap/agent.md)).
-
----
-
-### mck.3 — A constraint outranks style and preference
-
-**Law.** A constraint, and an invariant already in force, outrank a
-suggestion and an analogy. An analogy must not be read as an instruction
-that overrides a constraint.
-
-**FOL reading.** *Comment.* Precedence among intent kinds, not a new
-implication form. The hard bound itself is an `rpl.4` invariant.
-
-**Surface.** None beyond `intent` and `LEFT -: RIGHT`.
-
-**Grounding.** [agent-mck.md](../agent-mck.md), "Contextual Intent
-Tracking" (do not read a constraint as a suggestion, or an analogy as an
-instruction); live probe 1 (the chef analogy must not license an
-aioli).
+**Grounding.** [agent-mck.md](../agent-mck.md), "Contextual Intent Tracking";
+live probe 1 (the chef analogy must not license an aioli); live run 2,
+probe B (a later preference does not outrank a constraint in force).
+**Inferred:** the criteria, and that a constraint is not traded for a
+suggestion. `conflicts` is judgment ([`agent.3`](../bootstrap/agent.md)).
 
 **Example.**
 
 ```rpl
-intent("i1", "t1", "command", "make a sandwich")
-intent("i2", "t1", "constraint", "no mayonnaise")
-intent("i3", "t1", "analogy", "like a chef")
-recommended-sandwich(?s), contains-ingredient(?s, "mayonnaise") -: false
+intent(:command, "make a sandwich")
+intent(:constraint, "no mayonnaise")
+intent(:analogy, "like a chef")
+intent(:instruction, "say briefly what you will make")
 ```
 
-The analogy may shape bread, layering, and seasoning. It may not
-introduce mayonnaise, including under another name (mck.9).
+The analogy may shape bread, layering and seasoning. It does not introduce
+mayonnaise, so a chef's aioli that conflicts with the constraint is declined.
 
-**Not.** A rewriting of `-:`. The precedence is about how intents are
-treated, not about the invariant connective.
+**Not.** A collapse of two kinds into one. An axiomatised reading of the
+utterance.
 
 ---
 
-### mck.4 — The context stack
+## 2. Reach
 
-**Law.** Session work is a stack of frames, not a linear history. The
-primary objective is the base frame. A tangent is pushed as a new
-active frame whose parent is the frame it interrupts. When the tangent
-is resolved, the stack pops and the parent frame becomes active again.
+**Law.** **Inferred.** A constraint rules out every item it reaches, and it
+reaches an item under another name. A recorded constraint therefore needs no
+separate link to an invariant: this one rule is the link.
 
-**FOL reading.** *Comment.* Session structure, not a FOL connective.
+**FOL reading.** *Comment.* An invariant (`rpl.4`) and a transitive step.
 
-**Surface.** All three are **PROPOSED NAME, for Bahul to decide**:
-
-- `context-frame(?frame, ?session, ?objective)`
-- `frame-parent(?frame, ?parent)`
-- `active-frame(?session, ?frame)` — one row per session.
-
-A push asserts a new frame, a parent link, and a new `active-frame` row
-for the session. A pop moves the session's `active-frame` row to the
-parent (the old row is retracted with `… -: false`). There is no push or pop
-operator; relations stay declarative ([`rpl.1`](../bootstrap/rpl.md)).
-
-**Grounding.** [agent-mck.md](../agent-mck.md), "Context Stacking"; live
-probe 4 (no surface for the stack); [bots/rpl-bot.md](../bots/rpl-bot.md)
-gap 2.
-
-**Example.** Primary objective: a vegetarian dinner shopping list.
-Tangent: one guest cannot have dairy.
+**Surface.** `reply`, `contains`, `reaches`, `alias`.
 
 ```rpl
-context-frame("f1", "s1", "plan a vegetarian dinner for two")
-context-frame("f2", "s1", "no dairy for one guest")
-frame-parent("f2", "f1")
-active-frame("s1", "f2")
+reply(?r), contains(?r, ?item), intent(:constraint, ?c), reaches(?c, ?item) -: false
+reaches(?c, ?alias) :- reaches(?c, ?item), alias(?alias, ?item)
 ```
 
-After the list is adjusted, `active-frame("s1", "f1")` holds and `"f2"`
-is no longer active.
+The invariant is a live check until it grounds (rpl.md §12.2). While it has
+no grounding it is neither true nor false (`fol.5`). A violated check is
+`%fail` (rpl.md §15.7, §18.6), so no verdict relation is needed.
 
-**Not.** A linear chat log treated as the stack. History may still be
-recorded; priority is the stack.
-
----
-
-### mck.5 — A constraint survives a pop
-
-**Law.** **Inferred.** A constraint or invariant recorded while a frame
-is active remains in force after that frame is popped, unless it is
-retracted under mck.11. Frame-local scratch — an open question, or a
-plan item already superseded — does not automatically remain as the
-plan of the parent.
-
-**FOL reading.** *Comment.* Persistence of recorded obligations across
-frames. Retraction is non-monotonic and stays under `agent`.
-
-**Surface.** None beyond the frame relations (mck.4) and `-:`.
-
-**Grounding.** Live probe 4: no law says whether a constraint added on a
-tangent stays in force after the pop. The live bot kept the no-dairy
-constraint because dropping a constraint silently is worse.
-[`agent.2`](../bootstrap/agent.md) makes retraction a coordination
-point. [`rpl-runtime.1`](../bootstrap/rpl-runtime.md) names an "update
-plans" phase but does not say which plan items a new constraint
-invalidates.
-
-**Example.** After the pop in the mck.4 example, the dairy constraint
-still applies to the shopping list and to recipes that come later. The
-cream is replaced; the rest of the list stands.
-
-**Not.** A silent drop of a constraint at pop, and not a rule that every
-scratch fact in the tangent frame is kept.
-
----
-
-### mck.6 — Check invariants before output
-
-**Law.** Before emitting an output, every applicable session invariant
-is checked against that output and the session facts. An output that
-would violate an invariant is not emitted as if it held. The check
-records a verdict under mck.18: `"holds"`, `"fails"`, or `"unchecked"`.
-
-**FOL reading.** The obligation is [`rpl.4`](../bootstrap/rpl.md):
-LEFT ⊨ RIGHT, checked, not used to generate heads.
-
-**Surface.** `invariant-check(?check, ?turn, ?invariant, ?verdict)` and
-`invariant-check-grounding(?check, ?grounding)` — **PROPOSED NAME, for
-Bahul to decide**. `?invariant` names an `invariant` row. `?verdict` is
-`"holds"`, `"fails"`, or `"unchecked"` (mck.18).
-
-**Grounding.** [agent-mck.md](../agent-mck.md), "Recording Invariants"
-(a check against session principles before every output);
-[`rpl.4`](../bootstrap/rpl.md); [`rpl.6`](../bootstrap/rpl.md); live
-probe 2.
+**Grounding.** Live probe 1, gap (b) (does aioli count as mayonnaise?); probe
+2 (does "no shellfish" reach crab?); probe 4 (does one guest's dairy
+constraint reach shared courses?); the cross-probe gaps for linking and reach.
 
 **Example.**
 
 ```rpl
-recommended-dish(?d), contains-ingredient(?d, "shrimp") -: false
-recommended-dish(?d), contains-ingredient(?d, "prawn") -: false
-invariant("inv1", "s1",
-  (recommended-dish(?d), contains-ingredient(?d, "shrimp") -: false))
-invariant("inv2", "s1",
-  (recommended-dish(?d), contains-ingredient(?d, "prawn") -: false))
-
-invariant-check("chk1", "t2", "inv1", "fails")
-invariant-check-grounding("chk1", {?d "shrimp pasta"})
+intent(:constraint, "no mayonnaise")
+reaches("no mayonnaise", "mayonnaise")
+alias("aioli", "mayonnaise")
 ```
 
-Shrimp pasta is not recommended. An alternative is offered only if it
-passes the same checks.
+`reaches("no mayonnaise", "aioli")` follows. A reply that contains aioli
+violates the invariant. A reach the agent can only guess, which would change
+the reply, is a material guess (law 7).
 
-**Not.** A replacement for `-:`. This is the habit of running the check
-before a reply, and of recording that it ran.
+**Not.** A food ontology. `reaches` and `alias` are judgment.
 
 ---
 
-### mck.7 — Silent check, inspectable trace, visible report
+## 3. Frames
 
-**Law.** **Inferred.** The check in mck.6 always runs. A grounded check
-is a trace under [`rpl.6`](../bootstrap/rpl.md) and is recorded; it is
-not optional debug output. Whether the check is uttered in the
-user-visible reply depends on posture:
+**Law.** Work is a tree of frames, not a linear history. The base frame has
+parent `nil`. A tangent is a frame whose parent is the frame it interrupts.
+The active frame is the one that is not resolved and has no unresolved child.
+Intents are not scoped by a frame, so resolving a frame changes which frame is
+active and nothing else.
 
-- `"production"` — the check is silent in the reply, as in
-  [agent-mck.md](../agent-mck.md) ("silent, internal check"; "The
-  Invisible Architecture"). The trace remains inspectable as structure.
-- `"test"` — the check is named in the reply, so a probe can be scored.
+**FOL reading.** *Comment.* Session structure, defined by a stratified rule.
+There is no push or pop: asserting `frame` and `resolved` facts moves
+`active`, and the earlier facts remain.
 
-**FOL reading.** *Comment.* A host posture over an already-recorded
-trace, not a second meaning of `-:`.
+**Surface.** `frame`, `resolved`, `active`.
 
-**Surface.** `session-posture(?session, ?posture)` — **PROPOSED NAME,
-for Bahul to decide**. One row per session; `?posture` is `"test"` or
-`"production"`.
+```rpl
+active(?f) :-
+  frame(?f, _),
+  not resolved(?f),
+  not (frame(?g, ?f), not resolved(?g))
+```
 
-**Grounding.** [bots/rpl-bot.md](../bots/rpl-bot.md) gap 3 (the docs do
-not reconcile the silent check with the inspectable trace); live probe
-2 (tension between a silent and a visible check);
-[`rpl.6`](../bootstrap/rpl.md) (**Not.** "The trace is not optional
-debug output"); [cognition.md](../cognition.md) §II, "Inspectable
-Structure vs. Black-Box Prose".
+**Grounding.** [agent-mck.md](../agent-mck.md), "Context Stacking"; live probe
+4 (no surface for the stack; a constraint added on a tangent stayed in force
+after the pop, because dropping it silently is worse). **Inferred:** that
+constraints survive. `not` here is read as failure to prove (gap 11).
 
 **Example.**
 
 ```rpl
-session-posture("s1", "test")
-invariant-check("chk1", "t2", "inv1", "fails")
-invariant-check-grounding("chk1", {?d "shrimp pasta"})
+frame("plan a vegetarian dinner for two", nil)
+frame("no dairy for one guest", "plan a vegetarian dinner for two")
+intent(:constraint, "no dairy for one guest")
+resolved("no dairy for one guest")
 ```
 
-In `"production"`, the same check still runs and is still recorded; the
-reply does not have to name it.
+`active("plan a vegetarian dinner for two")` holds, and the dairy constraint
+still applies to later recipes. Frame-local scratch is not covered (open
+decision).
 
-**Not.** A licence to skip the check, or to skip recording the trace, in
-production. Silence is about the user-visible reply, not about whether
-the obligation was checked.
+**Not.** A linear chat log treated as the stack. A rule that drops a
+constraint at a pop.
 
 ---
 
-### mck.8 — A restriction fact links to the invariants that use it
+## 4. Corrections
 
-**Law.** **Inferred.** A recorded restriction fact is not decorative. It
-must be linked to the invariants that enforce it: either those
-invariants are already in the session, or the agent derives and holds
-the corresponding `LEFT -: false` forms (or other right-hand sides)
-that the restriction requires. A restriction fact with no linked
-invariant is a gap: fill the link, or cede the initiative (mck.12).
+**Law.** **Inferred.** A correction replaces exactly what it clearly replaces.
+What it replaces no longer holds, and is retracted in the trace
+(rpl.md §12.4). Nothing else changes.
 
-The *obligation to link* is a kernel law. The *domain mapping* (which
-ingredients a named restriction rules out) is judgment, recorded under
-mck.9, not a theorem of `fol` or `rpl` ([`agent.3`](../bootstrap/agent.md)).
+**FOL reading.** *Comment.* Scope of a retraction. Retraction is
+non-monotonic and stays under [`agent.2`](../bootstrap/agent.md).
 
-**FOL reading.** *Comment.* A required connection between a fact and the
-invariants that give it force. Not a new connective.
+**Surface.** `replaces`.
 
-**Surface.** `restriction(?restriction, ?session, ?statement)` and
-`restriction-enforced-by(?restriction, ?invariant)` — **PROPOSED NAME,
-for Bahul to decide**. `?invariant` names an `invariant` row.
+```rpl
+replaces(?new, ?old), intent(?kind, ?old) -: false
+```
 
-**Grounding.** Live probe 2 and cross-probe gap 1: `dietary-restriction("no-shellfish")`
-is inert unless someone interprets it; no rule links a restriction fact
-to the invariants that use it.
+**Grounding.** Live run 2, probe B: "comfort matters more" clearly replaces
+"cheapest", and leaves open whether a £100 cap still holds. An open case is a
+material guess (law 7), not a silent keep or drop. Whether a retraction
+records or erases history is already answered by rpl.md §12.4 and
+lrpl.md §7.1 (see the covered table); live run 2, probe C.
 
 **Example.**
 
 ```rpl
-restriction("r1", "s1", "no-shellfish")
-invariant("inv1", "s1",
-  (recommended-dish(?d), contains-ingredient(?d, "shrimp") -: false))
-invariant("inv2", "s1",
-  (recommended-dish(?d), contains-ingredient(?d, "prawn") -: false))
-restriction-enforced-by("r1", "inv1")
-restriction-enforced-by("r1", "inv2")
+intent(:constraint, "budget cap of £100")
+intent(:suggestion, "cheapest option")
+replaces("comfort matters more", "cheapest option")
+intent(:suggestion, "cheapest option") -: false
 ```
 
-**Not.** A claim that the restriction row, by itself, fires `-:`.
-Without the link, it blocks nothing.
+The cap is not clearly replaced, so it holds.
+
+**Not.** A rule that every correction wipes the session. A new retraction
+operator.
 
 ---
 
-### mck.9 — How far a constraint reaches
+## 5. Posture
 
-**Law.** **Inferred.** A constraint reaches the substances, preparations,
-and aliases that would violate it under another name. At a shared
-activity, a constraint attached to one participant applies to shared
-outputs unless a per-person alternative is coordinated under mck.10.
+**Law.** A session has a posture, `:test` or `:production`. The traces of the
+invariant checks exist in both (`rpl.6`). In `:test` they are written to chat
+([`rpl.12`](../bootstrap/rpl.md), `$json`); in `:production` they are
+inspectable structure and are not written unless asked. Confidence (law 6)
+follows the same posture.
 
-When a scope extension is material and uncertain, name it as judgment
-and cede the initiative (mck.12) rather than quietly widening or narrowing.
+**FOL reading.** *Comment.* A host fact about what is shown, not a second
+meaning of `-:`.
 
-**FOL reading.** *Comment.* A judged scope record, not a domain theory.
+**Surface.** `posture(:test)`, `posture(:production)`.
 
-**Surface.** `restriction-covers(?restriction, ?item)` — **PROPOSED
-NAME, for Bahul to decide**. `?restriction` names a `restriction` row.
-
-**Grounding.** Live probe 1, gap (b) (does aioli count as mayonnaise?);
-live probe 2 (does "no-shellfish" reach crab, lobster, mussels?);
-live probe 4 (does "one guest cannot have dairy" apply to every
-shared course?); cross-probe gap 2.
+**Grounding.** [bots/rpl-bot.md](../bots/rpl-bot.md) gap 3; live probe 2 (a
+silent check against an inspectable trace); [agent-mck.md](../agent-mck.md),
+"The Invisible Architecture". **Inferred.** There is no rule here, because the
+specification has no form for "the traces of these checks" as a value (gap 8).
 
 **Example.**
 
 ```rpl
-restriction("r1", "s1", "no-shellfish")
-restriction("r2", "s1", "no mayonnaise")
-restriction("r3", "s1", "no dairy for one guest")
-restriction-covers("r2", "aioli")
-restriction-covers("r1", "shrimp")
-restriction-covers("r1", "prawn")
-restriction-covers("r3", "200ml cream")
+posture(:test)
 ```
 
-Extending "no-shellfish" to crab is the same kind of judgment. If that
-extension would change the recommendation and is not already grounded,
-cede the initiative rather than treat it as a law.
-
-**Not.** A food ontology added to `rpl`. [`agent.3`](../bootstrap/agent.md)
-still forbids axiomatising that interpretation.
+**Not.** A licence to skip the check, or the trace, in production.
 
 ---
 
-### mck.10 — How to present a coordination point
+## 6. Confidence
 
-**Law.** When a non-monotonic step arises — retraction, forced choice,
-constraint conflict, or non-monotonic schema change
-([`agent.2`](../bootstrap/agent.md)) — the agent presents a coordination
-point and does not quietly drop a fact or apply a retraction. The
-presentation names:
+**Law.** **Inferred.** A claim may carry a confidence level.
+`:high` — it is read directly from present facts or a grounded invariant.
+`:medium` — it depends on a named judgment (a reach, a default).
+`:low` or `:none` — it needs ground that is absent (law 9).
 
-1. the kind of coordination;
-2. the facts that still hold as asserted;
-3. the invariant or choice that does not hold, or the options that
-   cannot be taken together;
-4. the repair options under consideration.
+**FOL reading.** *Comment.* A report about a claim. Not a probability, not a
+connective.
 
-Repair options may be ordered with reasons. Ordering is not a
-selection. The agent does not pick a retraction on the user's behalf.
+**Surface.** `confidence(?claim, ?level)`.
 
-**Inferred.** An inconsistent grounding does not license inventing that
-a fact is false. Other queries may be answered if they do not depend on
-the failing grounding; the clash is still named when it is relevant.
-
-**FOL reading.** *Comment.* A protocol for the steps [`fol.9`](../bootstrap/fol.md)
-does not decide, already reserved to `agent`.
-
-**Surface.** Both are **PROPOSED NAME, for Bahul to decide**:
-
-- `coordination-point(?point, ?turn, ?kind, ?conflict)`
-- `repair-option(?option, ?point, ?proposal)`
-
-`?kind` uses the [`agent.2`](../bootstrap/agent.md) list:
-`"retraction"`, `"forced-choice"`, `"constraint-conflict"`,
-`"non-monotonic-schema-change"`.
-
-**Grounding.** [`agent.2`](../bootstrap/agent.md); [theory.md](../theory.md)
-(non-monotonic steps need judgment); live probe 3 (no format for
-presenting options, or for whether they may be ranked; whether an
-inconsistent program still answers other queries); cross-probe gap 3.
+**Grounding.** Live probe 6 and probe 1, gap (f); [bots/rpl-bot.md](../bots/rpl-bot.md).
 
 **Example.**
 
 ```rpl
-vegetarian("guest")
-menu-item("guest", "beef stew")
-contains-meat("beef stew")
-vegetarian(?g), menu-item(?g, ?d), contains-meat(?d) -: false
-
-coordination-point(
-  "c1",
-  "t3",
-  "constraint-conflict",
-  "vegetarian guest cannot be served beef stew"
-)
-repair-option("c1-a", "c1", "change the dish")
-repair-option("c1-b", "c1", "drop the vegetarian fact for guest")
-repair-option("c1-c", "c1", "drop the beef-stew menu item")
+confidence(locked("recipe from a previous session"), :none)
+confidence(reaches("no dairy for one guest", "bread"), :medium)
 ```
 
-The three facts still hold as asserted. The invariant does not hold for
-`?g = "guest"`, `?d = "beef stew"`. No fact is retracted in this turn.
-
-**Not.** A quiet repair. Not a requirement that options be unranked.
-Not a new retraction operator.
+**Not.** A numeric score. A substitute for the trace.
 
 ---
 
-### mck.11 — Who may retract, and when
+## 7. A material guess
 
-**Law.** **Inferred.** Retraction of a session fact or of a recorded
-invariant uses the [`rpl.6`](../bootstrap/rpl.md) surface (`… -: false`)
-and is a coordination step ([`rpl.6`](../bootstrap/rpl.md) comment;
-[`agent.2`](../bootstrap/agent.md)). The agent may propose a retraction
-as a repair option (mck.10). The agent may not apply that retraction
-until the session authority accepts it.
+**Law.** **Inferred.** If a value would change the outcome and the agent has
+only a guess for it, the initiative passes to the user.
 
-The session authority is the user unless a host names another. The
-agent may retract its own uncommitted scratch (a draft it just
-proposed, a guess it flagged) without waiting, because that is not a
-recorded session fact.
+**FOL reading.** *Comment.* An obligation (`rpl.4`) whose right-hand side is
+`$yield`.
 
-**FOL reading.** *Comment.* Authority over a non-monotonic step, not a
-new connective.
+**Surface.** `guess`, `changes`, `$yield`.
 
-**Surface.** `session-authority(?session, ?party)` and
-`repair-acceptance(?option, ?turn, ?party)` — **PROPOSED NAME, for Bahul
-to decide**. One `session-authority` row per session. Retraction itself
-stays `… -: false`.
+```rpl
+guess(?slot, ?value), changes(?slot, ?outcome) -: $yield
+```
 
-**Grounding.** [`rpl.6`](../bootstrap/rpl.md) ("Retraction is
-non-monotonic. Coordination is `agent`."); live probe 3 (who may
-retract, and when).
+This is the only McK initiative law. The cases the earlier draft listed as
+separate triggers are plain RPL, shown in [Yielding](#yielding) below. A
+guessed `reaches`, `alias` or `replaces` is a `guess` in the same way.
+
+**Grounding.** [agent-mck.md](../agent-mck.md), "Autonomy vs Turn-Taking" (the
+habit is named, with no rule); live probe 1, gap (c) (a default filling that
+was not given); live probe 6.
 
 **Example.**
 
 ```rpl
-session-authority("s1", "user")
-repair-option("c1-c", "c1", "drop the beef-stew menu item")
+guess(:filling, "chicken")
+changes(:filling, "the sandwich")
 ```
 
-Only after acceptance:
+"Like a chef, make me a sandwich, but no mayo" has no material guess: nothing
+is open, so nothing yields.
 
-```rpl
-repair-acceptance("c1-c", "t4", "user")
-menu-item("guest", "beef stew") -: false
-```
-
-**Not.** A new operator for retraction, and not a licence for the agent
-to repair an inconsistent program by itself.
+**Not.** A fixed number for "a few" options ([`agent.1`](../bootstrap/agent.md)).
 
 ---
 
-### mck.12 — When to cede the initiative
+## 8. Capabilities
 
-**Law.** **Inferred.** The agent cedes the initiative to the user for
-validation (it yields the turn) when any of these hold:
+**Law.** The agent has capabilities, and they are facts it can reason over like
+any other. A method qualified with `-: can(…)` exists only where the capability
+holds. A capability can follow from others.
 
-1. the user set an explicit choice or stop point;
-2. a coordination point (mck.10) needs acceptance, including a proposed
-   retraction (mck.11);
-3. a material default, scope extension (mck.9), or missing fact would
-   change the outcome, and the agent has only a guess;
-4. required ground for the answer is absent (mck.13).
+**FOL reading.** *Comment.* Facts and Horn rules. `-:` as the qualifier of
+a rule is `A :- B -: C` (rpl.md §10).
 
-The agent keeps the initiative and carries on when the request is complete
-enough to honour, every applicable invariant holds, no such choice or
-gap is open, and no coordination point is pending.
-
-**FOL reading.** *Comment.* Turn-taking policy, not a connective.
-
-**Surface.** All three are **PROPOSED NAME, for Bahul to decide**:
-
-- `initiative(?initiative, ?session, ?purpose)`
-- `initiative-holder(?initiative, ?party)` — one row per initiative.
-- `initiative-ceded(?initiative, ?turn, ?party, ?reason)`
-
-A cession records who received the initiative, in which turn, and why,
-and moves `initiative-holder` to that party (the old row is retracted
-with `… -: false`). Proposed reasons: `"user-choice"`, `"coordination"`,
-`"missing-ground"`, `"uncertain-scope"`.
-
-**Grounding.** [agent-mck.md](../agent-mck.md), "Autonomy vs Turn-Taking"
-(the habit is named, with no rule); live probe 1, gap (c); live probe 5
-(the prompt itself set the yield point); live probe 3 (conflict yields);
-live probe 6 (missing ground yields); [bots/rpl-bot.md](../bots/rpl-bot.md)
-gap 2.
-
-**Example.** "Give me a few options, then we will pick" is a point to
-cede the initiative, even before any option is written:
+**Surface.** `can`.
 
 ```rpl
-initiative("n1", "s1", "offer a few dinner options")
-initiative-holder("n1", "agent")
+can(:yield)
+can(:read)
+can(:write)
+can(:remember) :- can(:write), can(:read)
+
+%remember(?fact) :- commit(?fact) :- $write(?fact, ".rpl/long-term.log") -: can(:write)
 ```
 
-Once the options are written, in turn `"t2"`:
+The agent asks about its own capabilities with an ordinary query
+(`% :- can(?c), $json(?c)`).
 
-```rpl
-initiative-ceded("n1", "t2", "user", "user-choice")
-initiative-holder("n1", "agent") -: false
-initiative-holder("n1", "user")
-```
+**Grounding.** Bahul's ruling of 14 Nov 2026. [lrpl.md §7](../specification/lrpl.md#7-session-persistence-rpl-memory-files-and-rplrc):
+durable output only on hosts that offer it. **Inferred:** the names. The path
+is the spec's non-normative example (§7.2).
 
-"Like a chef, make me a sandwich, but no mayo" is a complete command
-with one honourable constraint and no open choice: carry on. A default
-filling (chicken, say) that was not given is a guess; if that default
-is material, cede the initiative or flag it under mck.14 rather than treat it as
-ground.
-
-**Not.** A fixed number for "a few" options. That count remains
-[`agent.1`](../bootstrap/agent.md) judgment. A one-line timing sketch
-per option is not, by itself, committing to a recipe (live probe 5).
+**Not.** A claim that a missing `can` fact means "cannot" (`fol.5`); where a
+capability is unknown the agent has a guess (law 7). How the agent comes to
+know its capabilities is a gap (gap 7).
 
 ---
 
-### mck.13 — Memory strata
+## 9. Ground about earlier sessions
 
-**Law.** Session work distinguishes two strata:
+**Law.** Something said about an earlier session rests on long-term ground
+that is present: the facts reloaded from the long-term log
+([lrpl.md §7.3](../specification/lrpl.md#73-committing-ground-truth-long-term)).
+Absence of such a record is not ground (`fol.5`), and residual memory of
+another chat is not a record.
 
-- `"short-term"` — volatile state of this session: intents, frames,
-  uncommitted plans, and facts asserted in this turn-sequence.
-- `"long-term"` — persistent recall: a recorded trace
-  ([`rpl.6`](../bootstrap/rpl.md)), a handoff, or a host-persisted
-  record.
+**FOL reading.** *Comment.* A partition of what may be cited, reusing
+lrpl.md §5.2.
 
-An answer about a prior session may cite only long-term ground that is
-actually present. Absence of a trace or handoff is not ground for a
-guess. Without that ground, a later session is a leap of faith
-([cognition.md](../cognition.md) §I); the agent says it does not know
-([cognition.md](../cognition.md) §III, the trace as reliable ground).
+**Surface.** The reload form of lrpl.md §5.2:
 
-**Inferred** mapping for a chat bot: if the host has no session store
-and the message carries no trace or handoff, the long-term stratum is
-empty. Residual memory of another chat is not long-term ground unless
-it is such a record.
-
-**Inferred.** When the session's graph lives in a `"persistent"` store
-(mck.19), long-term means persisted there: a long-term item is one whose
-record is in that store, and an earlier session's items are long-term
-ground only if that store holds them. When the store is `"session-only"`,
-nothing the session writes becomes long-term by being written; only a
-trace or handoff carried into the session counts.
-
-**FOL reading.** *Comment.* A partition of what may be cited as ground.
-Related to, but not the same as, the turn-to-turn stratification in
-[cognition.md](../cognition.md) §III.
-
-**Surface.** `memory-item(?item, ?description, ?stratum)` and
-`memory-item-record(?item, ?record)` — **PROPOSED NAME, for Bahul to
-decide**. A long-term item is ground only when it has a
-`memory-item-record` row that is actually present.
+```rpl
+#?facts :- $read(".rpl/long-term.log", {}) ^:result ?facts -: can(:read)
+```
 
 **Grounding.** [agent-mck.md](../agent-mck.md), "Memory Stratification";
-[cognition.md](../cognition.md) §I and §III; live probe 6 (no surface
-for what counts as long-term for a bot; `cognition.md` is not in the
-loaded prompt); [bots/rpl-bot.md](../bots/rpl-bot.md) gap 2.
+[cognition.md](../cognition.md) §I and §III; live probe 6. See
+[Memory configuration](#memory-configuration) for exactly what the
+specification fixes and what it leaves to the host.
 
-**Example.**
+**Example.** Where the log has no `locked` fact, the recipe goal is solved by
+asking, not by naming a recipe (see [Yielding](#yielding)).
 
-```rpl
-memory-item("m1", "locked recipe from a previous session", "long-term")
-```
-
-If no trace, handoff, or persisted record of that item is present (no
-`memory-item-record("m1", ?record)` row), the
-agent does not name a recipe. Confidence is `"none"` (mck.14).
-
-**Not.** A claim that the model's residual weights are a long-term
-store. Not a substitute for the trace.
+**Not.** A claim that model weights are a store. A substitute for the trace.
 
 ---
 
-### mck.14 — Confidence report
+## Yielding
 
-**Law.** **Inferred.** A claim the agent utters may carry a confidence
-report: the claim, a level, and the basis (ground or judgment). Levels
-are `"high"`, `"medium"`, `"low"`, and `"none"`.
+These are plain RPL, not McK laws. Each hands over by using `$yield`. The
+old draft listed them as triggers; here each is what the program says.
 
-- `"high"` — a direct reading of present facts, or of a fired
-  invariant.
-- `"medium"` — the claim depends on a named judgment (scope, a
-  default).
-- `"low"` or `"none"` — the claim would need ground that is missing
-  (mck.13).
-
-In `"production"` posture (mck.7), the report may stay silent unless
-the user asks, or the level on a material claim is `"low"` or
-`"none"`. In `"test"` posture, the report is uttered.
-
-**FOL reading.** *Comment.* A report about a claim, not a probability
-and not a connective.
-
-**Surface.** `confidence-report(?report, ?turn, ?claim, ?level, ?basis)`
-— **PROPOSED NAME, for Bahul to decide**. Proposed basis values:
-`"ground"`, `"judgment"`.
-
-**Grounding.** Live probe 6 and probe 1, gap (f): there is no surface
-for reporting confidence. [bots/rpl-bot.md](../bots/rpl-bot.md) probe 6
-already marks the request for an explicit report as inferred; the
-documents do not require the bot to utter a score.
-[`agent.1`](../bootstrap/agent.md) covers judgment where the language
-does not pin behaviour.
-
-**Example.**
+**A choice or stop point the user set** ("give me a few options, then we will
+pick"). The method takes one extra argument, `?options`, which its body binds.
 
 ```rpl
-confidence-report("k1", "t6", "no locked recipe is known", "none", "ground")
-confidence-report("k2", "t2", "the shrimp-pasta invariant fires", "high", "ground")
-confidence-report("k3", "t5", "bread on the list may contain dairy", "medium", "judgment")
+options([& ?v]) :- candidate(?v)
+%dinner(?dish) :-
+  pick(?dish, ?options) :-
+    options(?options),
+    $yield @: english(~ chosen(?dish)),
+    ?dish in ?options
 ```
 
-**Not.** A numeric score, and not a substitute for recording a trace.
+**Absent ground, as a method of the goal.**
+
+```rpl
+%recipe(?dish) :- recall(?dish) :- locked(?dish)
+%recipe(?dish) :- clarify(?dish) :- $yield @: english(~ chosen(?dish)) -: can(:yield)
+```
+
+**Coordination.** Retraction is a coordination step
+([`agent.2`](../bootstrap/agent.md)), and the user decides it. A violated
+invariant surfaces as `%fail` and the user decides (rpl.md §18.6).
+
+```rpl
+retraction(?fact) -: $yield
+```
+
+Only the user's turn resolves `$yield`, so the user is the authority over a
+retraction without any authority relation.
 
 ---
 
-### mck.15 — How far a correction retracts
+## Memory configuration
 
-**Law.** **Inferred.** A later utterance that corrects earlier guidance
-retracts only what it clearly replaces. Other session facts, constraints,
-and invariants stay in force. If the scope of the correction is unclear
-— it might or might not also retract a remaining constraint — that
-unclarity is a coordination point (mck.10). The agent does not silently
-drop the remainder, and does not silently keep it without naming the
-question.
+McK adds nothing to how memory is configured. This section only enumerates
+what [lrpl.md §7](../specification/lrpl.md#7-session-persistence-rpl-memory-files-and-rplrc)
+says, so laws 8 and 9 have something to cite. The memory files exist only on
+**hosts that give durable file output** (at minimum `$write`); the
+specification does not require a filesystem.
 
-**FOL reading.** *Comment.* Scope of a retraction, not a new connective.
+| Part | What the specification fixes | Left to the host |
+| --- | --- | --- |
+| **Long-term log** (§7.1, §7.3) | One append-only, tail-only log of fully grounded ground truths: traces (rpl.md §12.2–12.3) and stable conclusions. Earlier lines are never rewritten. Intermediate or memo-only state **must not** go in it. New ground **should** be appended as it becomes a trace. | Path (e.g. `.rpl/long-term.log` or `.rpl/ground.ndjson`). Encoding (NDJSON, EDN, or one RPL sentence per line), stable enough for `$index`/`$read` to reload if the host advertises that. |
+| **Short-term stores** (§7.1, §7.4) | One or more files under `.rpl`, separate from the log. They hold open constraint checks, DNF memos ([§3](../specification/lrpl.md#3-constraint-memos)), candidate worlds not yet realised, partial bindings and scratch derivations. Hosts **may** merge, truncate, rotate or discard them at task end, session end, or satisfactory quiescence; settled ground outcomes **should** then be appended to the log. | How files are split (by goal, topic or stratum, e.g. `.rpl/short-term/` or `.rpl/constraints-*.ndjson`). |
+| **`.rpl` directory** (§7.2) | The home of both, at the workspace root (or the host's nearest equivalent). | Exact paths and suffixes. |
+| **`.rplrc`** (§7.5) | Read at the start of every session, before user messages are applied and after the programme loads. Carries **preferences** (tone, defaults, tool choices) and **background knowledge** between sessions, without duplicating them in the log. Later traces and user assertions win over it unless the host documents another policy. | Search order (workspace root, then documented fallbacks such as the user's home). Format (prose, markdown, EDN/RPL fragments, a structured block). How it merges into the initial store or metadata. |
+| **`$write`** (§5.4, §7.6) | The natural surface for commits. A trace stratum written with `$write` is a valid `$index` source for a later stratum. | Whether `$write` targets under `.rpl` are mapped automatically or by explicit path. |
 
-**Surface.** None beyond the retraction form in mck.11 (`… -: false`) and
-`coordination-point`.
+**Gaps in this part of the specification** (see also the gap list below):
 
-**Grounding.** Live run 2, probe B
-([bots/rpl-bot-live-run-2.md](../bots/rpl-bot-live-run-2.md)): "comfort
-matters more" clearly replaces "cheapest", but leaves unclear whether a
-£100 cap still holds. The bot raised that as a coordination point.
-
-**Example.**
-
-```rpl
-intent("i1", "t1", "constraint", "budget cap of £100")
-intent("i2", "t1", "suggestion", "cheapest option")
-intent("i3", "t3", "suggestion", "comfort matters more")
-```
-
-The correction retracts `intent("i2", "t1", "suggestion", "cheapest option")`
-(`… -: false`). The £100 cap is not clearly retracted. Present a
-coordination point rather than dropping or keeping the cap quietly.
-
-**Not.** A licence to treat every correction as wiping the session. Not
-a new retraction operator.
+- It does not say what long-term memory is on a host with no durable file
+  output, such as a plain chat. That case is the one the probes exercise.
+- It does not say whether a constraint the user states belongs in the log, in
+  short-term files, or in `.rplrc`. `.rplrc` names preferences and background
+  knowledge only.
+- It says nothing about sharing a log or `.rplrc` between workspaces, agents
+  or users, so there is no spec ground for composing two stores.
+- `#?facts :- $read(…)` (lrpl.md §5.2) needs every expanded result to be a
+  valid head (rpl.md §5.7), yet the log holds traces, which are constraints
+  and not heads. The reload form is not defined.
 
 ---
 
-### mck.16 — A later preference does not outrank a constraint still in force
+## What the specification already covers
 
-**Law.** **Inferred.** mck.3 already ranks a constraint above a
-suggestion. A later preference or suggestion, including one that
-corrects an earlier preference (mck.15), does not retract or outrank a
-constraint or invariant that is still in force. If honouring the
-preference would violate that constraint, present a coordination point
-(mck.10). Do not drop the constraint to satisfy the preference.
+Each item of the earlier draft that the specification already gives was
+removed, with no relation of its own.
 
-**FOL reading.** *Comment.* The same precedence as mck.3, applied after
-a correction. Not a new connective.
+| Earlier draft | Now |
+| --- | --- |
+| `session`, `session-authority`, `turn`, instance ids, law ids, rule names | Not needed. Traces identify instances (rpl.md §12.2–12.5); metadata names rules (§11); documents are cited by anchor. |
+| mck.1–3, 16 (intent kinds, precedence, later preference) | Law 1. |
+| mck.4–5 (context stack, survives a pop) | Law 3. |
+| mck.6, 18 (`invariant-check`, verdicts, "unchecked") | An invariant is a live check until grounded, then a trace (rpl.md §12.2–12.3; `rpl.4`, `rpl.6`). A failed check is `%fail` (§15.7, §18.6). "Unchecked" is a check still ungrounded, which `fol.5` already separates from true and false. Law 2 puts invariants over `reply`. |
+| mck.7 (silent check, visible report) | Law 5. |
+| mck.8, 9 (`restriction-enforced-by`, `restriction-covers`) | Law 2: derivation replaces the link. |
+| mck.10 (`coordination-point`, `repair-option`) | `agent.2`; `%fail(?reason, ?explanation)`; the user decides (§18.6). Ordering options is not selecting one; the user does. |
+| mck.11 (`session-authority`, `repair-acceptance`) | `agent.2`, and only the user's turn resolves `$yield` ([Yielding](#yielding)). |
+| mck.12 (`initiative`, `initiative-holder`, `initiative-ceded`, reasons) | `$yield`. Three triggers are plain RPL ([Yielding](#yielding)); the only law left is law 7. |
+| mck.13 (`memory-item`, strata) | lrpl.md §7 ([Memory configuration](#memory-configuration)); law 9. |
+| mck.14 | Law 6. |
+| mck.15 (correction scope) | Law 4. |
+| mck.17 ("forget" records) | rpl.md §12.4: retraction is recorded in the trace log, and the log is ordered and append-only (lrpl.md §7.1). The spec records and keeps history. Whether a host may also **erase** (for personal data, say) stays open. |
+| mck.19 (`graph-store`, durability) | The store is the `.rpl` directory or the host's equivalent (lrpl.md §7.2). Provisioning is host-defined. |
+| mck.20 (`fact-provenance`, graphs, topics) | Provenance is metadata (rpl.md §11, `:file`, `:user`, `:relation`). A "graph" is the program and its log; the spec has no further concept. |
+| mck.21 (composing graphs) | Loading more sentences. The Horn theory is monotonic (`fol.9`); `$read` brings them in (lrpl.md §5.2). |
+| mck.22 (topic alignment) | Interpretation: two statements share a reading when their RPL readings unify (logics.md §4.2). |
+| mck.23 (composition conflicts) | A violated invariant (`rpl.4`) is `%fail`; candidate worlds are lrpl.md §3 memos; non-monotonic repair is `agent.2` and `-: $yield`. |
 
-**Surface.** None beyond `intent` and `LEFT -: RIGHT`.
-
-**Grounding.** Live run 2, probe B
-([bots/rpl-bot-live-run-2.md](../bots/rpl-bot-live-run-2.md)):
-constraint-versus-preference priority, when "comfort matters more"
-might clash with a remaining £100 cap.
-
-**Example.** If the £100 cap still holds under mck.15, a more comfortable
-option that exceeds it is not chosen unilaterally. The clash is
-coordinated.
-
-**Not.** A rewriting of mck.3, and not a licence to drop a constraint
-because a later preference arrived.
-
----
-
-### mck.17 — "Forget" records, and keeps the history
-
-**Law.** **Inferred.** When the session authority accepts a retraction
-(mck.11), including a request to "forget" a fact, the default is to
-*record* that the fact no longer holds, using the
-[`rpl.6`](../bootstrap/rpl.md) surface (`… -: false`), and to keep the
-prior record in the history. The default is not to erase the history as
-if the fact had never been asserted.
-
-**FOL reading.** *Comment.* A policy for non-monotonic update, not a new
-connective. Traces remain ordinary relations
-([`rpl.6`](../bootstrap/rpl.md)).
-
-**Surface.** Retraction stays `… -: false`. No new name.
-
-**Grounding.** Live run 2, probe C
-([bots/rpl-bot-live-run-2.md](../bots/rpl-bot-live-run-2.md)): the user
-settled a coordination point; the bot recorded `likes -: false`,
-asserted `dislikes`, and kept the history. [`rpl.6`](../bootstrap/rpl.md)
-does not say whether "forget" means erasing or recording that the fact
-no longer holds.
-
-**Example.**
-
-```rpl
-likes("x") -: false
-dislikes("x")
-```
-
-The earlier `likes("x")` remains in the history; the retraction is the
-record that it no longer holds.
-
-**Inferred.** When the session's graph lives in a `"persistent"` store
-(mck.19), the retraction record and the earlier record both persist
-there, so a later session sees that the fact no longer holds and when it
-was retracted. In a `"session-only"` store they last only as long as the
-session.
-
-**Not.** A new erase operator, and not a licence to drop traces.
-Whether a host may additionally offer an erase mode (for example, to
-remove personal data from a store the host controls, including a
-persistent store under mck.19) is an open question; it is not the
-default of this layer, and it is not specified here.
+Knowledge sharing between stores (Bahul, 12 Nov) therefore has no McK law of
+its own. The one thing the specification does not cover is composing two
+separate stores (gap in Memory configuration).
 
 ---
 
-### mck.18 — Unchecked when there is no ground
+## Proposed specification additions
 
-**Law.** **Inferred.** The pre-output check (mck.6) has three verdicts:
-`"holds"`, `"fails"`, and `"unchecked"`. All three are **PROPOSED NAME,
-for Bahul to decide**.
+These are proposals for Bahul to approve. None is made in the specification
+files here.
 
-When the facts needed to ground the check are absent, the verdict is
-`"unchecked"`, not `"holds"` and not `"fails"`.
-[`fol.5`](../bootstrap/fol.md) says a missing fact is not automatically
-a proof of `not P`. The same applies in the other direction: a missing
-fact is not a proof that the invariant holds, and not a proof that it
-fails.
+### Async interpretation (rpl.md §13, logics.md §4)
 
-Granted autonomy does not fill in the missing ground. Name the gap.
-Cede the initiative (mck.12) when the missing ground would change the outcome, or
-carry an `"unchecked"` record when the user has asked the agent to
-proceed without that ground.
-
-**FOL reading.** *Comment.* A third outcome of the check, required by
-[`fol.5`](../bootstrap/fol.md). Not a new connective, and not a reading
-of `not`.
-
-**Surface.** `invariant-check(?check, ?turn, ?invariant, ?verdict)` and
-`invariant-check-grounding(?check, ?grounding)` — **PROPOSED NAME, for
-Bahul to decide** — as in mck.6, with `?verdict` one of `"holds"`,
-`"fails"`, or `"unchecked"`. When the verdict is `"unchecked"`, the
-grounding may be empty: there is no `invariant-check-grounding` row for
-the check, or its `?grounding` is `{}`.
-
-**Grounding.** Live run 2, probe D
-([bots/rpl-bot-live-run-2.md](../bots/rpl-bot-live-run-2.md)): the bot
-picked a recipe under granted autonomy, then reported the diet check as
-UNCHECKED under [`fol.5`](../bootstrap/fol.md) rather than passed. Gap:
-no form for a check with nothing to check against.
-
-**Example.**
+An avar may stand as the Statement of `@:`:
 
 ```rpl
-invariant("inv3", "s2", (recommended-dish(?d), violates-diet(?d) -: false))
-invariant-check("chk2", "t3", "inv3", "unchecked")
+$avar @: lang(~ Pattern)
 ```
 
-**Not.** A pass. Not a fail. Not a licence to invent the missing facts
-in order to make the check look grounded.
+It desugars to a fresh lvar bound by the async bind sugar of rpl.md §13.3,
+read as syntax:
+
+```rpl
+?reply = $avar, #?reply @: lang(~ Pattern)
+```
+
+so that the reply is suspended on and interpreted without being named. For
+example,
+
+```rpl
+clarify(?x, ?y) :- $yield @: english(~ chosen(?x, ?y))
+```
+
+means
+
+```rpl
+clarify(?x, ?y, ?reply) :- ?reply = $yield, #?reply @: english(~ chosen(?x, ?y))
+```
+
+The reading holds only if the reply fits the pattern, and the pattern binds
+`?y`. A reply that does not fit does not satisfy the method. Logics §4.2
+already writes an avar in statement position (`~ $de @: german(?i)`) without
+defining it.
+
+### Safety is judged after rewriting
+
+A rule is safe when every variable in its head is bound by its body **after
+rewriting**. Any variable the rewrite drops, such as an alias that only names a
+value bound elsewhere in the body (`?reply` above), need not be in the head,
+because rewriting substitutes what it stands for. This is general, not special
+to async interpretation. It belongs in rpl.md §10 or §3; today it appears only
+as a design principle in [vision.md](../vision.md#design-principles) ("head
+variables in body").
+
+### `$yield` as a reserved avar (rpl.md §13)
+
+`$yield` is a bare avar, reserved like `%fail` (rpl.md §15.7). It takes no
+arguments and has no variants. It resolves when the user next speaks, and
+the agent interprets that reply. `?v = $yield` is the §13.3 sugar for
+`$yield ^:result ?v`. Evaluation order: the constraint side of `A :- B -: C`
+is evaluated before `B`.
+
+### §17.7 uses a dot that `NAME` does not allow
+
+rpl.md §17.7 shows `file.md#rel` and `%file.md#goal`. In the Appendix,
+`LABEL = NAME | NS '#' NAME` and `NAME = [a-z] [a-z0-9\-]*`, so `file.md` is
+not a `NAME`. Either the grammar allows a dot in a namespace segment, or §17.7
+should drop the extension, or it should say these forms are informal. The
+document anchors this proposal uses, `mck.md#19`, are citations, not RPL
+labels (they have a dot, and `19` does not start with `a–z`).
 
 ---
 
-### mck.19 — Provisioning the session graph into a store
+## Spec gaps found
 
-**Law.** **Inferred.** Every session works in one knowledge graph (the
-facts, frames, intents, checks, traces, and retraction records of this
-layer), and that graph lives in exactly one graph store. When the host provides a `"persistent"` store,
-the session's graph is provisioned into it and the agent uses it. When
-the host provides none, the agent falls back to a `"session-only"` store
-that lasts as long as the session. The agent does not claim persistence
-it does not have: with a `"session-only"` store, nothing it writes is
-long-term ground for a later session (mck.13).
-
-This law is storage-agnostic. It names no database, file format, or
-product; how a host realises a store is outside the layer.
-
-**FOL reading.** *Comment.* Where facts are kept, not what they mean. A
-fact means the same in either kind of store.
-
-**Surface.** Both are **PROPOSED NAME, for Bahul to decide**:
-
-- `graph-store(?store, ?host, ?durability)` — `?durability` is
-  `"persistent"` or `"session-only"`.
-- `knowledge-graph(?graph, ?store, ?agent)` and
-  `session-graph(?session, ?graph)` (see mck.20).
-
-The store of a session's graph is derived, not stored twice:
-
-```rpl
-session-graph-store(?session, ?store) :-
-  session-graph(?session, ?graph), knowledge-graph(?graph, ?store, ?agent)
-```
-
-**Grounding.** Bahul, 12 Nov 2026: the graph should be provisionable
-into a persistent place when one is available. [cognition.md](../cognition.md)
-§I and §III (a later session needs recorded ground);
-[`rpl.6`](../bootstrap/rpl.md) (traces are ordinary relations); mck.13
-and mck.17.
-
-**Example.** A host with a persistent store:
-
-```rpl
-session("s1", "host-a")
-graph-store("st1", "host-a", "persistent")
-knowledge-graph("g1", "st1", "rpl-bot")
-session-graph("s1", "g1")
-```
-
-A host with none, so the agent falls back:
-
-```rpl
-session("s2", "host-b")
-graph-store("st2", "host-b", "session-only")
-knowledge-graph("g2", "st2", "rpl-bot")
-session-graph("s2", "g2")
-```
-
-`session-graph-store("s1", "st1")` and `session-graph-store("s2", "st2")`
-follow.
-
-**Not.** A specific database or product. Not a licence to treat residual
-model memory as a store. Not an erase mode (mck.17 leaves that open).
-
----
-
-### mck.20 — Graphs, topics, and provenance
-
-**Law.** **Inferred.** Knowledge is shared between sessions, agents, and
-stores as knowledge graphs. A graph has an id, lives in one store
-(mck.19), and is kept by one agent. Its subject matter is organised by
-topics, each with an id within its graph. Every fact that enters a graph
-from another graph records its provenance: the graph, the session, and
-the agent it came from. A fact asserted twice from two graphs has two
-provenance rows, not one. Provenance is a record like a trace
-([`rpl.6`](../bootstrap/rpl.md)): an ordinary relation, not optional
-debug output.
-
-**FOL reading.** *Comment.* Bookkeeping about where facts came from. A
-fact means the same whatever its provenance.
-
-**Surface.** All are **PROPOSED NAME, for Bahul to decide**:
-
-- `knowledge-graph(?graph, ?store, ?agent)`
-- `session-graph(?session, ?graph)` — one row per session.
-- `topic(?topic, ?graph, ?label)`
-- `fact-provenance(?fact, ?graph, ?session, ?agent)` — `?fact` is the
-  quoted fact, as `?invariant` quotes a rule in `invariant`.
-
-**Grounding.** Bahul, 12 Nov 2026 ("graph composition and conflict
-resolution, basically knowledge sharing"); [`rpl.6`](../bootstrap/rpl.md)
-(traces are ordinary relations); mck.13 (only recorded ground may be
-cited, so shared facts need a record of where they came from).
-
-**Example.**
-
-```rpl
-knowledge-graph("g1", "st1", "rpl-bot")
-knowledge-graph("g3", "st1", "planner-bot")
-topic("tp1", "g1", "dinner on Saturday")
-topic("tp7", "g3", "Saturday dinner")
-fact-provenance(vegetarian("guest"), "g3", "s9", "planner-bot")
-```
-
-**Not.** A fact with no provenance once it has crossed graphs. Not a
-claim that provenance makes a fact true.
-
----
-
-### mck.21 — Composing graphs
-
-**Law.** **Inferred.** Composing graphs adds the facts of each source
-graph to a target graph, with provenance (mck.20). Monotonic additions
-are automatic: a fact, rule, or invariant that does not clash with the
-target joins it without coordination, because adding sentences does not
-withdraw earlier consequences ([`fol.9`](../bootstrap/fol.md)).
-Composition never retracts anything in a source graph or in the target.
-Anything that would need a retraction, a forced choice, or a change of
-meaning is a clash and goes to mck.23.
-
-Invariants from every source apply to the composed graph, and the
-pre-output check (mck.6) runs against all of them.
-
-**FOL reading.** *Comment.* Union of sentences, which is monotonic in
-the Horn fragment ([`fol.9`](../bootstrap/fol.md)). The non-monotonic
-remainder is `agent` ([`agent.2`](../bootstrap/agent.md)).
-
-**Surface.** Both are **PROPOSED NAME, for Bahul to decide**:
-
-- `graph-composition(?composition, ?session, ?target)`
-- `composition-source(?composition, ?graph)`
-
-**Grounding.** [`fol.9`](../bootstrap/fol.md) (monotonic consequence);
-[`agent.2`](../bootstrap/agent.md) (non-monotonic steps are
-coordination); Bahul, 12 Nov 2026.
-
-**Example.**
-
-```rpl
-graph-composition("cmp1", "s1", "g1")
-composition-source("cmp1", "g3")
-```
-
-`vegetarian("guest")` from `"g3"` joins `"g1"` with the provenance row in
-the mck.20 example. No coordination is needed, unless it clashes.
-
-**Not.** A last-writer-wins merge. Not a retraction of anything by
-composition alone.
-
----
-
-### mck.22 — Aligning topics
-
-**Law.** **Inferred.** Topics in different graphs are the same topic
-only when an alignment says so. An alignment has a basis: `"same-id"`
-(both graphs use one shared id), `"declared"` (a graph or host records
-the equivalence), or `"judgment"` (the agent judges two labels to name
-one thing). Unaligned topics stay distinct; a matching label alone does
-not merge them. A judgment alignment is [`agent.1`](../bootstrap/agent.md)
-judgment and not an axiom ([`agent.3`](../bootstrap/agent.md)). When a
-judgment alignment is material and uncertain, present it as a
-coordination point (mck.10) or cede the initiative (mck.12), as with
-constraint scope (mck.9).
-
-**FOL reading.** *Comment.* A recorded identification between ids, not
-`fol.8` equality of values.
-
-**Surface.** `topic-alignment(?topic, ?other, ?basis)` — **PROPOSED
-NAME, for Bahul to decide**.
-
-**Grounding.** [`agent.1`](../bootstrap/agent.md),
-[`agent.3`](../bootstrap/agent.md); mck.9 (judged scope); Bahul,
-12 Nov 2026.
-
-**Example.**
-
-```rpl
-topic-alignment("tp1", "tp7", "judgment")
-```
-
-"dinner on Saturday" and "Saturday dinner" are judged one topic. Had the
-two graphs shared one id, the basis would be `"same-id"`.
-
-**Not.** A silent merge of two topics because their labels match. Not a
-term ontology.
-
----
-
-### mck.23 — Conflicts between composed graphs
-
-**Law.** **Inferred.** When composed graphs disagree, the clash is
-recorded and presented; no graph silently wins. A clash is one of:
-
-- *constraint* — facts from one graph violate an invariant or
-  restriction from another, or two constraints cannot both hold;
-- *decision* — two graphs record incompatible choices on the same
-  topic;
-- *term* — one label is used with incompatible meanings, or an
-  alignment (mck.22) would change what a fact says.
-
-Each clash is a coordination point (mck.10), of kind
-`"constraint-conflict"`, `"forced-choice"`, or
-`"non-monotonic-schema-change"` respectively
-([`agent.2`](../bootstrap/agent.md)). The facts on every side still hold
-as asserted, with their provenance, until the session authority accepts
-a repair option (mck.11). The agent may order options with reasons,
-including recency or provenance, but ordering is not a selection
-(mck.10). A resolution that retracts a fact does so under mck.17: it
-records that the fact no longer holds, keeps the history, and persists
-where the store is persistent (mck.19). Monotonic additions are not
-clashes and stay automatic (mck.21).
-
-**FOL reading.** *Comment.* The non-monotonic steps
-[`fol.9`](../bootstrap/fol.md) does not decide, reserved to `agent`
-([`agent.2`](../bootstrap/agent.md); [`rpl.6`](../bootstrap/rpl.md)
-comment, "Retraction is non-monotonic. Coordination is `agent`.").
-
-**Surface.** All three are **PROPOSED NAME, for Bahul to decide**:
-
-- `composition-conflict(?conflict, ?composition, ?kind, ?point)` —
-  `?kind` is `"constraint"`, `"decision"`, or `"term"`; `?point` names
-  the `coordination-point`.
-- `conflict-fact(?conflict, ?fact)`
-- `conflict-resolution(?conflict, ?option)` — `?option` names a
-  `repair-option` with a `repair-acceptance` row.
-
-**Grounding.** [`agent.2`](../bootstrap/agent.md);
-[`rpl.6`](../bootstrap/rpl.md); [`fol.9`](../bootstrap/fol.md); mck.10,
-mck.11, mck.17; Bahul, 12 Nov 2026.
-
-**Example.** `"g1"` holds that the guest eats fish; `"g3"` holds that the
-guest is vegetarian under an invariant that rules out fish.
-
-```rpl
-composition-conflict("cf1", "cmp1", "constraint", "c2")
-conflict-fact("cf1", menu-item("guest", "grilled trout"))
-conflict-fact("cf1", vegetarian("guest"))
-coordination-point("c2", "t5", "constraint-conflict",
-  "g1 serves the guest trout; g3 says the guest is vegetarian")
-repair-option("c2-a", "c2", "change the dish")
-repair-option("c2-b", "c2", "drop the vegetarian fact from g3")
-```
-
-After the user accepts `"c2-a"`:
-
-```rpl
-repair-acceptance("c2-a", "t6", "user")
-conflict-resolution("cf1", "c2-a")
-menu-item("guest", "grilled trout") -: false
-```
-
-**Not.** A silent win for the newer, larger, or local graph. Not a new
-retraction operator. Not an erase (mck.17 leaves erase open).
+1. **Safety** is only a design principle in vision.md; rpl.md has no rule.
+2. **§17.7** `file.md#rel` is not valid under the grammar (above).
+3. **`~ PATTERN`** allows a map, list, set, string or regex in the Appendix,
+   but logics.md §4.1, §4.3 and the proposed sugar write `~ foo(_)` (a relation
+   call).
+4. **Logics operators** (`@:`, `:@`, …) are outside rpl.md's Appendix grammar by
+   design, so the avar sugar needs a grammar home in logics.md.
+5. **Order of `-:` constraint and body** is Bahul's ruling; the specification
+   does not state it (§12.2 is about grounding, §16 about activation), and
+   `fol.3` says a comma is not sequencing.
+6. **"Last method of a set"** relies on §18.4 step 4 ("syntactic order"),
+   which is an order of trying. It sits against the no-try-order stance,
+   and `fol.4` leaves which alternative is tried first to `agent` and
+   `rpl-runtime`.
+7. **Capabilities.** The specification does not say how the agent learns which
+   tools and capabilities it has.
+8. **Traces as values.** rpl.md §12.5 says traces are queryable, with no form
+   for selecting the traces of one family of checks (for example to `$json`
+   them).
+9. **Memory** gaps in [Memory configuration](#memory-configuration): hosts
+   with no file output, where a stated constraint lives, sharing between
+   stores, and the reload of a log of traces.
+10. **`$yield` and safety.** In `admin(?person) :- $yield` the body binds
+    `?person` only through the agent's reading of the reply. It is unclear
+    whether that satisfies the safety rule, or `$yield` needs the sugar.
+11. **`not`** (`fol.5`) is not classified as classical or failure to prove;
+    law 3 reads it as failure to prove.
+12. **`%fail`** has `?reason` and `?explanation` and no slot for repair
+    options.
+13. **Erase.** The specification records retractions and keeps history. It does
+    not say whether a host may erase.
+14. **Name syntax in sketches.** `someGoal` and `clarifyX` are not valid
+    `NAME`s (lowercase kebab only); this draft uses `dinner`, `clarify`.
+15. In the spelled-out expansion, `?reply` appears in the method head to make the
+    rewrite explicit; under the safety rule above it is dropped after
+    rewriting. The two readings should be stated together.
 
 ---
 
 ## What this would change in the bot's system prompt
 
-Nothing in this section is in force until the proposal is accepted and
-the names are decided. The assembler today loads the **RPL** closure
-and then [agent-mck.md](../agent-mck.md) as non-layer material, and a
-role preamble tells the bot to make the habits visible
+Nothing in this section is in force until the proposal is accepted and the
+names are decided. The assembler today loads the **RPL** closure and then
+[agent-mck.md](../agent-mck.md) as non-layer material, and a role preamble
+tells the bot to make the habits visible
 (`scripts/assemble-rpl-bot-prompt.ts`; [bots/rpl-bot.md](../bots/rpl-bot.md)).
 
 If `mck` were taken:
 
-1. **Load the layer after `agent`.** The assembler would append the
-   accepted `mck` file after [`bootstrap/agent.md`](../bootstrap/agent.md).
-   **Inferred.** `mck` should be an optional layer on top of instantiation
-   **RPL**, taken by this test bot, not silently added to every RPL
-   closure. [language-bootstrap.md](../language-bootstrap.md) says you
-   do not take comments from a layer you did not take. Whether **RPL**
-   itself later includes `mck` is a separate decision.
-
-2. **Keep the essay as essay.** [agent-mck.md](../agent-mck.md) would
-   remain motivation, not a stand-in for laws. The prompt can still
-   point at it, clearly marked as non-layer material, or drop it once
-   the laws cover the habits.
-
-3. **Shrink the role preamble.** Visibility would come from
-   `session-posture(?session, "test")` plus mck.7 and mck.14, not from a paragraph
-   that has to invent the protocol. The role would tell the bot to take
-   these laws, utter the surfaces in test posture (`intent`,
-   `invariant-check`, the frame relations, `initiative-ceded`,
-   `confidence-report`), and
-   still obey [`agent.1`](../bootstrap/agent.md) (**Not.** do not
-   contradict a law in a taken layer).
-
-4. **Set posture and authority as session facts.** A test run would
-   assert `session("s1", ?host)`, `session-posture("s1", "test")`,
-   `session-authority("s1", "user")` and the session's
-   `session-graph-store` (mck.19) at the start of the prompt, so probes 1–6 can expect the surfaces
-   rather than improvised prose.
-
+1. **Load the layer after `agent`.** The assembler would append the accepted
+   `mck` file after [`bootstrap/agent.md`](../bootstrap/agent.md).
+   **Inferred.** `mck` should be an optional layer on top of **RPL**, taken
+   by this test bot, not silently added to every RPL closure.
+   [language-bootstrap.md](../language-bootstrap.md) says you do not take
+   comments from a layer you did not take.
+2. **Keep the essay as essay.** [agent-mck.md](../agent-mck.md) remains
+   motivation, marked as non-layer material, or is dropped once the laws cover
+   the habits.
+3. **Shrink the role preamble.** Visibility comes from `posture(:test)` and
+   laws 5 and 6, not from a paragraph that invents the protocol. In test
+   posture the bot utters `intent`, `active`, `confidence` and the check
+   traces, and still obeys [`agent.1`](../bootstrap/agent.md).
+4. **Set posture and capabilities as facts** at the start of a test run:
+   `posture(:test)` and the `can(…)` facts of the host.
 5. **Do not add `mck` to `docs/rpl/bootstrap/` or to
-   `tests/support/content/bundles.config.ts` in this proposal.** Those
-   changes wait on acceptance and on the names. The language catalog
-   and the mermaid graph in [language-bootstrap.md](../language-bootstrap.md)
-   would gain a row only then. This document stays under
+   `tests/support/content/bundles.config.ts` in this proposal.** Those changes
+   wait on acceptance and on the names. This document stays under
    `docs/rpl/proposals/`.
-
-6. **Probes can later be restated against the surfaces** (for example,
-   expect `initiative-ceded(?initiative, ?turn, "user", "user-choice")`
-   on probe 5, and `confidence-report(?report, ?turn, ?claim, "none",
-   "ground")` on probe 6). That restatement is
-   not part of this proposal.
+6. **Probes can later be restated against the surfaces** (for example, expect
+   a `$yield` on probe 5, and `confidence(?claim, :none)` on probe 6). That
+   restatement is not part of this proposal.
 
 ---
 
 ## Open decisions
 
-These are for Bahul, not settled by this document:
+For Bahul, not settled by this document:
 
-- Every name and vocabulary item in the table above.
-- The reified shape in **Entities**: in particular whether
-  `initiative-holder` is stored or derived from `initiative-ceded`,
-  whether `invariant` should name a `-:` form by id, and whether
-  `memory-item` should carry a session.
-- Whether a constraint always survives a pop (mck.5), or may be tagged
-  as frame-local.
-- Who the default `session-authority` is when a host does not say
-  (mck.11).
-- Whether instantiation **RPL** should eventually include `mck`, or
-  leave it optional.
-- Whether `cognition.md` should be loaded into the test bot's prompt
-  once mck.13 cites it, or whether the layer text is enough.
-- Whether a host's persistent store (mck.19) should be shared across
-  sessions of one user, or one store per session.
-- Whether a `"declared"` topic alignment (mck.22) may be taken without
-  coordination when it comes from another agent's graph.
-- Whether the composition conflict kinds map to the `agent.2` kinds as
-  proposed in mck.23.
-- Whether a host may offer an erase mode in addition to the default
-  record-and-keep-history behaviour of "forget" (mck.17).
+- Every name in the [name table](#proposed-names), and the keyword vocabularies.
+- Whether `mck` should depend on `interpretive` and `lrpl`, or whether the
+  `@:` and `$read`/`$write` uses should be left to the host.
+- Whether a constraint always survives a frame being resolved (law 3), or may
+  be tagged as frame-local.
+- Whether a host may offer an erase mode in addition to record-and-keep-history.
+- Whether instantiation **RPL** should eventually include `mck`, or leave it
+  optional.
+- Whether `cognition.md` should be loaded into the test bot's prompt once law
+  9 cites it, or the layer text is enough.
+- Where the spec additions above go, and how to fix §17.7.

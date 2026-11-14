@@ -849,7 +849,9 @@ It would add to the specification:
 Evaluation order is not proposed for the specification beyond Bahul's ruling
 that the yield case exploits it (above, gap 5).
 
-### §17.7 uses a dot that `NAME` does not allow — accepted by Bahul, 14 Nov as a bug
+### §17.7 uses a dot that `NAME` does not allow
+
+**Accepted by Bahul, 14 Nov, as a bug.**
 
 rpl.md §17.7 shows `file.md#rel` and `%file.md#goal`. In the Appendix,
 `LABEL = NAME | NS '#' NAME` and `NAME = [a-z] [a-z0-9\-]*`, so `file.md` is

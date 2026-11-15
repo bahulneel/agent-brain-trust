@@ -129,8 +129,8 @@ single bare avar. Anything marked ABT is this document's elaboration.
 **Normalised syntax.** Bahul gave his syntax from memory and asked that it be
 read as illustrative ("assume that my RPL recollection is gappy", 14 Nov 20:18).
 The examples in this document are **normalised to the specification**: an lvar
-on the left of the §13.3 bind sugar (`?msg = $generate(…)`, not an avar), and a
-conjunction that binds a variable before the clause that uses it.
+on the left of the §13.3 bind sugar (`?msg = $generate(…)`, not an avar). The order of
+literals in a conjunction is not semantic (`fol.3`).
 
 **`$consult(?agent, ?prompt)`** is a new async call. It messages another agent
 from a rule, and the reply is the result (`?r = $consult(?agent, ?prompt)`, the
@@ -143,8 +143,8 @@ example:
 ```rpl
 reviewed(?draft, ?verdict) :-
   reviewer(?agent),
-  ?prompt = $generate("construct a prompt asking the agent to review {?draft}"),
-  ?verdict = $consult(?agent, ?prompt)
+  ?verdict = $consult(?agent, ?prompt),
+  ?prompt = $generate("construct a prompt asking the agent to review {?draft}")
 ```
 
 **`name!`** is the same as `$name()`: a zero-argument async call, an async
@@ -174,8 +174,8 @@ This relies on two proposed additions. The nested-call sugar (see
 
 ```rpl
 $yield() :-
-  ?msg = $generate("given where this yield sits and whatever method fits best, hand over what you think should be handed over, and interpret and act on the reply as you think is right"),
-  $consult(:user, ?msg)
+  $consult(:user, ?msg),
+  ?msg = $generate("given where this yield sits and whatever method fits best, hand over what you think should be handed over, and interpret and act on the reply as you think is right")
 ```
 
 The `$consult` result is not captured, so by Bahul's rule (14 Nov 20:24, see
@@ -896,22 +896,28 @@ Bahul has defined this (rpl.md §9, §13.3, Appendix). `A(B(?c))` is sugar for
 `A(?b), ?b = B(?c)`.
 
 **Desugaring.** A call written as an argument is replaced, in that position, by a
-fresh lvar, and a bind of that lvar to the call is placed before the clause that
-used it. Calls are lifted innermost first, and left to right among arguments. The
-bind is the `=` form: for an async call it is the §13.3 bind sugar
-(`?b = B(?c)` is `B(?c) ^:result ?b`). Bahul wrote the desugared form with the
-bind after the call that uses it; `,` is not sequencing (`fol.3`), so the two
-orders say the same thing, and this document writes the bind first, so that the
-variable is bound before it is used.
+fresh lvar, and a bind of that lvar to the call is added to the same clause.
+Calls are lifted innermost first, and left to right among arguments. The bind is
+the `=` form: for an async call it is the §13.3 bind sugar (`?b = B(?c)` is
+`B(?c) ^:result ?b`). `,` is not sequencing (`fol.3`), so the order of the
+literals is not semantic.
 
 ```rpl
 A(B(?c))                                  -- nested
-?b = B(?c), A(?b)                         -- desugared
+A(?b), ?b = B(?c)                         -- desugared
 ```
 
 **Async calls are covered.** So `$consult(:user, $generate("…"))` is valid, and
-means `?m = $generate("…"), $consult(:user, ?m)`. A `name!` thunk is valid as an
+means `$consult(:user, ?m), ?m = $generate("…")`. A `name!` thunk is valid as an
 argument for the same reason.
+
+**Nested relation calls are covered too.** They mean the same thing as the nested
+form rpl.md §9 already allows: `outer(inner(?x), ?y)` and
+`outer(?r, ?y), ?r = inner(?x)` are the same statement.
+
+**Collections are unchanged.** Calls inside a collection (`[` … `]`, `#` `{` … `}`)
+stay disallowed (rpl.md §4); the sugar covers arguments only, not collection
+elements.
 
 **Grammar change.** `ARG` gains `TOOL` as an alternative, and `TOOL` includes the
 `LABEL '!'` form of the `name!` entry above:
@@ -923,18 +929,9 @@ ARG = VAR | LITERAL | COLLECTION | '_' | RELATION | TOOL
 This sits beside the nested relation call that `ARG` already allows (rpl.md §9)
 and the bind sugar of §13.3. No other rule is added.
 
-**Open questions (ABT; not decided here).**
-
-- A nested *relation* call. rpl.md §3 and §9 already read `outer(inner(?x), ?y)`
-  as an lvar standing for the nested expression, with `?r -: inner(?x)` as the
-  factored form. Whether the sugar applies to relation calls too, and if so that
-  it must not change that reading, is open.
-- Collections. rpl.md §4 does not allow a call inside `[` … `]` or `#` `{` … `}`.
-  This document leaves that unchanged and does not extend the sugar to
-  collection elements; whether it should is open.
-- A call written as an argument of a rule head, or inside a `-:` constraint. The
-  bind has to go in a body, and nothing here says where it goes for these
-  positions.
+A call written as an argument of a rule head or of a `-:` constraint is an open
+assumption, recorded under [Open decisions](#open-decisions), not part of Bahul's
+design.
 
 ### Uncaptured async results propagate to the head (rpl.md §13, §14)
 
@@ -1109,8 +1106,9 @@ For Bahul, not settled by this document. The first block matters most.
 - Where reserved tool names are listed (gap 18).
 - ABT's edge cases for uncaptured results: more than one in a body, and whether
   the rule applies to a non-async rule.
-- Nested-call sugar: whether it applies to nested relation calls, to collection
-  elements, and to calls in a head or a `-:` constraint.
+- Nested-call sugar in a rule head or a `-:` constraint (ABT's assumption, from
+  the spec; not Bahul's ruling): the lifted bind joins the body literal of that
+  rule or constraint. Nothing in the spec says otherwise, and it needs confirming.
 
 **Coverage**
 

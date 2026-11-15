@@ -1,17 +1,16 @@
 # Proposal: a metacognitive kernel layer
 
-**Status.** Proposal only. This document is not a language layer, is not part
-of any instantiation, and is not in force. It must not be loaded as if it
-lived under [`bootstrap/`](../bootstrap/). It does not change an existing
-layer or the specification. Its proposed changes to the specification are
-collected in [Proposed specification additions](#proposed-specification-additions)
-and are not made in the specification files.
+**Scope.** This document proposes a layer. It is not a language layer and is not
+part of any instantiation. It must not be loaded as if it lived under
+[`bootstrap/`](../bootstrap/). It does not change an existing layer or the
+specification. Its proposed changes to the specification are collected in
+[Proposed specification additions](#proposed-specification-additions) and are
+not made in the specification files.
 
 **Proposed layer name.** `mck` ("metacognitive kernel"), written McK in
 prose. Bahul suggested the McK prose form on 11 Nov 2026 ("would McK be better, in prose"); the code name `mck`
-stays lowercase like `fol`, `rpl` and `agent`. If accepted, this file becomes
-`bootstrap/mck.md`, and law N in it is `mck.N`, cited as the document anchor
-`mck.md#N`.
+stays lowercase like `fol`, `rpl` and `agent`. Law N in this file is `mck.N`, cited as the
+document anchor `mck.md#N`.
 
 **Provides.** *(candidate)* Laws for the five metacognitive habits named in
 [agent-mck.md](../agent-mck.md), written as logic programs: statements of
@@ -67,8 +66,8 @@ only what the specification does not already give, and writes it as logic.
   messages backs it, and the message is quoted verbatim (typos as written) with
   its number, `#n`, in ABT's numbered record of those messages. Anything marked
   **ABT proposal** or **ABT's reading** is this document's suggestion or
-  interpretation, pending Bahul. Every name in a program is a placeholder for
-  Bahul unless it comes from the specification (`$generate` is lrpl.md §5.3 and
+  interpretation, not Bahul's words. Every name in a program is ABT's choice
+  unless it comes from the specification (`$generate` is lrpl.md §5.3 and
   `english` is in logics.md §4.2) or is one of his own words, quoted where it is
   introduced: `$consult` (#8), `var!` (#21), `$yeild()` (#19), `google-it!`
   (#23), `config!` (#24), and "async rule" and "uncaptured" (#33). The
@@ -287,12 +286,10 @@ The trace of the `yield!` method resolving is the record that the goal was
 solved by handing back. "Last", if it is written last, is a position, not a
 condition. McK adds no order of trying.
 
-### Async interpretation (sugar accepted by Bahul)
+### Async interpretation
 
 `$avar @: lang(~ Pattern)` reads an async reply as a shape the goal chooses,
-without naming the reply. Bahul (#27): "Okay aside over let's work those on, accept
-the other and return to the top list"; ABT reads "the other" as this sugar and the
-§17.7 dot bug, the two items then on the table. For example `$answer @: english(~ picked(?dish, ?kind))` (an example shape, not McK
+without naming the reply. For example `$answer @: english(~ picked(?dish, ?kind))` (an example shape, not McK
 vocabulary). It is specified in
 [Proposed specification additions](#proposed-specification-additions). It is
 not applied to `yield!`, whose interpretation lives in its own instruction.
@@ -477,7 +474,7 @@ intent(:suggestion, :cheapest) -: false     -- the §12.4 retraction, for this i
 
 The cap is not clearly replaced, so it holds.
 
-**ABT proposal, pending Bahul.** A user's own correction skips the yield, and
+**ABT proposal.** A user's own correction skips the yield, and
 only agent-proposed retractions yield (`retraction(?fact) -: yield!`, see
 [Yielding](#yielding)). The reading is that the user's correction is itself the
 acceptance.
@@ -563,7 +560,7 @@ the agent has no ground for.
 guess(?slot, ?value), changes(?slot, ?outcome) -: yield!
 ```
 
-This is the only McK initiative law, **as an ABT proposal pending Bahul**: ABT's
+This is the only McK initiative law, **as an ABT proposal**: ABT's
 reading of Bahul's yield examples is that the old yield triggers become plain RPL using
 `yield!`; that nothing else of the earlier law survives is also ABT's
 proposal. The
@@ -714,7 +711,7 @@ that give durable file output** (at minimum `$write`); core LRPL does not
 require a filesystem. The words *should*, *may* and *must* are the
 specification's. §7 uses the word "memory".
 
-| Part | What the specification says | Left to the host |
+| Part | What the specification says | Host-defined |
 | --- | --- | --- |
 | **Long-term log** (§7.1, §7.3) | Long-term memory **is** an append-only record of ground truths: fully grounded facts and constraints (rpl.md §12), traces, stable conclusions. Each committed line is one append to a single tail-only log; earlier lines are never rewritten. When the agent can write files it **should** append newly established ground truths as they become traces. It **must not** put intermediate or unrealised memo-only state in it. | Path (e.g. `.rpl/long-term.log` or `.rpl/ground.ndjson`). Encoding (NDJSON, EDN, or one RPL sentence per line), which **must** be stable enough for `$index` or `$read` to reload in a later session if the host advertises that workflow. |
 | **Short-term stores** (§7.1, §7.4) | Short-term memory **holds** intermediate material: open constraint checks, partial memo state ([§3](../specification/lrpl.md#3-constraint-memos)), candidate worlds not yet realised, scratch derivations. When the agent can write files it **should** persist constraint and memo intermediates (DNF memos, open invariants, partial bindings) to short-term files under `.rpl`, not to the log. Hosts **may** split these across one or more files and **may** truncate, rotate, merge or discard them when a task completes, a session ends, or satisfactory quiescence settles the bindings. The ground outcomes **should** then be appended to the long-term log. | How files are split (by goal, topic or stratum, e.g. `.rpl/short-term/` or `.rpl/constraints-*.ndjson`). |
@@ -757,13 +754,10 @@ its own here.
 
 ## Proposed specification additions
 
-Two are **accepted by Bahul** (ABT's reading of #27, "accept the other"): the async interpretation
-sugar and the §17.7 dot bug (see Async interpretation above for ABT's reading of
-"the other"). The rest are proposals for him to approve, even where
-the idea is his and quoted. None is made in the
-specification files here.
+Each is a proposed change to the specification. None is made in the specification
+files here.
 
-### Async interpretation (rpl.md §13, logics.md §4) — accepted by Bahul (ABT's reading of #27, "accept the other")
+### Async interpretation (rpl.md §13, logics.md §4)
 
 An avar may stand as the Statement of `@:`:
 
@@ -948,8 +942,8 @@ word for the dual: a result is *captured* when the call has a `?v = …` bind or
 ### `$consult` and `yield!` (rpl.md §14, lrpl.md §5)
 
 Bahul designed these (#8, #18, quoted under
-[Forms used](#yield-consult-and-the-name-notation)). Adding them to the
-specification files is proposed here for his approval. It would add to the specification:
+[Forms used](#yield-consult-and-the-name-notation)). This proposal adds
+to the specification:
 
 - `$consult(?agent, ?prompt)` as an async call, next to `$ask` and `$choose`
   (rpl.md §14.2) and `$generate` (lrpl.md §5.3). Its name would be reserved like
@@ -961,8 +955,6 @@ No change to evaluation order is proposed beyond Bahul's ruling that the yield
 case exploits it.
 
 ### §17.7 uses a dot that `NAME` does not allow
-
-**Accepted by Bahul (ABT's reading of #27, "accept the other"), as a bug.**
 
 rpl.md §17.7 shows `file.md#rel` and `%file.md#goal`. In the Appendix,
 `LABEL = NAME | NS '#' NAME` and `NAME = [a-z] [a-z0-9\-]*`, so `file.md` is
@@ -976,15 +968,14 @@ anchors either.
 
 ## What this would change in the bot's system prompt
 
-Nothing in this section is in force until the proposal is accepted and the
-names are decided. The assembler today loads the **RPL** closure and then
+The assembler today loads the **RPL** closure and then
 [agent-mck.md](../agent-mck.md) as non-layer material, and a role preamble
 tells the bot to make the habits visible
 (`scripts/assemble-rpl-bot-prompt.ts`; [bots/rpl-bot.md](../bots/rpl-bot.md)).
 
 If `mck` were taken:
 
-1. **Load the layer after `agent`.** The assembler would append the accepted
+1. **Load the layer after `agent`.** The assembler would append the
    `mck` file after [`bootstrap/agent.md`](../bootstrap/agent.md).
    **Inferred.** `mck` should be an optional layer on top of **RPL**, taken
    by this test bot, not silently added to every RPL closure.
@@ -1002,8 +993,7 @@ If `mck` were taken:
 4. **Set posture and capabilities as facts** at the start of a test run:
    `posture(:test)` and the `can(…)` facts of the host.
 5. **Do not add `mck` to `docs/rpl/bootstrap/` or to
-   `tests/support/content/bundles.config.ts` in this proposal.** Those changes
-   wait on acceptance and on the names. This document stays under
+   `tests/support/content/bundles.config.ts` in this proposal.** This document stays under
    `docs/rpl/proposals/`.
 6. **Probes can later be restated against the surfaces** (for example, expect
    a `yield!` on probe 5, and `confidence(?claim, :none)` on probe 6). That

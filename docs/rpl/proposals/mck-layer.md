@@ -166,6 +166,13 @@ normalised; the instruction wording is illustrative, since Bahul gave it as
 "roughly":
 
 ```rpl
+$yield() :- $consult(:user, $generate("given where this yield sits and whatever method fits best, hand over what you think should be handed over, and interpret and act on the reply as you think is right"))
+```
+
+This relies on two proposed additions. The nested-call sugar (see
+[Nested-call sugar](#nested-call-sugar-bahuls-design)) makes it the same as:
+
+```rpl
 $yield() :-
   ?msg = $generate("given where this yield sits and whatever method fits best, hand over what you think should be handed over, and interpret and act on the reply as you think is right"),
   $consult(:user, ?msg)
@@ -883,6 +890,52 @@ relation), and it is valid wherever `TOOL` is: as a `HEAD`, an `ATOM`, or the
 note: §5.1 already requires spaces around operators, so `name! = ?x` and
 `name != ?x` are told apart by the space.
 
+### Nested-call sugar (Bahul's design)
+
+Bahul has defined this (rpl.md §9, §13.3, Appendix). `A(B(?c))` is sugar for
+`A(?b), ?b = B(?c)`.
+
+**Desugaring.** A call written as an argument is replaced, in that position, by a
+fresh lvar, and a bind of that lvar to the call is placed before the clause that
+used it. Calls are lifted innermost first, and left to right among arguments. The
+bind is the `=` form: for an async call it is the §13.3 bind sugar
+(`?b = B(?c)` is `B(?c) ^:result ?b`). Bahul wrote the desugared form with the
+bind after the call that uses it; `,` is not sequencing (`fol.3`), so the two
+orders say the same thing, and this document writes the bind first, so that the
+variable is bound before it is used.
+
+```rpl
+A(B(?c))                                  -- nested
+?b = B(?c), A(?b)                         -- desugared
+```
+
+**Async calls are covered.** So `$consult(:user, $generate("…"))` is valid, and
+means `?m = $generate("…"), $consult(:user, ?m)`. A `name!` thunk is valid as an
+argument for the same reason.
+
+**Grammar change.** `ARG` gains `TOOL` as an alternative, and `TOOL` includes the
+`LABEL '!'` form of the `name!` entry above:
+
+```
+ARG = VAR | LITERAL | COLLECTION | '_' | RELATION | TOOL
+```
+
+This sits beside the nested relation call that `ARG` already allows (rpl.md §9)
+and the bind sugar of §13.3. No other rule is added.
+
+**Open questions (ABT; not decided here).**
+
+- A nested *relation* call. rpl.md §3 and §9 already read `outer(inner(?x), ?y)`
+  as an lvar standing for the nested expression, with `?r -: inner(?x)` as the
+  factored form. Whether the sugar applies to relation calls too, and if so that
+  it must not change that reading, is open.
+- Collections. rpl.md §4 does not allow a call inside `[` … `]` or `#` `{` … `}`.
+  This document leaves that unchanged and does not extend the sugar to
+  collection elements; whether it should is open.
+- A call written as an argument of a rule head, or inside a `-:` constraint. The
+  bind has to go in a body, and nothing here says where it goes for these
+  positions.
+
 ### Uncaptured async results propagate to the head (rpl.md §13, §14)
 
 **Bahul's rule (14 Nov 20:24):** if an async rule calls an async, any uncaptured
@@ -899,11 +952,6 @@ ABT's gloss: a result is *captured* when the call has a `?v = …` bind or a
   whether that is an error.
 - Whether the rule also applies to a non-async rule, where a body call with an
   uncaptured result could propagate to the head in the same way.
-
-**Nested-call sugar (Bahul's separate, pending idea; not proposed here).** He
-described `A(B(?c))` as the same as `A(?b), ?b = B(?c)`, which would allow
-`$consult(:user, $generate("…"))`. This is recorded as a gap (gap 19), not as a
-rule.
 
 ### `$consult` and `yield!` (rpl.md §14, lrpl.md §5)
 
@@ -997,12 +1045,6 @@ anchors either.
     reserved, but where the spec lists reserved tool names is unclear:
     lrpl.md's `STDLIB` does not list `$ask` or `$choose`, which rpl.md §14.2
     treats as built in.
-19. **Nested calls as arguments.** rpl.md §9 permits a nested relation call as an
-    argument (`ARG` includes `RELATION`), and §3 shows `outer(?r, ?y)` with
-    `?r -: inner(?x)`, but no desugaring is stated, and none for an async call.
-    `ARG` has no `TOOL`, so `$consult(:user, $generate("…"))` is not valid
-    today. Bahul's `A(B(?c))` as `A(?b), ?b = B(?c)` is a pending idea; nothing
-    here proposes it.
 
 ---
 
@@ -1065,9 +1107,10 @@ For Bahul, not settled by this document. The first block matters most.
 - Whether `yield!` is a built-in or a library definition, and the wording of its
   one fixed instruction (Bahul gave it as "roughly" so).
 - Where reserved tool names are listed (gap 18).
-- Bahul's nested-call sugar `A(B(?c))` as `A(?b), ?b = B(?c)` (gap 19), and
-  ABT's edge cases for uncaptured results: more than one in a body, and whether
+- ABT's edge cases for uncaptured results: more than one in a body, and whether
   the rule applies to a non-async rule.
+- Nested-call sugar: whether it applies to nested relation calls, to collection
+  elements, and to calls in a head or a `-:` constraint.
 
 **Coverage**
 

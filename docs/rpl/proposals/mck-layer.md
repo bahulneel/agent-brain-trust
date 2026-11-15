@@ -353,12 +353,22 @@ separate link to an invariant: this one rule is the link.
 
 **FOL reading.** *Comment.* An invariant (`rpl.4`) and a transitive step.
 
-**Surface.** `reply`, `contains`, `reaches`, `alias`.
+**Surface.** `reply`, `contains`, `reaches`, `alias`, and for the scoped case `active` and
+`within` (law 3).
 
 ```rpl
 reply(?r), contains(?r, ?item), intent(:constraint, ?c), reaches(?c, ?item) -: false
+reply(?r), contains(?r, ?item), (intent(:constraint, ?c) ~: ?w), active(?a), (?a = ?w | within(?a, ?w)), reaches(?c, ?item) -: false      -- ABT proposal: scoped case
 reaches(?c, ?alias) :- reaches(?c, ?item), alias(?alias, ?item)
 ```
+
+**Scoped constraints (ABT proposal).** The second invariant is the scoped case of
+the first. A constraint recorded in a frame with `~:` (law 3) is checked only
+while `?w` is the active frame or an ancestor of it (`?a = ?w | within(?a, ?w)`).
+The premises are all positive, and every variable occurs in a positive premise
+(`?w` in the `~:` fact, `?a` in `active(?a)`), so the rule is safe and
+monotonic. `(intent(:constraint, ?c) ~: ?w)` is parenthesised so that it reads as
+one premise.
 
 The invariant is a live check until it grounds (rpl.md §12.2); a violated
 check is `%fail` (§15.7, §18.6). So no verdict relation is needed, and a check
@@ -397,7 +407,9 @@ reply, is a guess (law 7).
 parent `nil`. A tangent is a frame whose parent is the frame it interrupts. The
 active frame is a frame that is not resolved and whose children are all
 resolved. At most one frame is active. Which frame is active moves by
-retraction (rpl.md §12.4) and a new `active` fact, per instance.
+retraction (rpl.md §12.4) and a new `active` fact, per instance. A frame has at
+most one parent, and the frames form a tree with no cycles, so no frame is inside
+itself.
 
 **FOL reading.** *Comment.* Session structure, as four invariants. There is no
 push or pop operator, and no negation: `not` would read a missing `resolved`
@@ -429,13 +441,17 @@ general versions of a statement", so ABT proposes no scope marker, only `~:`
 ```rpl
 intent(:constraint, :no-dairy)                      -- bare: session-wide
 intent(:constraint, :no-onions) ~: :dairy-detour    -- holds in that world only
-within(?g, ?f) :- frame(?g, ?f)
+within(?g, ?f) :- frame(?g, ?f), ?f != nil
 within(?g, ?f) :- frame(?g, ?h), within(?h, ?f)
 ```
 
+The base frame's `nil` is not a frame, so `within` excludes it: the root has no
+parent frame.
+
 ABT's reading of `~:` here: `S ~: ?w` is in force while `?w` is the active frame
 or an ancestor of it (by `within`), so a frame-scoped constraint does not lapse
-during a child tangent. `within` is ABT's name.
+during a child tangent; law 2's scoped invariant uses this reading. `within` is
+ABT's name.
 
 **Grounding.** [agent-mck.md](../agent-mck.md), "Context Stacking"; live probe
 4 (no surface for the stack; a constraint added on a tangent stayed in force
@@ -448,6 +464,7 @@ frame(:dinner, nil)
 frame(:dairy-detour, :dinner)
 active(:dairy-detour)
 intent(:constraint, :no-dairy)
+intent(:constraint, :no-onions) ~: :dairy-detour
 active(:dairy-detour) -: false
 resolved(:dairy-detour)
 active(:dinner)
@@ -458,7 +475,9 @@ asserted, so the second invariant is never violated; the trace log is ordered
 (rpl.md §12.3).
 
 The dairy constraint does not mention the frame, so it is session-wide and still
-applies to later recipes.
+applies to later recipes. The onion constraint is scoped with `~:`: it is checked
+while `:dairy-detour` is active (or a frame within it is), and not once
+`:dinner` is active again.
 
 **Not.** A linear chat log treated as the stack. A rule that drops a
 constraint when a frame is resolved.
@@ -662,11 +681,16 @@ lrpl.md §5.1 and §5.4.
 in (lrpl.md §7.3: the long-term log must be stable enough for `$index` or
 `$read` to reload "if the host advertises that workflow"). A trace stratum
 written with `$write` is a valid `$index` source for a later stratum (lrpl.md
-§5.4). ABT's example of the log as an `$index` source:
+§5.4). ABT's schematic example of the log as an `$index` source; the target
+relation `ground` and the projection are the host's:
 
 ```rpl
-$index(".rpl/long-term.log") -: can(:read)
+ground(?fact) :- $index(".rpl/long-term.log")      -- schematic (lrpl.md §5.1)
 ```
+
+The call is lazy (lrpl.md §5.0): it is not executed until a value is required. ABT's
+note: the index maps log lines to tuples; it does not itself carry `-: false`
+retractions or the log's order (rpl.md §12.3–12.4).
 
 **Grounding.** [agent-mck.md](../agent-mck.md), "Memory Stratification";
 [cognition.md](../cognition.md) §I and §III; live probe 6. See

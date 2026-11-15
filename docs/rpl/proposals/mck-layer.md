@@ -409,10 +409,10 @@ active(?f), frame(?g, ?f) -: resolved(?g)
 active(?f), active(?g) -: ?f = ?g
 ```
 
-**Constraints and frames.** **Inferred.** `intent` has no frame argument, so a
-constraint stated while a frame is active is not a fact about that frame.
-Resolving a frame changes which frame is active and nothing else. A constraint is
-therefore not frame-local.
+**Constraints and frames.** Scope follows from how a constraint is written
+(Bahul, 12 Nov): a constraint that mentions the frame holds only inside that
+frame, and one that does not is session-wide, with no marker. Resolving a frame
+changes which frame is active and nothing else.
 
 **Grounding.** [agent-mck.md](../agent-mck.md), "Context Stacking"; live probe
 4 (no surface for the stack; a constraint added on a tangent stayed in force
@@ -422,19 +422,20 @@ after the pop, because dropping it silently is worse).
 
 ```rpl
 frame(:dinner, nil)
-frame(:no-dairy, :dinner)
-active(:no-dairy)
+frame(:dairy-detour, :dinner)
+active(:dairy-detour)
 intent(:constraint, :no-dairy)
-active(:no-dairy) -: false
-resolved(:no-dairy)
+active(:dairy-detour) -: false
+resolved(:dairy-detour)
 active(:dinner)
 ```
 
-The retraction of `active(:no-dairy)` comes before `resolved(:no-dairy)` is
+The retraction of `active(:dairy-detour)` comes before `resolved(:dairy-detour)` is
 asserted, so the second invariant is never violated; the trace log is ordered
 (rpl.md §12.3).
 
-The dairy constraint still applies to later recipes.
+The dairy constraint does not mention the frame, so it is session-wide and still
+applies to later recipes.
 
 **Not.** A linear chat log treated as the stack. A rule that drops a
 constraint when a frame is resolved.
@@ -772,8 +773,9 @@ as syntax:
 ?reply = $avar, #?reply @: lang(~ Pattern)
 ```
 
-so that the reply is suspended on and interpreted without being named. For
-example,
+so that the reply is suspended on and interpreted without being named. `?reply`
+is local to the body: the method is the same predicate in both spellings, with the
+goal's arguments plus only the extras the body needs. For example,
 
 ```rpl
 method(?x, ?y) :- $answer @: english(~ picked(?x, ?y))
@@ -782,7 +784,7 @@ method(?x, ?y) :- $answer @: english(~ picked(?x, ?y))
 means
 
 ```rpl
-method(?x, ?y, ?reply) :- ?reply = $answer, #?reply @: english(~ picked(?x, ?y))
+method(?x, ?y) :- ?reply = $answer, #?reply @: english(~ picked(?x, ?y))
 ```
 
 The sugar is a general form. It is not applied to `yield!`, whose interpretation
@@ -821,12 +823,11 @@ ABT's elaboration of the terms (Bahul has not defined them):
 Standard safety already allows variables that occur only in the body
 (vision.md, "head variables in body"; see
 [vision.md](../vision.md#design-principles)), so a body-only alias needs no
-exemption on its own. What the ruling adds concerns the desugared head argument:
-the sugar form and the desugared form `method(?x, ?y, ?reply)` are one rule (the
-sugar hides `?reply`), and hiding it does not break the arity rule.
+exemption on its own, and no place in the args (Bahul, #6: "why the cars aren't
+needed in the args"). The sugar form and the desugared form are one rule.
 
-**Arity.** The two spellings differ in arity, three arguments against two. This
-document's examples write the sugar form only, for brevity.
+**Arity.** The sugar form and the desugared form have the same arity, because
+`?reply` is body-local.
 
 ### The `name!` form (rpl.md §13, §14, Appendix)
 

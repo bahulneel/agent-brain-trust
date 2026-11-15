@@ -193,7 +193,7 @@ $yield() :- $consult(:user, $generate("given where this yield sits and whatever 
 **Open (not decided here):** what the reply is when it is bound (does
 `?dish = yield!` get the raw reply, or the reply as the instruction interpreted
 it?); and the failure and absent cases: "stop", a host with no user turn, and a
-reply that is not an answer. They are listed under [Open decisions](#open-decisions).
+reply that is not an answer. They are open (see the PR description).
 
 This relies on two proposed additions. The nested-call sugar (see
 [Nested-call sugar](#nested-call-sugar-bahuls-design)) makes it the same as:
@@ -750,7 +750,7 @@ retraction(?fact) -: yield!
 authority over a retraction without any authority relation.
 
 A reply that is not an answer to the goal does not satisfy the method. What
-happens next is not specified, and it is open ([Open decisions](#open-decisions)):
+happens next is not specified, and it is open (see the PR description):
 §18.6 has the row "No rule is eligible: emit `%fail(reason, explanation)`; ask
 user", which may cover it, and the row "User declines arg", which does not (a
 non-answer is not a decline). Which applies is open (gap 3). A reply of "stop" is
@@ -999,7 +999,7 @@ This sits beside the nested relation call that `ARG` already allows (rpl.md §9)
 and the bind sugar of §13.3. No other rule is added.
 
 A call written as an argument of a rule head or of a `-:` constraint is an open
-assumption, recorded under [Open decisions](#open-decisions), not part of Bahul's
+assumption, open (see the PR description), not part of Bahul's
 design.
 
 ### Uncaptured async results propagate to the head (rpl.md §13, §14)
@@ -1157,72 +1157,3 @@ If `mck` were taken:
 6. **Probes can later be restated against the surfaces** (for example, expect
    a `yield!` on probe 5, and `confidence(?claim, :none)` on probe 6). That
    restatement is not part of this proposal.
-
----
-
-## Open decisions
-
-For Bahul, not settled by this document. The first block matters most.
-
-**Direction and semantics**
-
-- Which retractions yield: ABT proposes that a user's correction does not and
-  an agent-proposed retraction does (law 4, Yielding). ABT is asking.
-- The `-:` method qualifier: Bahul's "holds if `C`" against the specification's
-  checked-obligation reading; what a false, absent or undetermined `can` means
-  (this draft: the method is not established, no `%fail`); and `-: C` against
-  `; @when(C)`.
-- Whether law 7 (a material guess) should be the only McK initiative law, and
-  what a non-material guess leads to.
-- Evaluation order: how the yield-first ruling fits §12.2 and §18.3.
-- Method arity under the async sugar: whether a method and its desugared form
-  (one more argument) are one predicate or two, and whether a caller may refer
-  to the hidden alias.
-- Whether `yield!`, or the `$consult` under it, is ever gated on a capability.
-- Whether `yield!` is a built-in or a library definition, and the wording of its
-  one fixed instruction (Bahul gave only a paraphrase, #14).
-- Where reserved tool names are listed (gap 18).
-- ABT's edge cases for uncaptured results: more than one in a body, whether the
-  rule applies to a non-async rule, and what counts as an "async rule" (for
-  example, any rule calling `$write`).
-- The reply to `yield!`: when it is bound (`?dish = yield!`), does the call get
-  the raw reply or the reply as the fixed instruction interpreted it? And the
-  failure and absent cases: "stop", a host with no user turn, and a reply that is
-  not an answer.
-- "Given where this yield sits": `$generate` takes a string and has no context
-  argument, so how the instruction learns the yield's location (#14) is open.
-- Yield-first ordering: how Bahul's evaluation-order point (the yield occurs
-  first) is to be stated; see gap 5 and the evaluation-order bullet above.
-- Nested-call sugar in a rule head or a `-:` constraint (ABT's assumption, from
-  the spec; not Bahul's ruling): the lifted bind joins the body literal of that
-  rule or constraint. Nothing in the spec says otherwise, and it needs confirming.
-
-**Coverage**
-
-- Graph composition and conflict resolution, which Bahul asked for on 12 Nov,
-  are covered here only by existing spec mechanisms. Is that enough?
-- Whether to use more of the logics (existential, modal) than interpretive.
-- Which of Bahul's two source kinds McK is (KE's review, 14 Nov); this
-  proposal does not decide.
-- Whether to avoid the word "memory" (knowledge, beliefs).
-
-**Design details**
-
-- Every name in the [name table](#proposed-names), the keyword vocabularies,
-  and how an intent's content is represented.
-- Who asserts `reply` and when (candidate or final).
-- Multiple or no active frame, who asserts `active`, and whether a constraint
-  may be tagged frame-local (law 3).
-- Command or constraint against a constraint; what consumes `declined`; whether
-  `conflicts` is derived from `reaches` (law 1).
-- How confidence relates to a guess; the default posture; how "asked by the
-  user" is recognised (laws 5–7).
-- Whether a host may offer an erase mode in addition to record-and-keep-history.
-- Whether `mck` should depend on `interpretive` and `lrpl`, or leave `@:` and
-  `$read`/`$write` to the host.
-- Whether instantiation **RPL** should eventually include `mck`, or leave it
-  optional.
-- Whether `cognition.md` should be loaded into the test bot's prompt once law 9
-  cites it.
-- Which §17.7 fix to take (accepted by Bahul (ABT's reading of #27, "accept the other")), and where the accepted async
-  sugar and the proposed `$consult` and `name!` go in the specification.

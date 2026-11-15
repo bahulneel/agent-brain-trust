@@ -231,8 +231,8 @@ admin(?person) :- ?person = yield!
 
 Conjunction is `,`.
 
-**Evaluation order.** ABT's record of Bahul's 13 Nov ruling (before the 14 Nov quote record, so not quoted here) is only that the yield case
-exploits evaluation order: the yield occurs first. This document uses that for a
+**Evaluation order.** Bahul (13 Nov 2026): "The yeild case is exploiting evaluation
+order l, IE the yield occurs first". This document takes the ruling as only that. This document uses that for a
 constraint that needs no body bindings, such as `-: yield!`: in
 `A :- B -: yield!` the yield occurs before `B`. It claims nothing more general
 about when a `-:` constraint is evaluated relative to a body (gap 5).
@@ -261,8 +261,8 @@ The middle predicate names the method. The goal's arguments are what other
 rules refer to, so the method's arguments include **all** of them. A method may
 add an argument only if its body binds it.
 
-**The `-:` qualifier.** Bahul (13 Nov, 22:41): `A :- B -: C` means "the rule
-`A :- B` holds if `C`", and `C` is read as a capability, so a method exists
+**The `-:` qualifier.** Bahul (13 Nov, 22:41): "It means that A:- B holds if C"
+(of `A :- B -: C`), and `C` is read as a capability, so a method exists
 only where the agent has that capability (law 8). That is the reading this
 document uses; it is not the spelling of an existing rule (rpl.md §10 gives the
 `-:` position, not this meaning). It conflicts with how the specification reads
@@ -646,7 +646,7 @@ reason over like any other. A method qualified with `-: can(…)` is established
 only where the capability holds. A capability can follow from others.
 
 **FOL reading.** *Comment.* Facts and Horn rules. The `-:` qualifier is
-Bahul's reading of 13 Nov (22:41), "`A :- B` holds if `C`", with `C` read as a
+Bahul's reading of 13 Nov (22:41), that `A :- B` holds if `C`, with `C` read as a
 capability; see [Methods](#methods) for the conflict with `rpl.4` and for what
 a false, absent or undetermined `can` means.
 
@@ -823,13 +823,13 @@ two separate stores.
 
 ## Proposed specification additions
 
-Two are **accepted by Bahul** (14 Nov, #27: "accept the other"; see Async
-interpretation above for ABT's reading of "the other"): the async interpretation
-sugar and the §17.7 dot bug. The rest are proposals for him to approve, even where
+Two are **accepted by Bahul** (ABT's reading of #27, "accept the other"): the async interpretation
+sugar and the §17.7 dot bug (see Async interpretation above for ABT's reading of
+"the other"). The rest are proposals for him to approve, even where
 the idea is his and quoted. None is made in the
 specification files here.
 
-### Async interpretation (rpl.md §13, logics.md §4) — accepted by Bahul, 14 Nov (#27)
+### Async interpretation (rpl.md §13, logics.md §4) — accepted by Bahul (ABT's reading of #27, "accept the other")
 
 An avar may stand as the Statement of `@:`:
 
@@ -871,8 +871,9 @@ precedent. Precedence of `@:` against `,` and `-:` is not in rpl.md §5.6, so
 ### Aliases and safety
 
 Bahul's 13 Nov ruling was that a body variable that only provides an alias is
-safe, recorded as the rule that rewriting will always drop the var. **The 14 Nov message
-supersedes that last rule.** Bahul (#6), verbatim: "Safety isn't a property of
+safe, recorded as the rule that rewriting will always drop the var. **ABT's reading: the 14 Nov
+message supersedes that last rule.** His words were "2 needs a little revision"
+(#6) and then, verbatim: "Safety isn't a property of
 rewriting, but rewriting is a potentially cheap way to know if a variable is an
 alias. It's not the only way and it will not always work because the grammar may
 not have a form for it. But it's a good pedagogical device to explain why the cars
@@ -979,8 +980,9 @@ not (A(?b), ?b = B(?c))                   -- desugared: the bind stays under not
 ((A(?b), ?b = B(?c)) | D)                 -- desugared: the bind stays in its disjunct
 ```
 
-**Ordering (ABT's reading).** A tool's arguments must be ground at dispatch
-(rpl.md §13.1, §14), so literal order is irrelevant and the data dependency
+**Ordering (ABT's reading).** A tool's arguments must be ground at dispatch. The
+specification does not state this (rpl.md §13.3 says only that resolved values
+are ground), so this is ABT's reading, not a spec rule. Given it, literal order is irrelevant and the data dependency
 decides the order: `$consult(:user, ?msg)` waits for `?msg = $generate("…")`
 whichever is written first. This narrows the reading of §18.4 step 5 ("Unbound
 args → async") for tool arguments: an unbound tool argument is not itself an
@@ -1043,7 +1045,7 @@ that the yield case exploits it (above, gap 5).
 
 ### §17.7 uses a dot that `NAME` does not allow
 
-**Accepted by Bahul, 14 Nov (#27: "accept the other"; ABT reads "the other" as this bug, see above), as a bug.**
+**Accepted by Bahul (ABT's reading of #27, "accept the other"), as a bug.**
 
 rpl.md §17.7 shows `file.md#rel` and `%file.md#goal`. In the Appendix,
 `LABEL = NAME | NS '#' NAME` and `NAME = [a-z] [a-z0-9\-]*`, so `file.md` is
@@ -1061,8 +1063,8 @@ anchors either.
 1. **Safety** is only a design principle in vision.md; rpl.md has no rule. What
    Bahul's alias ruling adds, and the arity of a method whose sugar hides an
    alias, are in [Aliases and safety](#aliases-and-safety).
-2. **§17.7** `file.md#rel` is not valid under the grammar (above). Bahul accepted
-   it as a bug (14 Nov, #27, ABT's reading of "the other"); the choice of fix is open.
+2. **§17.7** `file.md#rel` is not valid under the grammar (above). Accepted by Bahul
+   (ABT's reading of #27, "accept the other") as a bug; the choice of fix is open.
 3. **Non-fitting reply and stop.** The spec has no case for a reply that
    fits no pattern. §18.6's "No rule is eligible" row may cover it and its
    "User declines arg" row does not; which applies is open. A reply of "stop"
@@ -1222,5 +1224,5 @@ For Bahul, not settled by this document. The first block matters most.
   optional.
 - Whether `cognition.md` should be loaded into the test bot's prompt once law 9
   cites it.
-- Which §17.7 fix to take (Bahul accepted the bug), and where the accepted async
+- Which §17.7 fix to take (accepted by Bahul (ABT's reading of #27, "accept the other")), and where the accepted async
   sugar and the proposed `$consult` and `name!` go in the specification.

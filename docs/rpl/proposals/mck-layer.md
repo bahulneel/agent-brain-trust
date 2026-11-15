@@ -18,8 +18,9 @@ what holds, with no steps, fallbacks or try-order.
 
 **Depends on.** [`agent`](../bootstrap/agent.md) (and so
 [`rpl`](../bootstrap/rpl.md), [`fol`](../bootstrap/fol.md)). *(candidate)*
-It also uses [`interpretive`](../bootstrap/interpretive.md) (`@:`) and
-[`lrpl`](../bootstrap/lrpl.md) (`$read`, `$write`, the `.rpl` memory files).
+It also uses [`modal`](../bootstrap/modal.md) (`~:`, law 3),
+[`interpretive`](../bootstrap/interpretive.md) (`@:`, the async sugar) and
+[`lrpl`](../bootstrap/lrpl.md) (`$index`, `$write`, the `.rpl` memory files).
 
 **Not provided.** New `fol` or `rpl` connectives. A rewrite of
 [`agent.1`](../bootstrap/agent.md)–[`agent.3`](../bootstrap/agent.md). A host
@@ -62,9 +63,10 @@ only what the specification does not already give, and writes it as logic.
   and documents by anchors. There are no instance ids, rule names or law ids
   inside the programs. Keywords such as `:no-dairy` in examples stand for
   contents, not ids.
-- **Who said what.** A claim is labelled "Bahul's" only where one of his 14 Nov
-  messages backs it, and the message is quoted verbatim (typos as written) with
-  its number, `#n`, in ABT's numbered record of those messages. Anything marked
+- **Who said what.** A claim is labelled "Bahul's" only where one of his
+  messages backs it, and the message is quoted verbatim (typos as written). The
+  14 Nov messages carry their number, `#n`, in ABT's numbered record; earlier ones
+  carry their date. Anything marked
   **ABT proposal** or **ABT's reading** is this document's suggestion or
   interpretation, not Bahul's words. Every name in a program is ABT's choice
   unless it comes from the specification (`$generate` is lrpl.md §5.3 and
@@ -103,6 +105,7 @@ hidden in the name.
 | `frame(?objective, ?parent)` | A line of work, and the one it interrupts (`nil` for the base). |
 | `resolved(?objective)` | That line of work is finished. |
 | `active(?objective)` | That line of work is the one in force. |
+| `within(?g, ?f)` | **ABT name.** The frame `?g` is inside `?f`: `?f` is its parent or an ancestor (law 3). |
 | `replaces(?new, ?old)` | A correction clearly replaces an earlier statement. |
 | `posture(?posture)` | `:test` or `:production`. |
 | `confidence(?claim, ?level)` | Levels: `:high`, `:medium`, `:low`, `:none`. |
@@ -400,7 +403,7 @@ retraction (rpl.md §12.4) and a new `active` fact, per instance.
 push or pop operator, and no negation: `not` would read a missing `resolved`
 fact as proof of `not resolved`, which `fol.5` does not allow.
 
-**Surface.** `frame`, `resolved`, `active`.
+**Surface.** `frame`, `resolved`, `active`, and (ABT proposal) `within`.
 
 ```rpl
 active(?f) -: frame(?f, _)
@@ -409,10 +412,30 @@ active(?f), frame(?g, ?f) -: resolved(?g)
 active(?f), active(?g) -: ?f = ?g
 ```
 
-**Constraints and frames.** Scope follows from how a constraint is written
-(Bahul, 12 Nov): a constraint that mentions the frame holds only inside that
-frame, and one that does not is session-wide, with no marker. Resolving a frame
-changes which frame is active and nothing else.
+**Constraints and frames.** Bahul (12 Nov): "This is down to how you write the
+constraint". ABT's reading: a constraint that mentions the frame holds only
+inside that frame, and one that does not is session-wide, with no marker.
+Resolving a frame changes which frame is active and nothing else.
+
+**Frame scope with `~:` (ABT proposal, hybrid).** The four invariants above are
+core-only (`-:`, no `@:`). `frame`, `resolved` and `active` stay as the tree and
+the current point, and a frame's scope is written with `~:`. Bahul (12 Nov): "We
+can use world's to model conversations with scope"; ABT maps a frame to a world.
+Bahul (13 Nov): "We should be leveraging all the logics in tge McK" and "Yes we
+should try to avoid inventing language where the notation allows for the pure
+general versions of a statement", so ABT proposes no scope marker, only `~:`
+(logics.md §3: `A ~: B` means `A` is true within the world-view of `B`).
+
+```rpl
+intent(:constraint, :no-dairy)                      -- bare: session-wide
+intent(:constraint, :no-onions) ~: :dairy-detour    -- holds in that world only
+within(?g, ?f) :- frame(?g, ?f)
+within(?g, ?f) :- frame(?g, ?h), within(?h, ?f)
+```
+
+ABT's reading of `~:` here: `S ~: ?w` is in force while `?w` is the active frame
+or an ancestor of it (by `within`), so a frame-scoped constraint does not lapse
+during a child tangent. `within` is ABT's name.
 
 **Grounding.** [agent-mck.md](../agent-mck.md), "Context Stacking"; live probe
 4 (no surface for the stack; a constraint added on a tangent stayed in force
@@ -625,18 +648,24 @@ the spec's non-normative example (§7.2).
 ## 9. Ground about earlier sessions
 
 **Law.** Something said about an earlier session rests on long-term ground
-that is present: the facts reloaded from the long-term log
-([lrpl.md §7.3](../specification/lrpl.md#73-committing-ground-truth-long-term)).
+that is present: the ground the host's advertised reload brings in from the
+long-term log
+([lrpl.md §7.3](../specification/lrpl.md#73-committing-ground-truth-long-term),
+§5.4).
 Absence of such a record is not ground (`fol.5`), and residual memory of
 another chat is not a record.
 
 **FOL reading.** *Comment.* A partition of what may be cited, reusing
-lrpl.md §5.2.
+lrpl.md §5.1 and §5.4.
 
-**Surface.** The reload form of lrpl.md §5.2:
+**Surface.** None of its own. Ground is what the host's advertised reload brings
+in (lrpl.md §7.3: the long-term log must be stable enough for `$index` or
+`$read` to reload "if the host advertises that workflow"). A trace stratum
+written with `$write` is a valid `$index` source for a later stratum (lrpl.md
+§5.4). ABT's example of the log as an `$index` source:
 
 ```rpl
-#?facts :- $read(".rpl/long-term.log", {}) ^:result ?facts -: can(:read)
+$index(".rpl/long-term.log") -: can(:read)
 ```
 
 **Grounding.** [agent-mck.md](../agent-mck.md), "Memory Stratification";

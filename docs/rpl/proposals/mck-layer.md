@@ -63,10 +63,15 @@ only what the specification does not already give, and writes it as logic.
   and documents by anchors. There are no instance ids, rule names or law ids
   inside the programs. Keywords such as `:no-dairy` in examples stand for
   contents, not ids (how contents are represented is an open decision).
-- **Who said what.** Bahul's words are cited with their date. Anything marked
-  **ABT proposal** is this document's suggestion, pending Bahul. Every name in
-  a program is a placeholder for Bahul unless it comes from the specification
-  (`yield!`, `$consult`, `name!` and `@:` are Bahul's; `$generate` is lrpl.md §5.3 and `english` is in logics.md §4.2). The
+- **Who said what.** A claim is labelled "Bahul's" only where one of his 14 Nov
+  messages backs it, and the message is quoted verbatim (typos as written) with
+  its number, `#n`, in ABT's numbered record of those messages. Anything marked
+  **ABT proposal** or **ABT's reading** is this document's suggestion or
+  interpretation, pending Bahul. Every name in a program is a placeholder for
+  Bahul unless it comes from the specification (`$generate` is lrpl.md §5.3 and
+  `english` is in logics.md §4.2) or is one of his own words, quoted where it is
+  introduced: `$consult` (#8), `var!` (#21), `$yeild()` (#19), `google-it!`
+  (#23), `config!` (#24), and "async rule" and "uncaptured" (#33). The
   [name table](#proposed-names) lists them. Hyphenated names are avoided
   because they tend to hide an argument that was left out.
 - **Law shape.** Each law uses the bootstrap fields: **Law**, **FOL reading**
@@ -105,17 +110,19 @@ hidden in the name.
 | `guess(?slot, ?value)` | The agent has only a guess for the slot. |
 | `changes(?slot, ?outcome)` | The slot's value would change the outcome. |
 | `retraction(?fact)` | The agent proposes retracting a recorded fact. |
-| `yield!` | **Bahul's design (14 Nov).** Hands the initiative to the user; defined from `$consult` and `$generate` (see [Forms used](#yield-consult-and-the-name-notation)). |
-| `$consult(?agent, ?prompt)` | **Bahul's design (14 Nov).** An async call that messages another agent; the reply is the result. |
-| `name!` | **Bahul's design (14 Nov).** The same as `$name()`: a zero-argument async call; the grammar form is in the proposed additions. |
+| `yield!` | **Bahul's name** ("But we will need to do one thing which is: $yeild()", #19; "yeild is 1 example", #23). Hands the initiative to the user; built from `$consult` ("we can use consult to build yield without and need for a special case", #18); see [Forms used](#yield-consult-and-the-name-notation). The spelling `yield!`, with the corrected `yield`, is ABT's. |
+| `$consult(?agent, ?prompt)` | **Bahul's name** ("a new async call called $consult(?agent,?prompt) This, as you might imagine I'd used to message another agent but in a rule context", #8). The reply is the result. |
+| `name!` | **Bahul's notation** ("Notation var! Is the same as $var()", #21). A zero-argument async call. `name!` is ABT's spelling of his `var!`; the grammar form `LABEL '!'` is an ABT proposal (see the proposed additions). |
 | `can(?capability)` | **ABT proposal.** The agent has the capability. Capabilities are keywords such as `:read`, `:write`. |
 | `%checks` | **ABT proposal.** An example goal (law 5) that writes the bindings of the law 2 invariant's left side to chat in `:test`. |
 
 Names used only inside examples (`recommended`, `locked`, `options`, `dinner`,
 `recipe`, `picked`, `reviewed`, `reviewer`, `answer`, and method names such as `method`, `pick` and `recall`) are
 illustrations, not proposals. In particular McK defines no clarification goal,
-method or relation (Bahul, 14 Nov 18:06): clarification is only a pattern, shown
-under [Methods](#methods).
+method or relation: clarification is only a pattern, shown under
+[Methods](#methods). (ABT's reading of a ruling relayed to ABT on 14 Nov, "McK must
+not encode clarify directly"; it is not in the numbered quote record, so it is
+ABT's reading until Bahul confirms.)
 
 ---
 
@@ -123,18 +130,26 @@ under [Methods](#methods).
 
 ### `yield!`, `$consult` and the `name!` notation
 
-This is Bahul's design of 14 Nov. It replaces his 13 Nov form of `$yield` as a
-single bare avar. Anything marked ABT is this document's elaboration.
+This follows Bahul's 14 Nov messages (#6–#28), quoted below by number. It
+replaces the earlier form of `$yield` as a single bare avar (13 Nov). Bahul
+introduced these items step by step ("Let's take a diversion through a new async
+call called $consult(?agent,?prompt)", #8). Anything marked ABT is this document's
+elaboration.
 
 **Normalised syntax.** Bahul gave his syntax from memory and asked that it be
-read as illustrative ("assume that my RPL recollection is gappy", 14 Nov 20:18).
+read as illustrative ("Assume that my rpl recollection is gaopy", #28, typo as
+written).
 The examples in this document are **normalised to the specification**: an lvar
 on the left of the §13.3 bind sugar (`?msg = $generate(…)`, not an avar). The order of
 literals in a conjunction is not semantic (`fol.3`).
 
-**`$consult(?agent, ?prompt)`** is a new async call. It messages another agent
-from a rule, and the reply is the result (`?r = $consult(?agent, ?prompt)`, the
-§13.3 async bind sugar). `?prompt` can itself come from a generator, with the
+**`$consult(?agent, ?prompt)`** is a new async call. Bahul (#8): "This, as you
+might imagine I'd used to message another agent but in a rule context". The reply
+is the result (ABT's reading: `?r = $consult(?agent, ?prompt)`, the §13.3 async
+bind sugar). Bahul (#9) wrote it with a generator as `$consult(?agent, $prompt),
+$prompt = $generate("construct a prompt that ...")`, and added "we can use string
+interpretation to generate that string from bound cars, generate a table, etc or
+use them by name, the agent knows". So `?prompt` can come from a generator, with the
 string interpolation of bound variables, tables, or naming variables that the
 agent knows how to do (rpl.md §2 string templates, `{?draft}` below). `?agent`
 can come from a choice such as `$choose` (rpl.md §14.2) and the like. For
@@ -147,27 +162,39 @@ reviewed(?draft, ?verdict) :-
   ?prompt = $generate("construct a prompt asking the agent to review {?draft}")
 ```
 
-**`name!`** is the same as `$name()`: a zero-argument async call, an async
-thunk, or void relation. "Thunk" is apt because the async momentarily gives
-evaluation a direction. A postfix `!` does not clash with `!=` or with the
+**`name!`**: Bahul (#21) "Notation var! Is the same as $var()", so it is a
+zero-argument async call; he called it "an async thunk or void relation" (#25) and
+said "because of the asynchrony we can use a term like thunk because the async
+changes the evaluation direction monetarily" (#26). A postfix `!` does not clash with `!=` or with the
 prefix `!%goal` (rpl.md §15.5).
 
-**`yield!` is not a special case.** It is built from `$consult` with `:user` as
-the agent, and from `$generate` given one fixed instruction, roughly "given the
-location of the yield and whatever method best fits, do what you think is
-right". That one instruction covers both what to hand off and what to do with the
-response: the two are duals of initiative passing. **Interpretation is part of
-that instruction** (Bahul, 14 Nov 20:18): what to do in the prompt generator is
-talked about there, and pairing `yield!` with `@:` from outside would break the
-fourth wall. So the instruction itself tells the agent what to hand off and how
-to interpret and act on the reply, and nothing at a call site does. `$consult`
-carries only the generated message, never the meta-instruction. The definition,
-normalised; the instruction wording is illustrative, since Bahul gave it as
-"roughly":
+**`yield!` is not a special case.** Bahul: "we can use consult to build yield
+without and need for a special case" (#18), and "yeild has a fixed instruction
+which boils down to do what you think is right" (#16). It is built from `$consult`
+with `:user` as the agent, and from `$generate` given that one fixed instruction,
+which he put as: And it's something "like given location of the yield and
+whatever method best fits..." (#14). He said "consult carries the delivered message not the meta
+instruction" (#17).
+
+**One instruction covers both directions.** Bahul (#13): "aside from what to
+generate generate the agent what to go with the response and both of those csses
+are the duals of 1 thing which is initiative passing" (typos as written). And on
+where interpretation lives (#28):
+"Interpretation must be part of the prompt issued to the agent, the trick is we can
+talk about what to do in the prompt generator, this is that breaking the 4th
+wall". So the single fixed instruction covers both the outgoing message and what
+to do with the reply, and interpretation lives in the generator prompt, not at
+the call site. The definition below is normalised; the instruction wording is
+illustrative, since Bahul gave it only as a "like" paraphrase (#14):
 
 ```rpl
 $yield() :- $consult(:user, $generate("given where this yield sits and whatever method fits best, hand over what you think should be handed over, and interpret and act on the reply as you think is right"))
 ```
+
+**Open (not decided here):** what the reply is when it is bound (does
+`?dish = yield!` get the raw reply, or the reply as the instruction interpreted
+it?); and the failure and absent cases: "stop", a host with no user turn, and a
+reply that is not an answer. They are listed under [Open decisions](#open-decisions).
 
 This relies on two proposed additions. The nested-call sugar (see
 [Nested-call sugar](#nested-call-sugar-bahuls-design)) makes it the same as:
@@ -178,17 +205,20 @@ $yield() :-
   ?msg = $generate("given where this yield sits and whatever method fits best, hand over what you think should be handed over, and interpret and act on the reply as you think is right")
 ```
 
-The `$consult` result is not captured, so by Bahul's rule (14 Nov 20:24, see
+The `$consult` result is uncaptured, so by Bahul's rule (#33: "if an async rule
+calls an async any uncaptured result propagates to the head"; see
 [Proposed specification additions](#uncaptured-async-results-propagate-to-the-head-rplmd-13-14))
 it is the `:result` of `$yield()`, and so of `yield!`.
 
-**A family of escape hatches.** `name!` forms a family: `google-it!`, or
-`config!`, which loads a config file. `google-it!` and `$lookup` (a way to find an
-agent) are illustrative names that Bahul invented to demonstrate a point; they are
-not proposed tools. A zero-argument call may be the same each
-time, depend on context, or be anything else the language can do with no
-arguments, at the top of a proof or elsewhere. Context awareness is only a
-property of a prompt generator if its definition has one.
+**A family of escape hatches.** Bahul (#22): "we can build a family of context
+aware asyncs that can be used as escape hatches". `name!` forms a family: "yeild
+is 1 example. We might also have a google-it!" (#23), or "config! Which is where
+we load a config file, the same one every time, a context dependant one or
+anything else the language can do without args at top of proof or anything we
+can ask the agent to do extra to that" (#24). `google-it!` and `$lookup` (a way to
+find an agent; "I invented it to demonstrate a point", #31) are illustrative names;
+they are not proposed tools. Bahul (#24): "the context awareness is only a
+property of the prompt generator if there's one".
 
 **Uses.** The user may reply "stop"; termination is the user's
 (rpl.md §15.6, §18.5). Valid uses:
@@ -202,7 +232,7 @@ admin(?person) :- ?person = yield!
 
 Conjunction is `,`.
 
-**Evaluation order.** Bahul's ruling (13 Nov) is only that the yield case
+**Evaluation order.** ABT's record of Bahul's 13 Nov ruling (before the 14 Nov quote record, so not quoted here) is only that the yield case
 exploits evaluation order: the yield occurs first. This document uses that for a
 constraint that needs no body bindings, such as `-: yield!`: in
 `A :- B -: yield!` the yield occurs before `B`. It claims nothing more general
@@ -247,8 +277,9 @@ clause: `; @when(C)` makes a rule ineligible, "not blocked, not waiting"
 (rpl.md §16). Whether `-: C` or `; @when(C)` should be the spelling is an open
 decision.
 
-**Handing back is a pattern, not McK vocabulary** (Bahul, 14 Nov 18:06: McK must
-not encode clarification directly). A goal may have a method whose body is
+**Handing back is a pattern, not McK vocabulary** (ABT's reading of a ruling
+relayed on 14 Nov, not in the quote record: McK must not encode clarification
+directly). A goal may have a method whose body is
 `yield!`, written where handing back makes sense for that goal (not as a
 universal rule over all goals). The following is an **example only**; the
 method name belongs to the goal, and McK defines neither:
@@ -272,8 +303,9 @@ add (gap 6).
 ### Async interpretation (sugar accepted by Bahul)
 
 `$avar @: lang(~ Pattern)` reads an async reply as a shape the goal chooses,
-without naming the reply. Bahul accepted it (14 Nov) as a general form. For
-example `$answer @: english(~ picked(?dish, ?kind))` (an example shape, not McK
+without naming the reply. Bahul (#27): "Okay aside over let's work those on, accept
+the other and return to the top list"; ABT reads "the other" as this sugar and the
+§17.7 dot bug, the two items then open. For example `$answer @: english(~ picked(?dish, ?kind))` (an example shape, not McK
 vocabulary). It is specified in
 [Proposed specification additions](#proposed-specification-additions). It is
 not applied to `yield!`, whose interpretation lives in its own instruction.
@@ -686,7 +718,7 @@ other methods of the goal, such as one that hands back with `yield!` (see
 These are plain RPL, not McK laws. Each hands over by using `yield!`. The old
 draft listed them as triggers; here each is what the program says. None
 interprets the reply at the call site: that is in the instruction behind
-`yield!` (Bahul, 14 Nov).
+`yield!` (ABT's reading of #13 and #28, quoted above).
 
 **A choice or stop point the user set** ("give me a few options, then we will
 pick"). The method takes one extra argument, `?options`, which its body binds.
@@ -719,12 +751,12 @@ retraction(?fact) -: yield!
 **ABT proposal.** Only the user's turn resolves `yield!`, so the user is the
 authority over a retraction without any authority relation.
 
-A reply that does not fit the `~` pattern does not satisfy the method. What
-happens next is not specified: §18.6 has the row "No rule is eligible: emit
-`%fail(reason, explanation)`; ask user", which may cover a reply that fits no
-pattern, and the row "User declines arg", which does not (a non-fitting reply
-is not a decline). Which applies is open (gap 3). A reply of "stop" is not an
-answer to the pattern; it is the user ending the run (§15.6, §18.5).
+A reply that is not an answer to the goal does not satisfy the method. What
+happens next is not specified, and it is open ([Open decisions](#open-decisions)):
+§18.6 has the row "No rule is eligible: emit `%fail(reason, explanation)`; ask
+user", which may cover it, and the row "User declines arg", which does not (a
+non-answer is not a decline). Which applies is open (gap 3). A reply of "stop" is
+not an answer; it is the user ending the run (§15.6, §18.5).
 
 ---
 
@@ -793,11 +825,13 @@ two separate stores.
 
 ## Proposed specification additions
 
-Two are **accepted by Bahul** (14 Nov): the async interpretation sugar and the
-§17.7 dot bug. The rest are proposals for him to approve. None is made in the
+Two are **accepted by Bahul** (14 Nov, #27: "accept the other"; see Async
+interpretation above for ABT's reading of "the other"): the async interpretation
+sugar and the §17.7 dot bug. The rest are proposals for him to approve, even where
+the idea is his and quoted. None is made in the
 specification files here.
 
-### Async interpretation (rpl.md §13, logics.md §4) — accepted by Bahul, 14 Nov
+### Async interpretation (rpl.md §13, logics.md §4) — accepted by Bahul, 14 Nov (#27)
 
 An avar may stand as the Statement of `@:`:
 
@@ -838,13 +872,16 @@ precedent. Precedence of `@:` against `,` and `-:` is not in rpl.md §5.6, so
 
 ### Aliases and safety
 
-Bahul's rulings: on 13 Nov (23:09–23:11), a body variable that only provides an
-alias is safe, and the desugared form keeps `?reply` in the head while the sugar
-hides it. On 14 Nov, safety is **not** a property of rewriting. Rewriting is a
-potentially cheap way to know whether a variable is an alias. It is not the only
-way, and it will not always work, because the grammar may have no form for it.
-It stays as a pedagogical device that explains why such variables need not be in
-the args.
+Bahul's 13 Nov ruling was that a body variable that only provides an alias is
+safe, recorded as the rule that rewriting will always drop the var. **The 14 Nov message
+supersedes that last rule.** Bahul (#6), verbatim: "Safety isn't a property of
+rewriting, but rewriting is a potentially cheap way to know if a variable is an
+alias. It's not the only way and it will not always work because the grammar may
+not have a form for it. But it's a good pedagogical device to explain why the cars
+aren't needed in the args." (typos as written; "cars" is "vars"). So rewriting is
+not the criterion: it is a cheap way to see that a variable is an alias, not the
+only way, and it may fail where the grammar has no form for it. It stays as a
+pedagogical device.
 
 ABT's elaboration of the terms (Bahul has not defined them):
 
@@ -875,52 +912,84 @@ brevity and choose nothing.
 
 ### The `name!` form (rpl.md §13, §14, Appendix)
 
-Bahul (14 Nov 20:18): the proposal needs to add this form. It is a grammar
-change. A postfix `LABEL '!'` is a tool call with no arguments:
+Bahul's notation (#21): "Notation var! Is the same as $var()", chosen after
+"are we using ! for anything except not?" (#20) and "Negation is fine because of
+where I'm going to put it". He liked dropping the `$` ("I didn't like having to
+prefix the $ do discarding it with sugar helps", #22). Writing it into the
+grammar is **ABT's proposal**. The spelling `LABEL '!'` is ABT's; a postfix
+`LABEL '!'` is a tool call with no arguments:
 
 ```
 TOOL = '$' LABEL '(' [ ARG [ ',' ARG ]* ]? ')'
      | LABEL '!'                      -- same as '$' LABEL '(' ')'
 ```
 
-So `name!` is `$name()`, a zero-argument async call (an async thunk, or void
-relation), and it is valid wherever `TOOL` is: as a `HEAD`, an `ATOM`, or the
-`ASYNC-ATOM` of the §13.3 bind sugar (`?v = name!` is `name! ^:result ?v`).
-`google-it!` and `config!` are valid labels, since `NAME` allows hyphens. ABT
-note: §5.1 already requires spaces around operators, so `name! = ?x` and
-`name != ?x` are told apart by the space.
+So `name!` is `$name()`, a zero-argument async call, and it is valid wherever
+`TOOL` is: as a `HEAD`, an `ATOM`, or the `ASYNC-ATOM` of the §13.3 bind sugar
+(`?v = name!` is `name! ^:result ?v`). `google-it!` and `config!` are valid
+labels, since `NAME` allows hyphens. ABT note: §5.1 already requires spaces
+around operators, so `name! = ?x` and `name != ?x` are told apart by the space.
+
+**Specification text that would change (ABT).** Places in rpl.md that say a tool
+call is `$name(...)` and would need to include `name!`: §13's prose
+("`$name(...)` invokes a **tool**"; `$tool(...)` in the §13 block), §14.1 (Tool
+Call Syntax), the Appendix `TOOL` production and the Appendix **Namespaces**
+paragraph ("`$name(` … `)` is a tool call"), and §10 "Namespaces in heads"
+("**tool** call (`$…`, §14)").
 
 ### Nested-call sugar (Bahul's design)
 
-Bahul has defined this (rpl.md §9, §13.3, Appendix). `A(B(?c))` is sugar for
-`A(?b), ?b = B(?c)`.
+Bahul (#30): "I.e A(B(?c)) is A(?b), ?b = B(?c)". Asked "why didn't you add the
+sugar and proiceed?" (#34, 15 Nov 17:40), so it is in this proposal. Everything
+below beyond that one equation is **ABT's elaboration**, as marked.
 
-**Desugaring.** A call written as an argument is replaced, in that position, by a
-fresh lvar, and a bind of that lvar to the call is added to the same clause.
-Calls are lifted innermost first, and left to right among arguments. The bind is
-the `=` form: for an async call it is the §13.3 bind sugar (`?b = B(?c)` is
-`B(?c) ^:result ?b`). `,` is not sequencing (`fol.3`), so the order of the
+**Desugaring (Bahul's equation; the rest ABT).** A call written as an argument is
+replaced, in that position, by a fresh lvar, and a bind of that lvar to the call
+is added to the same clause. ABT: calls are lifted innermost first, and left to
+right among arguments. `,` is not sequencing (`fol.3`), so the order of the
 literals is not semantic.
 
 ```rpl
 A(B(?c))                                  -- nested
-A(?b), ?b = B(?c)                         -- desugared
+A(?b), ?b = B(?c)                         -- desugared (Bahul, #30)
 ```
+
+The bind differs by kind of call (ABT's reading). For an **async call** it is the
+§13.3 bind sugar (`?b = B(?c)` is `B(?c) ^:result ?b`), which suspends until the
+result arrives. For a **relation call** rpl.md §9 (Composition) already gives
+the factored form, an lvar argument with a constraint, so the desugared form is
+`outer(?r, ?y), ?r -: inner(?x)`, which means the same as the nested
+`outer(inner(?x), ?y)`. The two desugarings are not the same mechanism.
 
 **Async calls are covered.** So `$consult(:user, $generate("…"))` is valid, and
 means `$consult(:user, ?m), ?m = $generate("…")`. A `name!` thunk is valid as an
 argument for the same reason.
 
-**Nested relation calls are covered too.** They mean the same thing as the nested
-form rpl.md §9 already allows: `outer(inner(?x), ?y)` and
-`outer(?r, ?y), ?r = inner(?x)` are the same statement.
-
 **Collections are unchanged.** Calls inside a collection (`[` … `]`, `#` `{` … `}`)
 stay disallowed (rpl.md §4); the sugar covers arguments only, not collection
 elements.
 
-**Grammar change.** `ARG` gains `TOOL` as an alternative, and `TOOL` includes the
-`LABEL '!'` form of the `name!` entry above:
+**Scope of the lifted bind (ABT's reading, a direct consequence).** The bind goes
+inside the innermost enclosing scope of the call, not outside it: a `not`, a
+disjunct of `|`, a `|…|` cardinality, or `@when(…)`. Lifting it outside would
+change the meaning, since the call would then be evaluated unconditionally.
+
+```rpl
+not A(B(?c))                              -- nested
+not (A(?b), ?b = B(?c))                   -- desugared: the bind stays under not
+(A(B(?c)) | D)                            -- nested
+((A(?b), ?b = B(?c)) | D)                 -- desugared: the bind stays in its disjunct
+```
+
+**Ordering (ABT's reading).** A tool's arguments must be ground at dispatch
+(rpl.md §13.1, §14), so literal order is irrelevant and the data dependency
+decides the order: `$consult(:user, ?msg)` waits for `?msg = $generate("…")`
+whichever is written first. This narrows the reading of §18.4 step 5 ("Unbound
+args → async") for tool arguments: an unbound tool argument is not itself an
+async to ask for; the tool waits for the binding.
+
+**Grammar change (ABT proposal).** `ARG` gains `TOOL` as an alternative, and
+`TOOL` includes the `LABEL '!'` form of the `name!` entry above:
 
 ```
 ARG = VAR | LITERAL | COLLECTION | '_' | RELATION | TOOL
@@ -935,13 +1004,19 @@ design.
 
 ### Uncaptured async results propagate to the head (rpl.md §13, §14)
 
-**Bahul's rule (14 Nov 20:24):** if an async rule calls an async, any uncaptured
-result propagates to the head. This resolves how a rule-defined tool such as
-`$yield() :- …` gets its `:result`: the result of the `$consult` call in its
-body is uncaptured, so it is the `:result` of `$yield()`, and `?v = yield!` binds
-it (rpl.md §13.3).
+**Bahul's rule (#33):** "We can say that if an async rule calls an async any
+uncaptured result propagates to the head." This resolves how a rule-defined tool
+such as `$yield() :- …` gets its `:result`: the result of the `$consult` call in
+its body is uncaptured, so it is the `:result` of `$yield()`, and `?v = yield!`
+binds it (rpl.md §13.3).
 
-ABT's gloss: a result is *captured* when the call has a `?v = …` bind or a
+**It overrides rpl.md §14.1 for async rules.** §14.1 shows `$tool(?args)` with
+the comment "result discarded". For a call in the body of an async rule, an
+uncaptured result is not discarded: it propagates to the head. §14.1's
+"discarded" still holds elsewhere (ABT's reading).
+
+"Async rule" and "uncaptured" are Bahul's words (#33). ABT's gloss, and ABT's
+word for the dual: a result is *captured* when the call has a `?v = …` bind or a
 `^:result …` / `^ ~ {:result …}` metadata match (rpl.md §11, §13.3), and
 *uncaptured* otherwise. ABT's open edge cases, not decided here:
 
@@ -949,12 +1024,15 @@ ABT's gloss: a result is *captured* when the call has a `?v = …` bind or a
   whether that is an error.
 - Whether the rule also applies to a non-async rule, where a body call with an
   uncaptured result could propagate to the head in the same way.
+- What counts as an "async rule": one whose body contains an async call, one
+  whose head is a tool, or any rule that calls something async such as `$write`.
 
 ### `$consult` and `yield!` (rpl.md §14, lrpl.md §5)
 
-Bahul's design of 14 Nov, described under
-[Forms used](#yield-consult-and-the-name-notation). It is not marked accepted.
-It would add to the specification:
+Bahul designed these (#8, #18, quoted under
+[Forms used](#yield-consult-and-the-name-notation)). Adding them to the
+specification files is still a proposal for him to approve; he has not accepted
+that. It would add to the specification:
 
 - `$consult(?agent, ?prompt)` as an async call, next to `$ask` and `$choose`
   (rpl.md §14.2) and `$generate` (lrpl.md §5.3). Its name would be reserved like
@@ -967,7 +1045,7 @@ that the yield case exploits it (above, gap 5).
 
 ### §17.7 uses a dot that `NAME` does not allow
 
-**Accepted by Bahul, 14 Nov, as a bug.**
+**Accepted by Bahul, 14 Nov (#27: "accept the other"; ABT reads "the other" as this bug, see above), as a bug.**
 
 rpl.md §17.7 shows `file.md#rel` and `%file.md#goal`. In the Appendix,
 `LABEL = NAME | NS '#' NAME` and `NAME = [a-z] [a-z0-9\-]*`, so `file.md` is
@@ -986,7 +1064,7 @@ anchors either.
    Bahul's alias ruling adds, and the arity of a method whose sugar hides an
    alias, are in [Aliases and safety](#aliases-and-safety).
 2. **§17.7** `file.md#rel` is not valid under the grammar (above). Bahul accepted
-   it as a bug (14 Nov); the choice of fix is open.
+   it as a bug (14 Nov, #27, ABT's reading of "the other"); the choice of fix is open.
 3. **Non-fitting reply and stop.** The spec has no case for a reply that
    fits no pattern. §18.6's "No rule is eligible" row may cover it and its
    "User declines arg" row does not; which applies is open. A reply of "stop"
@@ -1102,10 +1180,19 @@ For Bahul, not settled by this document. The first block matters most.
   to the hidden alias.
 - Whether `yield!`, or the `$consult` under it, is ever gated on a capability.
 - Whether `yield!` is a built-in or a library definition, and the wording of its
-  one fixed instruction (Bahul gave it as "roughly" so).
+  one fixed instruction (Bahul gave only a paraphrase, #14).
 - Where reserved tool names are listed (gap 18).
-- ABT's edge cases for uncaptured results: more than one in a body, and whether
-  the rule applies to a non-async rule.
+- ABT's edge cases for uncaptured results: more than one in a body, whether the
+  rule applies to a non-async rule, and what counts as an "async rule" (for
+  example, any rule calling `$write`).
+- The reply to `yield!`: when it is bound (`?dish = yield!`), does the call get
+  the raw reply or the reply as the fixed instruction interpreted it? And the
+  failure and absent cases: "stop", a host with no user turn, and a reply that is
+  not an answer.
+- "Given where this yield sits": `$generate` takes a string and has no context
+  argument, so how the instruction learns the yield's location (#14) is open.
+- Yield-first ordering: how Bahul's evaluation-order point (the yield occurs
+  first) is to be stated; see gap 5 and the evaluation-order bullet above.
 - Nested-call sugar in a rule head or a `-:` constraint (ABT's assumption, from
   the spec; not Bahul's ruling): the lifted bind joins the body literal of that
   rule or constraint. Nothing in the spec says otherwise, and it needs confirming.

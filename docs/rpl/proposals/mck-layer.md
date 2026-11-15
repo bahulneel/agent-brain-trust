@@ -120,9 +120,8 @@ Names used only inside examples (`recommended`, `locked`, `options`, `dinner`,
 `recipe`, `picked`, `reviewed`, `reviewer`, `answer`, and method names such as `method`, `pick` and `recall`) are
 illustrations, not proposals. In particular McK defines no clarification goal,
 method or relation: clarification is only a pattern, shown under
-[Methods](#methods). (ABT's reading of a ruling relayed to ABT on 14 Nov, "McK must
-not encode clarify directly"; it is not in the numbered quote record, so it is
-ABT's reading until Bahul confirms.)
+[Methods](#methods). Bahul (#0, 14 Nov): "But we are not supposed to encode clarify
+directly just use it as a pattern".
 
 ---
 
@@ -130,7 +129,7 @@ ABT's reading until Bahul confirms.)
 
 ### `yield!`, `$consult` and the `name!` notation
 
-This follows Bahul's 14 Nov messages (#6–#28), quoted below by number. It
+This follows Bahul's 14 Nov messages (#0 and #6–#28), quoted below by number. It
 replaces the earlier form of `$yield` as a single bare avar (13 Nov). Bahul
 introduced these items step by step ("Let's take a diversion through a new async
 call called $consult(?agent,?prompt)", #8). Anything marked ABT is this document's
@@ -277,9 +276,8 @@ clause: `; @when(C)` makes a rule ineligible, "not blocked, not waiting"
 (rpl.md §16). Whether `-: C` or `; @when(C)` should be the spelling is an open
 decision.
 
-**Handing back is a pattern, not McK vocabulary** (ABT's reading of a ruling
-relayed on 14 Nov, not in the quote record: McK must not encode clarification
-directly). A goal may have a method whose body is
+**Handing back is a pattern, not McK vocabulary** (Bahul, #0, 14 Nov: "But we are
+not supposed to encode clarify directly just use it as a pattern"). A goal may have a method whose body is
 `yield!`, written where handing back makes sense for that goal (not as a
 universal rule over all goals). The following is an **example only**; the
 method name belongs to the goal, and McK defines neither:

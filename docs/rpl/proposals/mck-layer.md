@@ -364,7 +364,8 @@ reaches(?c, ?alias) :- reaches(?c, ?item), alias(?alias, ?item)
 
 **Scoped constraints (ABT proposal).** The second invariant is the scoped case of
 the first. A constraint recorded in a frame with `~:` (law 3) is checked only
-while `?w` is the active frame or an ancestor of it (`?a = ?w | inside(?a, ?w)`).
+while `?w` is the active frame or an ancestor of it (`?a = ?w | inside(?a, ?w)`;
+`inside` is defined in [law 3](#3-frames)).
 The premises are all positive, and every variable occurs in a positive premise
 (`?w` in the `~:` fact, `?a` in `active(?a)`), so the rule is safe and
 monotonic. `(intent(:constraint, ?c) ~: ?w)` is parenthesised so that it reads as
@@ -427,7 +428,8 @@ active(?f), active(?g) -: ?f = ?g
 ```
 
 **Tree (ABT proposal).** Two further invariants encode the tree: at most one
-parent, and no cycles, so no frame is inside itself.
+parent, and no cycles, so no frame is inside itself (`inside` is defined below, under
+"Frame scope with `~:`").
 
 ```rpl
 frame(?g, ?p), frame(?g, ?q) -: ?p = ?q
@@ -698,8 +700,11 @@ the tutorials use (tutorials 00, 02 and 04):
 $index(".rpl/long-term.log") -: can(:read)      -- schematic (lrpl.md §5.1)
 ```
 
-Its rows become facts of the predicates they carry, so the law uses
-`locked(?dish)` directly. The call is lazy (lrpl.md §5.0): it is not executed until
+Its rows become facts of the predicates they carry (lrpl.md L21: "external data
+mapped into relation positions"; and the non-normative tutorials
+[00](../tutorial/00-recipe-protocol.md) L309–313,
+[02](../tutorial/02-kitchen-context.md) L37–39 and
+[04](../tutorial/04-handoff.md) L47–49), so the law uses `locked(?dish)` directly. The call is lazy (lrpl.md §5.0): it is not executed until
 a value is required. ABT's note: the specification does not say whether `$index`
 carries `-: false` retractions or log order (rpl.md §12.3–12.4).
 

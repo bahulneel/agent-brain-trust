@@ -513,8 +513,9 @@ call forms.
 **Safety by default** — Variables that appear in the **head** should also appear
 in the **body**, so conclusions are tied to support in the same rule. The rule
 applies to variables the head **concludes**, not variables the head **binds**
-(e.g. **`?reader = #"…" :- …`** is safe because **`?reader`** is defined in the
-body; **`{?var}`** slots inside that template are supported by the same tail). When
+(e.g. in **`?reader = #"…" :- …`**, **`?reader`** is a head **binding**, so the
+safety rule does not apply to it; **`{?var}`** slots in that template are
+supported by the same tail). When
 a concluding head variable cannot appear in the body, record **provenance** in
 metadata (§11) instead of leaving unexplained gaps (e.g. `:file`, `:heading`,
 `:doc`).

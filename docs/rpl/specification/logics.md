@@ -240,8 +240,9 @@ rel(?a, ?b) :% true ^:pred #"rel(?a,?b)" ^:lang :sketch-dsl :- ~ sketch-dsl(?a, 
 ```
 
 Here `:pred` records that `rel(?a,?b)` is the intended predicate shape; `~:`
-fixes modal context; `:lang` ties the world to the interpretive language
-**sketch-dsl** (kebab-case label, §4.1).
+fixes modal context; **`^:lang :sketch-dsl`** names the same language as the
+**sketch-dsl** label in §4.1 (keyword **`:sketch-dsl`** in metadata, kebab-case
+language name in interpretive clauses).
 
 ---
 

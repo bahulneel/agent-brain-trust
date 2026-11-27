@@ -1265,6 +1265,17 @@ $tool#action         -- tool subcommand
 $sql-select#table    -- tool with named query target
 ```
 
+### 17.8 Practice
+
+An RPL **practice** is a Markdown file (RPL source, this section) whose goal is
+to extend the program with its own names and rules. The file is the namespace;
+names in it are cited as `file.md#name` (§17.7). A practice `coc.md` that
+defines `take` is cited as:
+
+```rpl
+coc.md#take(:abt, :FOR-123) :% true
+```
+
 ---
 
 ## 18. Runtime — Operating Model

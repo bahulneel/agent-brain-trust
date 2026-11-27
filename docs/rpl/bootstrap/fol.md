@@ -91,15 +91,15 @@ parent(?x, ?y) | mentor(?x, ?y)
 
 ---
 
-### fol.5 — Negation is written, not classified
+### fol.5 — `not` is negation by absence
 
 **Law.** `not A` is a well-formed operator.
 
-**FOL reading.** *Comment.* [rpl.md §5.5](../specification/rpl.md#55-logical-operators) lists `not`. It does not say classical ¬ versus failure to prove.
+**FOL reading.** *Comment.* [rpl.md §5.5](../specification/rpl.md#55-logical-operators) lists `not` as negation by absence (failure to prove). Explicit retraction is `¬A`, sugar for `A -: false` ([rpl.md §12.4](../specification/rpl.md#124-trace-retraction)).
 
-**Surface.** `not A`.
+**Surface.** `not A`. `¬A` is retraction ([rpl.md §12.4](../specification/rpl.md#124-trace-retraction)), not this operator.
 
-**Spec.** [rpl.md §5.5](../specification/rpl.md#55-logical-operators).
+**Spec.** [rpl.md §5.5](../specification/rpl.md#55-logical-operators), [rpl.md §12.4](../specification/rpl.md#124-trace-retraction).
 
 **Example.**
 

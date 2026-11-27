@@ -38,6 +38,12 @@ derivation; `<$label(…)>` applies both mechanisms.
 Academic grounding (Bloom, CALM, monotonic vs non-monotonic points) —
 [theory.md](../theory.md).
 
+**LRPL coordination points** — Lazy evaluation, memo narrowing, and forced
+realisation are **monotonic** where facts and memos accumulate; **memo disjunct
+retraction**, **lazy entry**, and **forced lvar realisation** are additional
+**non-monotonic coordination points** alongside those in [rpl.md §18.1](rpl.md#181-two-layers)
+([theory.md](../theory.md#monotonic-and-non-monotonic-points-lrpl)).
+
 **Additional logics** — Existential, modal, and interpretive operators are specified in
 [logics.md](logics.md). Hosts may also add tools and grammar in separate specs;
 normative text for such an extension lives only in its own document.

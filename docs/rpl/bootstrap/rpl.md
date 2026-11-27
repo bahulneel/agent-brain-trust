@@ -28,15 +28,15 @@ locked-ingredient-line($ingredient, $qtyNote)
 
 ---
 
-### rpl.2 — `#?x` is the syntax reading
+### rpl.2 — `#?x` and `#&` are syntax readings
 
-**Law.** `?x` means the value of the binding. `#?x` means the form of the bound expression.
+**Law.** `?x` means the value of the binding. `#?x` means the form of one admissible binding (or several sentences, one per binding). `#"…"` unquotes a string (including `{?x}` templates) into a statement. `#&` splices the syntax of a whole gathered collection—typically `#&[& ?x]` after a head that gathers with `&`.
 
-**FOL reading.** *Partial.* Value reading is `fol`. Expansion is a syntactic operation, not a FOL connective.
+**FOL reading.** *Partial.* Value reading is `fol`. Expansion, string unquote, and splice are syntactic operations, not FOL connectives.
 
-**Surface.** `?x`, `#?x`.
+**Surface.** `?x`, `#?x`, `#"…"`, `#&`, `#&[& ?x]`.
 
-**Spec.** [rpl.md §3](../specification/rpl.md#3-variables), [rpl.md §5.7](../specification/rpl.md#57-expansion).
+**Spec.** [rpl.md §3](../specification/rpl.md#3-variables), [rpl.md §5.7](../specification/rpl.md#57-expansion-and-collection-splice).
 
 **Example.**
 
@@ -45,6 +45,26 @@ outer(?r, ?y) :- ... -: ?r -: inner(?x)
 ```
 
 **Not.** An lvar in callee position is still ill-formed.
+
+---
+
+### rpl.2a — `_name` placeholders
+
+**Law.** `_name` (e.g. `_prose`) is a placeholder: it stands in for content to be supplied later, not an lvar or anonymous `_`.
+
+**FOL reading.** *Comment.* Deferred authoring site, not a logical variable.
+
+**Surface.** `_prose`, `:@ _prose`.
+
+**Spec.** [rpl.md §3](../specification/rpl.md#3-variables).
+
+**Example.**
+
+```rpl
+sketch-lang(?id) :@ _prose
+```
+
+**Not.** A placeholder does not unify like `?x` or match like `_`.
 
 ---
 
@@ -179,21 +199,23 @@ ask(?prompt, ?answer) :- $ask(?prompt) ^ ~ {:result ?answer}
 
 ### rpl.9 — `$` marks async deduction
 
-**Law.** `$x` suspends until a later timestep. `$name(...)` is a tool. `?x` is resolved in the current deductive step.
+**Law.** `?x` is **inferred** (must match existing facts). `$x` is **deduced** (the body or tool **produces** the value). `$x` also **suspends** until a later timestep when async. `$name(...)` is a tool.
 
 **FOL reading.** *Comment.* There is no FOL connective for “the witness arrives later.” The spec treats `$` as a Bloom-style channel ([theory.md](../theory.md)). Resolution is a grounded constraint (rpl.6).
 
-**Surface.** `$x`, `$tool(...)`, sugar `?r = $tool(...)`.
+**Surface.** `?x`, `$x`, `$tool(...)`, `rel(?a)`, `rel($a)`, sugar `?r = $tool(...)`.
 
-**Spec.** [rpl.md §13](../specification/rpl.md#13-async-variables), [rpl.md §14](../specification/rpl.md#14-tools), [scope.md](../scope.md#inference-and-deduction).
+**Spec.** [rpl.md §3](../specification/rpl.md#3-variables), [rpl.md §9](../specification/rpl.md#9-relations), [rpl.md §13](../specification/rpl.md#13-async-variables), [rpl.md §14](../specification/rpl.md#14-tools), [scope.md](../scope.md#inference-and-deduction).
 
 **Example.**
 
 ```rpl
+pairing(?id)              -- ?id must already be known
+pairing($id)              -- $id is produced by this relation
 ?answer = $ask("How are you?")
 ```
 
-**Not.** `$` is not a second sort of lvar. Scope: `?` inferred, `$` deduced.
+**Not.** `$` is not a second sort of lvar; it is deduced (and may be async).
 
 ---
 
@@ -214,6 +236,26 @@ ask(?prompt, ?answer) :- $ask(?prompt) ^ ~ {:result ?answer}
 ```
 
 **Not.** Nested `HEAD :- HEAD :- TAIL` is a permitted idiom, not the execution model ([rpl.md §10](../specification/rpl.md#10-rules-and-implication)).
+
+---
+
+### rpl.10a — Inference modes (default, goal, existential)
+
+**Law.** Inference is inductive by default; goals bias deductive reading; existential operators bias abductive branching. One expression may mix all three. The agent may evaluate in any order if the result matches the modelled inference. `:-` has no fixed head-to-tail direction.
+
+**FOL reading.** *Comment.* Modes describe how authors read rules, not a mandated engine algorithm.
+
+**Surface.** `:-`, `:%`, `%:`, `%`.
+
+**Spec.** [rpl.md §10](../specification/rpl.md#10-rules-and-implication) (Inference modes), [logics.md §2](../specification/logics.md#2-additional-logic-a-existential).
+
+**Example.**
+
+```rpl
+ancestor(?x, ?y) :- parent(?x, ?y)
+```
+
+**Not.** Top-down or bottom-up evaluation is not required at runtime.
 
 ---
 
@@ -270,3 +312,23 @@ user('foo')
 ```
 
 **Not.** `$json` is not an HTTP API, and not an internal-only debug stream. The chat carries the NDJSON; the trace records completion (`$json(?x) ^ ~ {:tool :json} -: true`).
+
+---
+
+### rpl.13 — Metadata is the agent’s meta space
+
+**Law.** Metadata maps belong to the agent. Binding is unify and union: values per key accumulate as a set; metadata is never destructively set; repeating a key adds (including multiple `:pred` signposts). Reserved keys include `:memo`, `:bindings`, `:result`, `:pred`, `:lang`, `:can` (programs never set `:can`).
+
+**FOL reading.** *Comment.* Side information on assertions, not Horn literals.
+
+**Surface.** `^:result ?r`, `^^ {?a ?b}`, `^:pred #"rel(?x,?y)"`, `-: ^:can :notify`.
+
+**Spec.** [rpl.md §11](../specification/rpl.md#11-metadata).
+
+**Example.**
+
+```rpl
+lookup($ref, ?item) :- $fetch($ref) ^:result ?item, ^:pred #"lookup($ref,?item)"
+```
+
+**Not.** `:can` is not populated by the program; the agent infers capability from usage.

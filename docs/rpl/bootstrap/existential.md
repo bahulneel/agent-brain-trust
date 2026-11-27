@@ -10,11 +10,11 @@
 
 ### existential.1 — Head `:%` and tail `%:`
 
-**Law.** Four modes:
+**Law.** Empty operand sides read as `true` ([logics.md §1.1.1](../specification/logics.md#111-implicit-true)). The Log is **assertion**—`:%` records what was asserted. Four modes:
 
 | Mode | Surface | Reading |
 | --- | --- | --- |
-| Log | `true :% A` | Permanent record |
+| Log | `:% A` (`true :% A`) | Permanent assertion |
 | Impulse | `A :% true` | Transient until next quiescence |
 | Consistency | `true %: A` | Structural invariant |
 | Eventually | `A %: true` | Pending until A holds |
@@ -28,7 +28,7 @@
 **Example.**
 
 ```rpl
-true :% BlackSwan
+:% BlackSwan
 BlackSwan %: true
 ```
 

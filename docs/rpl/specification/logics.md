@@ -18,6 +18,14 @@ Every expression in (L)RPL is shorthand for a deeper structural commitment. For 
 
 The composition `true :- expr -: true` anchors the expression at both ends: as a positive existence ("head") and as a necessary validity ("tail").
 
+### 1.1.1 Implicit `true`
+
+**`true` is implicit** wherever an operator or canonical form leaves an operand
+position **empty**: that side is read as **`true`**. For example a standalone
+**`expr`** expands to **`true :- expr -: true`**; **`:- expr -:`** with no
+constraint is **`expr -: true`**; existential forms use the same rule (e.g.
+**`:% A`** means **`true :% A`**).
+
 ### 1.2 Fact vs. Proof
 
 There is a key distinction between a **fact** and a **proof** (truth). A statement like "There is a black swan" claims existence (fact), but does not constitute a proof. In canonical form:
@@ -48,21 +56,25 @@ In the base logic, these two are balanced. But at scale, managing these independ
 
 This logic governs **materialization and synchronization** of expressions. It introduces explicit lifecycle operators: **`:%`** (Head) and **`%:`** (Tail).
 
+**Assertion.** The **Log** is **assertion**: recording in the log is asserting what
+occurred. **`:%`** on the head side materialises that assertion ([§2.1](#21-the-four-operational-modes)).
+
 ### 2.1 The Four Operational Modes
 
-By decomposing canonical forms into existential components, we find four core states:
+By decomposing canonical forms into existential components, we find four core states.
+Empty operands read as **`true`** ([§1.1.1](#111-implicit-true)).
 
 | Mode         | Syntax         | Concept             | Description                                               |
 |--------------|---------------|---------------------|-----------------------------------------------------------|
-| The Log      | `true :% A`   | A Posteriori        | Permanent history—record of what has occurred             |
+| The Log      | `:% A` (`true :% A`) | Assertion     | Permanent history—what was asserted to have occurred      |
 | The Impulse  | `A :% true`   | Transient Trigger   | Immediate—lasts until the next quiescence                 |
 | Consistency  | `true %: A`   | Structural Invariant| Hard constraint—logic is invalid if it contradicts A      |
 | Eventually   | `A %: true`   | Liveness Promise    | Pending—obligation until A is met                         |
 
 ### 2.2 Analogy: The Lifecycle of the Swan
 
-- **The Log** (`true :% BlackSwan`):  
-  Grounded observation. We found a black swan—it’s part of permanent history.
+- **The Log** (`:% BlackSwan`, i.e. `true :% BlackSwan`):  
+  Grounded assertion. We found a black swan—it’s part of permanent history.
 
 - **The Impulse** (`BlackSwan :% true`):  
   Momentary sighting. Immediate effect; not necessarily a permanent law.
@@ -183,6 +195,54 @@ Most programs need no definition clauses. The agent's background already fixes h
 
 `rpl` has special standing: it refers not to RPL in the abstract but to the RPL language as currently instantiated for this run — the active dialect, extensions, and logics included. A bare Statement is sugar for its Interpretation under `rpl`; the wrapper is elided because source and target coincide.
 
+### 4.5 Run-time reader for every available language
+
+When the set of languages is not fixed at authoring time, a program can define
+an interpretive reader for **each** language the run can supply, then splice those
+definitions into one asserted block:
+
+```rpl
+:% #&[& ?reader] :- ?reader = #"{?lang}(~ rel(?a, ?b)) :@ _prose" :- ?lang = $generate('available languages') ; @each(?lang)
+```
+
+Reading this form in order:
+
+- **`$generate('available languages')`** yields the language names for this run.
+  The spec does not enumerate which languages exist; generation supplies them
+  ([lrpl.md](lrpl.md) for `$generate`).
+
+- **`@each(?lang)`** ([rpl.md §16.4](rpl.md#164-each)) forces **one branch per**
+  binding of `?lang`, so each language is handled separately in the tail.
+
+- Each branch equates **`?reader`** to the **syntax** of a small program:
+  **`{?lang}(~ rel(?a, ?b)) :@ _prose`** — a **value** string template (§2, §6)
+  whose `{?lang}` slot is the language name, defining a language whose
+  specification prose is `_prose` (placeholder, [rpl.md §3](rpl.md#3-variables))
+  and whose statements read as `rel(?a, ?b)` under structural matching.
+
+- The rule **head** **`[& ?reader]`** **gathers** every branch’s `?reader` into
+  one list ([rpl.md §8](rpl.md#8-collection-destructuring)).
+
+- **`#&[& ?reader]`** **splices** that gathered collection in at the assertion
+  site ([rpl.md §5.7](rpl.md#57-expansion-and-collection-splice)).
+
+- **`:%`** records the spliced readers in the **Log** ([§2.1](#21-the-four-operational-modes)):
+  a permanent assertion of what was materialised for this run.
+
+The relation **`rel(?a, ?b)`** is neutral illustration only; any head-compatible
+relation would serve the same structural role.
+
+**Mixed logics and `:pred`.** When assertion, modal, and interpretive operators
+combine, `:pred` signposts schema without treating an ungrounded call as fact:
+
+```rpl
+rel(?a, ?b) :% true ^:pred #"rel(?a,?b)" ^:lang :sketch-dsl :- ~ sketch-dsl(?a, ?b) ~: true
+```
+
+Here `:pred` records that `rel(?a,?b)` is the intended predicate shape; `~:`
+fixes modal context; **`^:lang :sketch-dsl`** names the same language as the
+**sketch-dsl** label in §4.1 (keyword **`:sketch-dsl`** in metadata, kebab-case
+language name in interpretive clauses).
 
 ---
 

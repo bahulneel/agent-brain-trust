@@ -128,6 +128,18 @@ To abstract over an inner goal, bind an **argument** lvar to the subexpression
 Lvars are introduced before **async vars** (`$x`, §13) and **in-place patterns**
 (`~ PATTERN`, §6).
 
+**Inferred (`?`) and deduced (`$`)** — An **`?x`** occurrence is **inferred**: it
+must be **bound from existing facts** before the surrounding relation can be read
+as ground. A **`$x`** occurrence is **deduced**: evaluation of the rule body (or
+tool) **produces** the value at that site. Where `?x` is input-shaped, `$x` is
+output-shaped. This is separate from the **async timestep** reading of `$x` (§13):
+async vars **also** deduce their values, but arrive on a **later timestep**.
+
+```rpl
+item-kind(?k)      -- ?k must already be known; matches against the store
+item-kind($k)      -- $k is produced when this relation is satisfied
+```
+
 ---
 
 ## 4. Collections
@@ -452,6 +464,11 @@ LABEL    = NAME | NS '#' NAME
 Each **argument** may be any **expression** permitted by `ARG` in the Appendix —
 typically a variable, literal, collection, `_`, or a nested relation call.
 
+**Argument roles** — Use **`?name`** for positions that must **match** what is
+already known (**inferred**, §3). Use **`$name`** for positions the relation or
+tool **produces** (**deduced**, §3). The same relation label may appear with
+either shape; the sigil states the data flow at that site.
+
 **Naming** — relation names are declarative; they name facts, not actions:
 
 ```
@@ -493,6 +510,11 @@ meaning until composed in a larger statement. Validity is determined by how the
 **whole** sentence is read, not by restricting heads to relation, goal, or tool
 call forms.
 
+**Safety by default** — Variables that appear in the **head** should also appear
+in the **body**, so conclusions are tied to support in the same rule. When that is
+not possible, record **provenance** in metadata (§11) instead of leaving unexplained
+gaps (e.g. `:file`, `:heading`, `:doc`).
+
 **Conjunction** is `,`; **disjunction** is `|`; parentheses group. A **clause**
 is an atom optionally annotated with `^` / `^^` (§11), **`LVAR '=' ASYNC-ATOM`**
 with the same optional annotations (async bind sugar, §13), or a parenthesised
@@ -532,6 +554,11 @@ head to tail or from tail to head.
 ---
 
 ## 11. Metadata
+
+**Metadata space** belongs to the **agent**. Programs attach metadata with `^` and
+`^^`; the agent **owns** the meta map, may add keys the program never mentions, and
+**infers** contents such as `:result`, `:can`, and `:config` from usage rather than
+requiring authors to pre-populate them ([agent design](../agent-mck.md)).
 
 In **`clause ^ VAR`** and **`clause ^^ VAR`**, the **meaning** is access to
 **metadata** on the immediately preceding form, or to the **`bindings`**
@@ -615,6 +642,13 @@ clause ^:bindings {?a "val1", ?c "val2"}  -- same reading
 The same **bindings** shapes attach when a **goal head** lists capture arguments
 on the tail (§15.1).
 
+**Binding metadata semantics** — Under a **single world**, values for the same
+metadata key **unify** (they must agree). Across **worlds** (e.g. memo disjuncts,
+abductive branches), the key’s values **union**—each world contributes, none
+**replaces** another. Metadata is **not** a destructive **set**: repeating a key
+**adds** or **extends** information; it does **not** overwrite prior union members
+for that key within the merge rules above.
+
 **Distribution** — `^` on a grouped tail distributes only to clauses whose vars
 appear in the pattern (examples use `->` as “same programme, rewritten for
 display”, not as a required step):
@@ -634,7 +668,18 @@ display”, not as a required step):
 :doc       "user selected editing goal during collaborative edit"
 ```
 
-The agent may mint additional keys as needed.
+**Reserved keys** — These keys have normative meaning; other keys may still be
+used when the agent can infer intent from patterns (e.g. `:config` matched with
+`-: ^:config ~ {:env ?e, :region ?r}` need not be reserved):
+
+| Key | Role |
+|-----|------|
+| `:memo` | Constraint memo in DNF on an lvar ([lrpl.md §3](lrpl.md)) |
+| `:bindings` | Ground or pattern capture map (this section) |
+| `:result` | Primary tool-result slot (`$tool ^:result ?r`, §14) |
+| `:pred` | Predicate **signpost** — long form only: `^:pred #"rel(?x,?y)"` (no `'` shorthand). Stores a real value but **no direct interpretation** as truth: `rel(?x,?y)` alone is never ground; what holds is that the **expression exists**, signposting that `rel` is a relation with those arguments. May be asserted again for other relations. On `true` (and similar assertion heads), `:pred` differs between worlds only **after** branching (abduction, modal, etc.); a `:pred` recorded mid-interpretation is **schema-scoped** to that branch. |
+| `:lang` | Language of an interpretation for this world ([logics.md §4](logics.md)); ties assertion to interpretive context. |
+| `:can` | **Capabilities** the agent may exercise. **Never set by a program.** Queried in the body (`head :- body, ^:can :notify`) or as a constraint (`head :- body -: ^:can :notify`). Once the agent knows what `:can` means, it **infers** contents from usage; authors do not populate it. Distinct from any separate `can(...)` relation used under `-:`. |
 
 **Context-sensitive defaults**:
 
@@ -737,13 +782,21 @@ at(:robot, :kitchen)
 Traces are queryable as ordinary relations. A future protocol can reason over
 prior traces without separate persistence machinery.
 
+A **later stratum** — the next **turn**, **session**, or **document handoff** —
+does **not** restart from an empty store. It treats the **prior trace** as
+**ground**: established facts, satisfied goals, and provenance from earlier strata
+remain relations the new stratum may extend or retract under the rules above
+([vision.md](../vision.md#the-trace), [cognition.md](../cognition.md)).
+
 ---
 
 ## 13. Async Variables
 
-An **async var** `$x` resolves **asynchronously** — from user input, a tool
-result, or an external event. Unlike an lvar `?x`, which is resolved within the
-current deductive step, `$x` **suspends** until a value is supplied.
+An **async var** `$x` is a **deduced** position (§3, §9): its value is
+**produced** by evaluation, not matched from prior facts. It also resolves
+**asynchronously** — from user input, a tool result, or an external event. Unlike
+an lvar `?x` (**inferred**, bound in the current deductive step), `$x`
+**suspends** until a value is supplied.
 
 ```
 $x           -- async var: value arrives asynchronously
@@ -1361,7 +1414,23 @@ Timestep:
 
 ### 18.1 Two Layers
 
-The formal vs agent layer split is stated in [theory.md](../theory.md#layers-formal-and-agent).
+```
+Formal layer     rules, constraints, abductives, quiescence, dispatch
+Agent layer      interpretation, ambiguity, non-monotonic change, planning,
+                 error recovery
+```
+
+The **monotonic core** — fact accumulation, relational derivation, trace growth —
+yields the **same conclusions** from the **same facts**, regardless of evaluation
+order. **Non-monotonic** steps — retractions, forced choices, conflict resolution,
+schema change, and related commitments — are **coordination points** where agent
+judgment applies ([theory.md](../theory.md#bloom-calm-and-monotonicity-rpl) for
+Bloom/CALM background; normative split in
+[theory.md § Layers](../theory.md#layers-formal-and-agent)).
+
+With **LRPL**, additional coordination points include **lazy expression
+realisation**, **memo disjunct retraction**, and **forced lvar realisation**
+([lrpl.md](lrpl.md), [theory.md § Monotonic and non-monotonic points (LRPL)](../theory.md#monotonic-and-non-monotonic-points-lrpl)).
 
 ### 18.2 Binding Store
 

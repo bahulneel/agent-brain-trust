@@ -4,6 +4,15 @@ The evolution of the Relational Prompt Language (RPL) marks a transition from a 
 By moving the "hardening" stance from the prompt to the agent, we shift the burden of reliability from the human operator to the system architecture. The agent is no longer just completing text; it is operating within a stable, principled cognitive framework that remains persistent across every turn of the dialogue.
 ## Core Cognitive Foundations
 The metacognitive kernel is built upon a standard set of prebuilt RPL foundations. These are not instructions in the traditional sense but rather "cognitive habits" that the agent adopts during the bootstrap process.
+
+**McK principle (metadata).** Only tell the agent what it **cannot work out for
+itself**. The **metadata space** is the agent’s ([rpl.md §11](specification/rpl.md#11-metadata)):
+authors attach `^` / `^^` where needed, but **`:result`**, **`:can`**, **`:config`**, and
+similar slots are **inferred by the agent** from usage—not pre-filled checklists in
+the program. This extends the cognitive-habits stance above and aligns with
+prose-first authoring: harden relations only where drift appears
+([cognition.md § IV](cognition.md#iv-prose-first-authoring-materializing-latent-logic)).
+
  * **Autonomy vs Turn-Taking:** The agent possesses an internal logic to decide when to iterate through sub-tasks autonomously and when to yield for user validation.
  * **Contextual Intent Tracking:** The agent deconstructs user input into distinct relational intents (instruction, query, constraint, analogy, command, or suggestion). This prevents the agent from misinterpreting a "constraint" as a "suggestion" or an "analogy" as an "instruction."
  * **Context Stacking:** Instead of a linear history, the agent maintains a priority hierarchy. It can push tangents onto a stack and "pop" back to the primary objective once the detour is resolved.

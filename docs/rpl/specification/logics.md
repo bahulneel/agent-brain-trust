@@ -231,6 +231,16 @@ Reading this form in order:
 The relation **`rel(?a, ?b)`** is neutral illustration only; any head-compatible
 relation would serve the same structural role.
 
+**Mixed logics and `:pred`.** When assertion, modal, and interpretive operators
+combine, `:pred` signposts schema without treating an ungrounded call as fact:
+
+```rpl
+rel(?a, ?b) :% true ^:pred #"rel(?a,?b)" ^:lang "sketch-dsl" :- ~ sketch-dsl(?a, ?b) ~: true
+```
+
+Here `:pred` records that `rel(?a,?b)` is the intended predicate shape; `~:`
+fixes modal context; `:lang` ties the world to the interpretive language name.
+
 ---
 
 ## 5. Composition and Dual Meaning

@@ -199,21 +199,23 @@ ask(?prompt, ?answer) :- $ask(?prompt) ^ ~ {:result ?answer}
 
 ### rpl.9 — `$` marks async deduction
 
-**Law.** `$x` suspends until a later timestep. `$name(...)` is a tool. `?x` is resolved in the current deductive step.
+**Law.** `?x` is **inferred** (must match existing facts). `$x` is **deduced** (the body or tool **produces** the value). `$x` also **suspends** until a later timestep when async. `$name(...)` is a tool.
 
 **FOL reading.** *Comment.* There is no FOL connective for “the witness arrives later.” The spec treats `$` as a Bloom-style channel ([theory.md](../theory.md)). Resolution is a grounded constraint (rpl.6).
 
-**Surface.** `$x`, `$tool(...)`, sugar `?r = $tool(...)`.
+**Surface.** `?x`, `$x`, `$tool(...)`, `rel(?a)`, `rel($a)`, sugar `?r = $tool(...)`.
 
-**Spec.** [rpl.md §13](../specification/rpl.md#13-async-variables), [rpl.md §14](../specification/rpl.md#14-tools), [scope.md](../scope.md#inference-and-deduction).
+**Spec.** [rpl.md §3](../specification/rpl.md#3-variables), [rpl.md §9](../specification/rpl.md#9-relations), [rpl.md §13](../specification/rpl.md#13-async-variables), [rpl.md §14](../specification/rpl.md#14-tools), [scope.md](../scope.md#inference-and-deduction).
 
 **Example.**
 
 ```rpl
+pairing(?id)              -- ?id must already be known
+pairing($id)              -- $id is produced by this relation
 ?answer = $ask("How are you?")
 ```
 
-**Not.** `$` is not a second sort of lvar. Scope: `?` inferred, `$` deduced.
+**Not.** `$` is not a second sort of lvar; it is deduced (and may be async).
 
 ---
 
@@ -310,3 +312,23 @@ user('foo')
 ```
 
 **Not.** `$json` is not an HTTP API, and not an internal-only debug stream. The chat carries the NDJSON; the trace records completion (`$json(?x) ^ ~ {:tool :json} -: true`).
+
+---
+
+### rpl.13 — Metadata is the agent’s meta space
+
+**Law.** Metadata maps belong to the agent. Binding keys unify within a world and union across worlds; repeating a key adds, never overwrites. Reserved keys include `:memo`, `:bindings`, `:result`, `:pred`, `:lang`, `:can` (programs never set `:can`).
+
+**FOL reading.** *Comment.* Side information on assertions, not Horn literals.
+
+**Surface.** `^:result ?r`, `^^ {?a ?b}`, `^:pred #"rel(?x,?y)"`, `-: ^:can :notify`.
+
+**Spec.** [rpl.md §11](../specification/rpl.md#11-metadata).
+
+**Example.**
+
+```rpl
+lookup($ref, ?item) :- $fetch($ref) ^:result ?item, ^:pred #"lookup($ref,?item)"
+```
+
+**Not.** `:can` is not populated by the program; the agent infers capability from usage.

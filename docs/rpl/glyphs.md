@@ -35,5 +35,6 @@ Bahul may override any of these.
 - `~:` is □ (U+25A1); `:~` is ◇ (U+25C7), used as binary operators. Textbook □ and ◇ are unary; RPL's operators are binary (project into a mode, or map back). That arity difference is noted, not treated as a reason to pick different characters.
 - `:%`/`%:` and `:@`/`@:` have no glyph, because no close standard operator exists.
 - `~`, `<=`, and `>=` stay ASCII, as instructed.
+- `¬` is not a presentation glyph for an ASCII connective. It is source-level sugar for `A -: false` (`doc`: `docs/rpl/specification/rpl.md` §12.4). The ASCII form remains `A -: false`.
 
 Reasons for each choice are in the table. Alternatives considered and not taken: ⇐ (U+21D0) for `:-`; → or ⊢ (U+22A2) for `-:`; typographic variants such as ◻ (U+25FB) or ◊ (U+25CA) for the modal pair.

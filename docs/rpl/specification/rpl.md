@@ -230,7 +230,8 @@ quoted strings, e.g. `"48h"` or `'48h'`, `"30min"` / `'30min'`, `"7d"` / `'7d'`.
 ```
 A , B            conjunction
 A | B            disjunction
-not A            negation
+not A            negation by absence (failure to prove)
+¬A               retraction (sugar for A -: false, §12.4)
 (A)              grouping
 ```
 
@@ -245,7 +246,7 @@ From highest to lowest:
 4.  Expansion        #LVAR (§5.7)
 5.  Cardinality      |expr|
 6.  Temporal         before after within between
-7.  Logical          not
+7.  Logical          not  ¬
 8.  Logical          , (conjunction)
 9.  Logical          | (disjunction)
 ```
@@ -653,7 +654,17 @@ editing-goal(?g) ^^ {?g "publish", ?d "draft-0"} -: false
 (Same **literal-key** rule for `^^ {…}` as §11; use `^^ ?b` and `~` on `?b` when keys
 must be correlated with lvars.)
 
-Retraction is recorded in the trace log.
+`¬A` is sugar for `A -: false` (`¬A` ≡ `A -: false`). A robot moving from the
+hall to the kitchen is an event; the previous location is retracted:
+
+```
+move(:robot, :kitchen) :% true
+¬at(:robot, :hall)
+at(:robot, :kitchen)
+```
+
+`¬` is explicit negation: a stated retraction, recorded in the trace log. `not`
+(§5.5) is negation by absence (failure to prove).
 
 ### 12.5 Traces as Relations
 
@@ -1257,6 +1268,12 @@ $tool#action         -- tool subcommand
 $sql-select#table    -- tool with named query target
 ```
 
+### 17.8 Practice
+
+A **practice** is a Markdown RPL source file (§17) whose goal is to
+extend the program with its own names and rules. The file is the namespace;
+its names are cited as `file.md#name` (§17.7), for example `robot.md#at`.
+
 ---
 
 ## 18. Runtime — Operating Model
@@ -1516,3 +1533,5 @@ call. Relation and goal heads use §9 and §15 respectively.
 
 **Reserved goal label** — `%fail` is a reserved built-in goal label. The fixed
 form is `%fail(?reason, ?explanation)` (§15.7).
+
+**Retraction sugar** — `¬A` is sugar for `A -: false` (§12.4).

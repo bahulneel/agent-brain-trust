@@ -119,7 +119,7 @@ names-workflow-phase("explore")
 
 **FOL reading.** A closed sentence, recorded.
 
-**Surface.** `… ^^ {…} -: true`; retract with `… -: false`.
+**Surface.** `… ^^ {…} -: true`; retract with `… -: false` or `¬…`.
 
 **Spec.** [rpl.md §12.2–12.5](../specification/rpl.md#122-constraint-grounding), [vision.md](../vision.md#the-trace).
 

@@ -53,7 +53,7 @@ flowchart BT
   lrpl --> rpl
 ```
 
-`fol` is not full classical first-order logic. It is the definite Horn / Datalog-shaped fragment the specs write. `not` is spelled in `fol` and not classified there.
+`fol` is not full classical first-order logic. It is the definite Horn / Datalog-shaped fragment the specs write. `not` is negation by absence (failure to prove); `¬A` is stated retraction, sugar for `A -: false` ([fol.5](bootstrap/fol.md), [rpl.md §12.4](specification/rpl.md#124-trace-retraction)).
 
 ## Instantiations
 

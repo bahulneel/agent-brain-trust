@@ -134,11 +134,11 @@ ancestor(?x, ?z) :- parent(?x, ?y), ancestor(?y, ?z)
 
 ### fol.7 — Logical variables
 
-**Law.** `?name` is a logical variable. `_` and `_name` match anything and bind nothing; `_name` is a labelled don't-care for sites the author may name later.
+**Law.** `?name` is a logical variable. `_` matches anything and binds nothing.
 
 **FOL reading.** In a rule (fol.6), free lvars are universal. In a query, unbound lvars are existential. Queries as a distinct `%` namespace are [`rpl`](rpl.md).
 
-**Surface.** `?name`, `_`, `_prose`.
+**Surface.** `?name`, `_`.
 
 **Spec.** [rpl.md §3](../specification/rpl.md#3-variables).
 

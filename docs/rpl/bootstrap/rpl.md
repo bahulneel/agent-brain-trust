@@ -48,6 +48,26 @@ outer(?r, ?y) :- ... -: ?r -: inner(?x)
 
 ---
 
+### rpl.2a — `_name` placeholders
+
+**Law.** `_name` (e.g. `_prose`) is a placeholder: it stands in for content to be supplied later, not an lvar or anonymous `_`.
+
+**FOL reading.** *Comment.* Deferred authoring site, not a logical variable.
+
+**Surface.** `_prose`, `:@ _prose`.
+
+**Spec.** [rpl.md §3](../specification/rpl.md#3-variables).
+
+**Example.**
+
+```rpl
+sketch-lang(?id) :@ _prose
+```
+
+**Not.** A placeholder does not unify like `?x` or match like `_`.
+
+---
+
 ### rpl.3 — Matching and collections
 
 **Law.** `~ PATTERN` is structural matching. Collections are lists, sets, and maps. A relation call is not a collection element.

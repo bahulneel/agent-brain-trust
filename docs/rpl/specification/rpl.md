@@ -59,13 +59,16 @@ An **lvar** (logical variable) is `?` followed by a **name**:
 
 ```
 NAME = [a-z] [ a-z0-9\- ]*
-LVAR = '?' NAME | '_' | '_' NAME
+LVAR = '?' NAME | '_'
+PLACEHOLDER = '_' NAME
 ```
 
-The anonymous variable `_` matches any value and binds nothing. **`_name`** (e.g.
-`_prose`) is the **labelled don't-care**: same matching and binding as `_`, but
-the label records that the author does not care about this site **for now** and may
-name it later.
+The anonymous variable `_` matches any value and binds nothing.
+
+**Placeholder** — **`_name`** (e.g. **`_prose`**) is a **placeholder** (Appendix
+`PLACEHOLDER`): it **stands in** for material to be filled in **later**. It is **not**
+an lvar and **not** the anonymous **`_`**. The label names **what** is deferred
+(e.g. specification prose for a `:@` clause).
 
 **Bindings** — An lvar may stand for any **expression** the grammar allows at the
 binding site (§9, Appendix `ARG`): literals, collections, variables, `_`, nested
@@ -1528,7 +1531,7 @@ SPLICE          = '#' '&'
 OPERAND         = RELATION | VAR | LITERAL | COLLECTION | EXPANSION | SPLICE
                 | '(' OPERAND ')'
 
-VAR             = LVAR | ASYNC-VAR | '~' PATTERN
+VAR             = LVAR | ASYNC-VAR | PLACEHOLDER | '~' PATTERN
 PATTERN         = MAP | LIST | SET | STRING | REGEX
 
 ELEMENT         = VAR | LITERAL | COLLECTION
@@ -1574,7 +1577,8 @@ KEYWORD         = ':' NAME
 REGEX           = '/' REGEX-BODY '/'
 REGEX-BODY      = [^/]+
 
-LVAR            = '?' NAME | '_' | '_' NAME
+LVAR            = '?' NAME | '_'
+PLACEHOLDER     = '_' NAME
 ASYNC-VAR       = '$' NAME
 NAME            = [a-z] [ a-z0-9\- ]*
 

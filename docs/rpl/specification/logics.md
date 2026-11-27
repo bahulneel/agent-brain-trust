@@ -216,7 +216,7 @@ Reading this form in order:
 - Each branch equates **`?reader`** to the **syntax** of a small program:
   **`{?lang}(~ rel(?a, ?b)) :@ _prose`** — a **value** string template (§2, §6)
   whose `{?lang}` slot is the language name, defining a language whose
-  specification prose is `_prose` (labelled don't-care, [rpl.md §3](rpl.md#3-variables))
+  specification prose is `_prose` (placeholder, [rpl.md §3](rpl.md#3-variables))
   and whose statements read as `rel(?a, ?b)` under structural matching.
 
 - The rule **head** **`[& ?reader]`** **gathers** every branch’s `?reader` into

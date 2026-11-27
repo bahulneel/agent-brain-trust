@@ -1,6 +1,6 @@
 # Layer `rpl-source`
 
-**Provides.** How a Markdown document denotes an RPL program. A **practice** is such a file whose goal is to extend the program with its own names and rules; the file is the namespace, cited as `robot.md#at` ([rpl.md §17.7](../specification/rpl.md#177-namespaces)).
+**Provides.** How a Markdown document denotes an RPL program. A **practice** is such a file whose goal is to extend the program with its own names and rules; the file is the namespace, cited as `robot.md#at` ([rpl.md §17.8](../specification/rpl.md#178-practice)).
 
 **Depends on.** [`rpl`](rpl.md).
 

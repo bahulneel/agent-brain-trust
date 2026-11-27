@@ -230,7 +230,7 @@ quoted strings, e.g. `"48h"` or `'48h'`, `"30min"` / `'30min'`, `"7d"` / `'7d'`.
 ```
 A , B            conjunction
 A | B            disjunction
-not A            negation
+not A            negation by absence (failure to prove)
 ¬A               retraction (sugar for A -: false, §12.4)
 (A)              grouping
 ```
@@ -651,6 +651,9 @@ Retract by asserting the same constraint with `-: false`:
 editing-goal(?g) ^^ {?g "publish", ?d "draft-0"} -: false
 ```
 
+(Same **literal-key** rule for `^^ {…}` as §11; use `^^ ?b` and `~` on `?b` when keys
+must be correlated with lvars.)
+
 `¬A` is sugar for `A -: false` (`¬A` ≡ `A -: false`). A robot moving from the
 hall to the kitchen is an event; the previous location is retracted:
 
@@ -659,9 +662,6 @@ move(:robot, :kitchen) :% true
 ¬at(:robot, :hall)
 at(:robot, :kitchen)
 ```
-
-(Same **literal-key** rule for `^^ {…}` as §11; use `^^ ?b` and `~` on `?b` when keys
-must be correlated with lvars.)
 
 `¬` is explicit negation: a stated retraction, recorded in the trace log. `not`
 (§5.5) is negation by absence (failure to prove).
@@ -1270,7 +1270,7 @@ $sql-select#table    -- tool with named query target
 
 ### 17.8 Practice
 
-A **practice** is a Markdown RPL source file (this section) whose goal is to
+A **practice** is a Markdown RPL source file (§17) whose goal is to
 extend the program with its own names and rules. The file is the namespace;
 its names are cited as `file.md#name` (§17.7), for example `robot.md#at`.
 

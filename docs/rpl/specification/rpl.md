@@ -231,6 +231,7 @@ quoted strings, e.g. `"48h"` or `'48h'`, `"30min"` / `'30min'`, `"7d"` / `'7d'`.
 A , B            conjunction
 A | B            disjunction
 not A            negation
+¬A               retraction (sugar for A -: false, §12.4)
 (A)              grouping
 ```
 
@@ -245,7 +246,7 @@ From highest to lowest:
 4.  Expansion        #LVAR (§5.7)
 5.  Cardinality      |expr|
 6.  Temporal         before after within between
-7.  Logical          not
+7.  Logical          not  ¬
 8.  Logical          , (conjunction)
 9.  Logical          | (disjunction)
 ```
@@ -650,10 +651,17 @@ Retract by asserting the same constraint with `-: false`:
 editing-goal(?g) ^^ {?g "publish", ?d "draft-0"} -: false
 ```
 
+`¬A` is sugar for `A -: false`:
+
+```
+¬editing-goal(?g) ^^ {?g "publish", ?d "draft-0"}
+```
+
 (Same **literal-key** rule for `^^ {…}` as §11; use `^^ ?b` and `~` on `?b` when keys
 must be correlated with lvars.)
 
-Retraction is recorded in the trace log.
+`¬` is explicit negation: a stated retraction, recorded in the trace log. `not`
+(§5.5) is negation by absence (failure to prove).
 
 ### 12.5 Traces as Relations
 
@@ -1516,3 +1524,5 @@ call. Relation and goal heads use §9 and §15 respectively.
 
 **Reserved goal label** — `%fail` is a reserved built-in goal label. The fixed
 form is `%fail(?reason, ?explanation)` (§15.7).
+
+**Retraction sugar** — `¬A` is sugar for `A -: false` (§12.4).

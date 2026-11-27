@@ -651,7 +651,14 @@ Retract by asserting the same constraint with `-: false`:
 editing-goal(?g) ^^ {?g "publish", ?d "draft-0"} -: false
 ```
 
-`¬A` is sugar for `A -: false` (`¬A` ≡ `A -: false`).
+`¬A` is sugar for `A -: false` (`¬A` ≡ `A -: false`). A robot moving from the
+hall to the kitchen is an event; the previous location is retracted:
+
+```
+move(:robot, :kitchen) :% true
+¬at(:robot, :hall)
+at(:robot, :kitchen)
+```
 
 (Same **literal-key** rule for `^^ {…}` as §11; use `^^ ?b` and `~` on `?b` when keys
 must be correlated with lvars.)

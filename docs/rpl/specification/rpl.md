@@ -82,6 +82,18 @@ relation calls such as `inner(?x)` inside `outer(inner(?x), ?y)`, and so on.
   expression shape; with **one** admissible binding, it is that single shape.
   (This is what other parts of the spec call **expansion**; §5.7 gives notation,
   precedence with `|…|`, and shape constraints.)
+- **`#&`** — The occurrence **means** the **syntax** of an entire **gathered**
+  collection bound to an lvar in one step. The usual pattern is **`#&`** followed
+  by a collection whose **head** gathers with **`&`** (§8), e.g. **`#&[& ?x]`**
+  splices every gathered binding of `?x` together at this site as one composite
+  form, rather than iterating the surrounding sentence once per binding as
+  **`#?x`** does. (§5.7 gives notation and shape constraints.)
+
+**Disambiguating `#`** — What follows **`#`** determines the construct:
+**`?`** or an lvar starts **expansion** (`#?x`); **`&`** starts **collection
+splice** (`#&`); **`{`** starts a **set** literal (`#{…}`); a **name** in a
+**label** is **`NS#NAME`** (§9); in LRPL, **`<`** after **`#`** expands a lazy
+expression (`#<expr>`, [lrpl.md](lrpl.md)).
 
 Together, this is **declarative**: it states what the sentence **asserts** about
 values and forms, not how an engine **schedules** work.
@@ -243,7 +255,7 @@ From highest to lowest:
 1.  Arithmetic       * /
 2.  Arithmetic       + -
 3.  Comparison       = != < > <= >=
-4.  Expansion        #LVAR (§5.7)
+4.  Expansion        #LVAR, #& (§5.7)
 5.  Cardinality      |expr|
 6.  Temporal         before after within between
 7.  Logical          not  ¬
@@ -253,11 +265,30 @@ From highest to lowest:
 
 Use parentheses to override.
 
-### 5.7 Expansion
+### 5.7 Expansion and collection splice
 
-**Notation** — **`#`** immediately before an **lvar** (`#?x`) is the **expansion**
+**Expansion (`#?x`)** — **`#`** immediately before an **lvar** is the **expansion**
 form (nonterminal `EXPANSION` in the Appendix). Its **meaning** is the **syntax**
-reading of that lvar’s binding (§3).
+reading of that lvar’s binding (§3): one binding at a time; where several bindings
+are admissible, the surrounding sentence may be read as several sentences, one
+per binding (§3).
+
+**Collection splice (`#&`)** — **`#&`** is the **splice** form (nonterminal
+`SPLICE` in the Appendix). It pairs **`#`** with the **`&`** **rest** marker used
+in collection patterns and head gathering (§7, §8). Its **meaning** is the
+**syntax** reading of a **whole gathered collection** at once: typically
+**`#&[` … `&` lvar `]`** or **`#&`#{` … `&` lvar `}`** where the inner
+collection’s head has gathered every answer of the relation into **`?x`** (or
+another lvar). Every gathered element is spliced in together as one composite form
+at the splice site—for example **`#&[& ?reader]`** after a rule whose head is
+**`[& ?reader]`** (§8).
+
+**Where allowed** — `EXPANSION` and `SPLICE` appear in the same grammar positions
+(Appendix `ATOM`, `OPERAND`).
+
+**Not confused with** — The character immediately after **`#`** distinguishes
+these forms from **`#{…}`** sets, **`file#name`** labels, and LRPL **`#<expr>`**
+(§3).
 
 **Shape** — If a position’s grammar requires a **relation call** (or another fixed
 head) and the bound expression is not of an allowed shape, the sentence is
@@ -1454,14 +1485,15 @@ TAIL            = CLAUSE
                 | '(' TAIL ')' [ '^' VAR ]?
 CLAUSE          = ATOM [ '^' VAR ]? [ '^^' VAR ]?
                 | LVAR '=' ASYNC-ATOM [ '^' VAR ]? [ '^^' VAR ]?
-ATOM            = RELATION | GOAL | TOOL | VAR | LITERAL | EXPANSION
+ATOM            = RELATION | GOAL | TOOL | VAR | LITERAL | EXPANSION | SPLICE
                 | '(' EXPR ')'
 ASYNC-ATOM      = TOOL | ASYNC-VAR
 BINDING         = CLAUSE | CLAUSE ',' BINDING
 STEP            = CLAUSE | CLAUSE ',' STEP
 
 EXPANSION       = '#' LVAR
-OPERAND         = RELATION | VAR | LITERAL | COLLECTION | EXPANSION
+SPLICE          = '#' '&'
+OPERAND         = RELATION | VAR | LITERAL | COLLECTION | EXPANSION | SPLICE
                 | '(' OPERAND ')'
 
 VAR             = LVAR | ASYNC-VAR | '~' PATTERN
@@ -1525,8 +1557,8 @@ ARG             = VAR | LITERAL | COLLECTION | '_' | RELATION
 ```
 
 **Cardinality** — The expression between `|` and `|` in §5.2 is an `OPERAND`
-when it is a surface relation call, a bare lvar (value reading), or **`#?x`**
-(syntax reading, §3; precedence §5.7).
+when it is a surface relation call, a bare lvar (value reading), **`#?x`**, or
+**`#&`** at a collection splice site (syntax reading, §3; precedence §5.7).
 
 **Namespaces** — `$name` without `(` `)` is an async var; `$name(` … `)` is a tool
 call. Relation and goal heads use §9 and §15 respectively.

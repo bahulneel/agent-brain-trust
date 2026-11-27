@@ -28,15 +28,15 @@ locked-ingredient-line($ingredient, $qtyNote)
 
 ---
 
-### rpl.2 — `#?x` is the syntax reading
+### rpl.2 — `#?x` and `#&` are syntax readings
 
-**Law.** `?x` means the value of the binding. `#?x` means the form of the bound expression.
+**Law.** `?x` means the value of the binding. `#?x` means the form of one admissible binding (or several sentences, one per binding). `#&` splices the syntax of a whole gathered collection—typically `#&[& ?x]` after a head that gathers with `&`.
 
-**FOL reading.** *Partial.* Value reading is `fol`. Expansion is a syntactic operation, not a FOL connective.
+**FOL reading.** *Partial.* Value reading is `fol`. Expansion and splice are syntactic operations, not FOL connectives.
 
-**Surface.** `?x`, `#?x`.
+**Surface.** `?x`, `#?x`, `#&`, `#&[& ?x]`.
 
-**Spec.** [rpl.md §3](../specification/rpl.md#3-variables), [rpl.md §5.7](../specification/rpl.md#57-expansion).
+**Spec.** [rpl.md §3](../specification/rpl.md#3-variables), [rpl.md §5.7](../specification/rpl.md#57-expansion-and-collection-splice).
 
 **Example.**
 

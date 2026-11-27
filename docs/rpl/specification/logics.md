@@ -183,6 +183,42 @@ Most programs need no definition clauses. The agent's background already fixes h
 
 `rpl` has special standing: it refers not to RPL in the abstract but to the RPL language as currently instantiated for this run — the active dialect, extensions, and logics included. A bare Statement is sugar for its Interpretation under `rpl`; the wrapper is elided because source and target coincide.
 
+### 4.5 Run-time reader for every available language
+
+When the set of languages is not fixed at authoring time, a program can define
+an interpretive reader for **each** language the run can supply, then splice those
+definitions into one asserted block:
+
+```rpl
+:% #&[& ?reader] :- ?reader = #"{?lang}(~ rel(?a, ?b)) :@ _prose" :- ?lang = $generate('available languages') ; @each(?lang)
+```
+
+Reading this form in order:
+
+- **`$generate('available languages')`** yields the language names for this run.
+  The spec does not enumerate which languages exist; generation supplies them
+  ([lrpl.md](lrpl.md) for `$generate`).
+
+- **`@each(?lang)`** ([rpl.md §16.4](rpl.md#164-each)) forces **one branch per**
+  binding of `?lang`, so each language is handled separately in the tail.
+
+- Each branch equates **`?reader`** to the **syntax** of a small program:
+  **`{?lang}(~ rel(?a, ?b)) :@ _prose`** — a **value** string template (§2, §6)
+  whose `{?lang}` slot is the language name, defining a language whose
+  specification prose is `_prose` and whose statements read as `rel(?a, ?b)` under
+  structural matching.
+
+- The rule **head** **`[& ?reader]`** **gathers** every branch’s `?reader` into
+  one list ([rpl.md §8](rpl.md#8-collection-destructuring)).
+
+- **`#&[& ?reader]`** **splices** that gathered collection in at the assertion
+  site ([rpl.md §5.7](rpl.md#57-expansion-and-collection-splice)).
+
+- **`:%`** records the spliced readers in the **Log** ([§2.1](#21-the-four-operational-modes)):
+  a permanent assertion of what was materialised for this run.
+
+The relation **`rel(?a, ?b)`** is neutral illustration only; any head-compatible
+relation would serve the same structural role.
 
 ---
 

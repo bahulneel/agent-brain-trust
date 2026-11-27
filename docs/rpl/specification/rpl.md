@@ -651,11 +651,7 @@ Retract by asserting the same constraint with `-: false`:
 editing-goal(?g) ^^ {?g "publish", ?d "draft-0"} -: false
 ```
 
-`¬A` is sugar for `A -: false`:
-
-```
-¬editing-goal(?g) ^^ {?g "publish", ?d "draft-0"}
-```
+`¬A` is sugar for `A -: false` (`¬A` ≡ `A -: false`).
 
 (Same **literal-key** rule for `^^ {…}` as §11; use `^^ ?b` and `~` on `?b` when keys
 must be correlated with lvars.)
@@ -1263,17 +1259,6 @@ file.md#rel          -- relation from another file
 %file.md#goal        -- goal from another file
 $tool#action         -- tool subcommand
 $sql-select#table    -- tool with named query target
-```
-
-### 17.8 Practice
-
-An RPL **practice** is a Markdown file (RPL source, this section) whose goal is
-to extend the program with its own names and rules. The file is the namespace;
-names in it are cited as `file.md#name` (§17.7). A practice `coc.md` that
-defines `take` is cited as:
-
-```rpl
-coc.md#take(:abt, :FOR-123) :% true
 ```
 
 ---

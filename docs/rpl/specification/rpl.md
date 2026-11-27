@@ -277,7 +277,7 @@ From highest to lowest:
 1.  Arithmetic       * /
 2.  Arithmetic       + -
 3.  Comparison       = != < > <= >=
-4.  Expansion        #LVAR, #& (§5.7)
+4.  Expansion        #LVAR, #"…", #'…', #& (§5.7)
 5.  Cardinality      |expr|
 6.  Temporal         before after within between
 7.  Logical          not  ¬
@@ -511,9 +511,13 @@ meaning until composed in a larger statement. Validity is determined by how the
 call forms.
 
 **Safety by default** — Variables that appear in the **head** should also appear
-in the **body**, so conclusions are tied to support in the same rule. When that is
-not possible, record **provenance** in metadata (§11) instead of leaving unexplained
-gaps (e.g. `:file`, `:heading`, `:doc`).
+in the **body**, so conclusions are tied to support in the same rule. The rule
+applies to variables the head **concludes**, not variables the head **binds**
+(e.g. **`?reader = #"…" :- …`** is safe because **`?reader`** is defined in the
+body; **`{?var}`** slots inside that template are supported by the same tail). When
+a concluding head variable cannot appear in the body, record **provenance** in
+metadata (§11) instead of leaving unexplained gaps (e.g. `:file`, `:heading`,
+`:doc`).
 
 **Conjunction** is `,`; **disjunction** is `|`; parentheses group. A **clause**
 is an atom optionally annotated with `^` / `^^` (§11), **`LVAR '=' ASYNC-ATOM`**
@@ -642,12 +646,13 @@ clause ^:bindings {?a "val1", ?c "val2"}  -- same reading
 The same **bindings** shapes attach when a **goal head** lists capture arguments
 on the tail (§15.1).
 
-**Binding metadata semantics** — Under a **single world**, values for the same
-metadata key **unify** (they must agree). Across **worlds** (e.g. memo disjuncts,
-abductive branches), the key’s values **union**—each world contributes, none
-**replaces** another. Metadata is **not** a destructive **set**: repeating a key
-**adds** or **extends** information; it does **not** overwrite prior union members
-for that key within the merge rules above.
+**Binding metadata semantics** — Binding is **unify** and **union**: bound values
+for a key **accumulate as a set**. Within one world, new bindings **unify** with
+existing members; across worlds (memo disjuncts, abductive branches, etc.) the
+results **union**. Metadata is never **set** in the destructive sense (replacing a
+single value). Asserting a key again **adds** another member—e.g. **`:pred`** may
+be recorded for one relation and asserted again for another without overwriting
+the first.
 
 **Distribution** — `^` on a grouped tail distributes only to clauses whose vars
 appear in the pattern (examples use `->` as “same programme, rewritten for
@@ -1596,7 +1601,7 @@ BINDING         = CLAUSE | CLAUSE ',' BINDING
 STEP            = CLAUSE | CLAUSE ',' STEP
 
 EXPANSION       = '#' LVAR | '#' STRING
-SPLICE          = '#' '&'
+SPLICE          = '#' '&' COLLECTION
 OPERAND         = RELATION | VAR | LITERAL | COLLECTION | EXPANSION | SPLICE
                 | '(' OPERAND ')'
 

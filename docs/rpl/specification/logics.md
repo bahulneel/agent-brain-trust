@@ -21,9 +21,10 @@ The composition `true :- expr -: true` anchors the expression at both ends: as a
 ### 1.1.1 Implicit `true`
 
 **`true` is implicit** wherever an operator or canonical form leaves an operand
-position **empty**: that side is read as **`true`**. For example **`:- expr -:`**
-with no constraint is **`expr -: true`**, and existential forms below use the same
-rule (e.g. **`:% A`** means **`true :% A`**).
+position **empty**: that side is read as **`true`**. For example a standalone
+**`expr`** expands to **`true :- expr -: true`**; **`:- expr -:`** with no
+constraint is **`expr -: true`**; existential forms use the same rule (e.g.
+**`:% A`** means **`true :% A`**).
 
 ### 1.2 Fact vs. Proof
 
@@ -235,11 +236,12 @@ relation would serve the same structural role.
 combine, `:pred` signposts schema without treating an ungrounded call as fact:
 
 ```rpl
-rel(?a, ?b) :% true ^:pred #"rel(?a,?b)" ^:lang "sketch-dsl" :- ~ sketch-dsl(?a, ?b) ~: true
+rel(?a, ?b) :% true ^:pred #"rel(?a,?b)" ^:lang :sketch-dsl :- ~ sketch-dsl(?a, ?b) ~: true
 ```
 
 Here `:pred` records that `rel(?a,?b)` is the intended predicate shape; `~:`
-fixes modal context; `:lang` ties the world to the interpretive language name.
+fixes modal context; `:lang` ties the world to the interpretive language
+**sketch-dsl** (kebab-case label, §4.1).
 
 ---
 

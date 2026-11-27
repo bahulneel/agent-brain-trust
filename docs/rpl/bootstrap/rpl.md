@@ -317,7 +317,7 @@ user('foo')
 
 ### rpl.13 — Metadata is the agent’s meta space
 
-**Law.** Metadata maps belong to the agent. Binding keys unify within a world and union across worlds; repeating a key adds, never overwrites. Reserved keys include `:memo`, `:bindings`, `:result`, `:pred`, `:lang`, `:can` (programs never set `:can`).
+**Law.** Metadata maps belong to the agent. Binding is unify and union: values per key accumulate as a set; metadata is never destructively set; repeating a key adds (including multiple `:pred` signposts). Reserved keys include `:memo`, `:bindings`, `:result`, `:pred`, `:lang`, `:can` (programs never set `:can`).
 
 **FOL reading.** *Comment.* Side information on assertions, not Horn literals.
 

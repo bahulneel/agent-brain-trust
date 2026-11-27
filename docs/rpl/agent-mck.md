@@ -7,9 +7,11 @@ The metacognitive kernel is built upon a standard set of prebuilt RPL foundation
 
 **McK principle (metadata).** Only tell the agent what it **cannot work out for
 itself**. The **metadata space** is the agent’s ([rpl.md §11](specification/rpl.md#11-metadata)):
-authors attach `^` / `^^` where needed, but **`:result`**, **`:can`**, **`:config`**, and
-similar slots are **inferred by the agent** from usage—not pre-filled checklists in
-the program. This extends the cognitive-habits stance above and aligns with
+authors attach `^` / `^^` where needed; **`:can`** and **`:pred`** need their
+**purpose stated** in the program (queries/constraints, signpost strings), while
+**`:config`** and **`:result`** need not— the agent infers them from patterns and
+usage. That contrast is the principle itself: do not pre-fill slots the agent can
+derive. This extends the cognitive-habits stance above and aligns with
 prose-first authoring: harden relations only where drift appears
 ([cognition.md § IV](cognition.md#iv-prose-first-authoring-materializing-latent-logic)).
 

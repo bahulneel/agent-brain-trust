@@ -30,11 +30,11 @@ locked-ingredient-line($ingredient, $qtyNote)
 
 ### rpl.2 — `#?x` and `#&` are syntax readings
 
-**Law.** `?x` means the value of the binding. `#?x` means the form of one admissible binding (or several sentences, one per binding). `#&` splices the syntax of a whole gathered collection—typically `#&[& ?x]` after a head that gathers with `&`.
+**Law.** `?x` means the value of the binding. `#?x` means the form of one admissible binding (or several sentences, one per binding). `#"…"` unquotes a string (including `{?x}` templates) into a statement. `#&` splices the syntax of a whole gathered collection—typically `#&[& ?x]` after a head that gathers with `&`.
 
-**FOL reading.** *Partial.* Value reading is `fol`. Expansion and splice are syntactic operations, not FOL connectives.
+**FOL reading.** *Partial.* Value reading is `fol`. Expansion, string unquote, and splice are syntactic operations, not FOL connectives.
 
-**Surface.** `?x`, `#?x`, `#&`, `#&[& ?x]`.
+**Surface.** `?x`, `#?x`, `#"…"`, `#&`, `#&[& ?x]`.
 
 **Spec.** [rpl.md §3](../specification/rpl.md#3-variables), [rpl.md §5.7](../specification/rpl.md#57-expansion-and-collection-splice).
 
@@ -214,6 +214,26 @@ ask(?prompt, ?answer) :- $ask(?prompt) ^ ~ {:result ?answer}
 ```
 
 **Not.** Nested `HEAD :- HEAD :- TAIL` is a permitted idiom, not the execution model ([rpl.md §10](../specification/rpl.md#10-rules-and-implication)).
+
+---
+
+### rpl.10a — Inference modes (default, goal, existential)
+
+**Law.** Inference is inductive by default; goals bias deductive reading; existential operators bias abductive branching. One expression may mix all three. The agent may evaluate in any order if the result matches the modelled inference. `:-` has no fixed head-to-tail direction.
+
+**FOL reading.** *Comment.* Modes describe how authors read rules, not a mandated engine algorithm.
+
+**Surface.** `:-`, `:%`, `%:`, `%`.
+
+**Spec.** [rpl.md §10](../specification/rpl.md#10-rules-and-implication) (Inference modes), [logics.md §2](../specification/logics.md#2-additional-logic-a-existential).
+
+**Example.**
+
+```rpl
+ancestor(?x, ?y) :- parent(?x, ?y)
+```
+
+**Not.** Top-down or bottom-up evaluation is not required at runtime.
 
 ---
 

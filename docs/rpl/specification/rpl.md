@@ -59,10 +59,13 @@ An **lvar** (logical variable) is `?` followed by a **name**:
 
 ```
 NAME = [a-z] [ a-z0-9\- ]*
-LVAR = '?' NAME | '_'
+LVAR = '?' NAME | '_' | '_' NAME
 ```
 
-The anonymous variable `_` matches any value and binds nothing.
+The anonymous variable `_` matches any value and binds nothing. **`_name`** (e.g.
+`_prose`) is the **labelled don't-care**: same matching and binding as `_`, but
+the label records that the author does not care about this site **for now** and may
+name it later.
 
 **Bindings** — An lvar may stand for any **expression** the grammar allows at the
 binding site (§9, Appendix `ARG`): literals, collections, variables, `_`, nested
@@ -82,6 +85,9 @@ relation calls such as `inner(?x)` inside `outer(inner(?x), ?y)`, and so on.
   expression shape; with **one** admissible binding, it is that single shape.
   (This is what other parts of the spec call **expansion**; §5.7 gives notation,
   precedence with `|…|`, and shape constraints.)
+- **`#"…"`** — The occurrence **means** the **syntax** of the **RPL statement**
+  obtained by reading the string as source (including **`{?x}`** templates in the
+  string, §2). (§5.7.)
 - **`#&`** — The occurrence **means** the **syntax** of an entire **gathered**
   collection bound to an lvar in one step. The usual pattern is **`#&`** followed
   by a collection whose **head** gathers with **`&`** (§8), e.g. **`#&[& ?x]`**
@@ -90,7 +96,8 @@ relation calls such as `inner(?x)` inside `outer(inner(?x), ?y)`, and so on.
   **`#?x`** does. (§5.7 gives notation and shape constraints.)
 
 **Disambiguating `#`** — What follows **`#`** determines the construct:
-**`?`** or an lvar starts **expansion** (`#?x`); **`&`** starts **collection
+**`?`** or an lvar starts **lvar expansion** (`#?x`); **`"`** or **`'`** starts
+**string unquote** (`#"…"`, §5.7); **`&`** starts **collection
 splice** (`#&`); **`{`** starts a **set** literal (`#{…}`); a **name** in a
 **label** is **`NS#NAME`** (§9); in LRPL, **`<`** after **`#`** expands a lazy
 expression (`#<expr>`, [lrpl.md](lrpl.md)).
@@ -273,6 +280,13 @@ reading of that lvar’s binding (§3): one binding at a time; where several bin
 are admissible, the surrounding sentence may be read as several sentences, one
 per binding (§3).
 
+**String unquote (`#"…"`)** — **`#`** immediately before a **string** literal
+(including a **`{?x}`** template, §2) is still **expansion** (`EXPANSION` in the
+Appendix): the string’s text is read as **RPL syntax** and stands for that
+**statement** at the occurrence. Building statements from generated or templated
+text uses this form; asserting them to permanent history uses **`:%`** on the
+unquoted form, e.g. **`:% #"…"`** ([logics.md §2](logics.md)).
+
 **Collection splice (`#&`)** — **`#&`** is the **splice** form (nonterminal
 `SPLICE` in the Appendix). It pairs **`#`** with the **`&`** **rest** marker used
 in collection patterns and head gathering (§7, §8). Its **meaning** is the
@@ -290,16 +304,9 @@ at the splice site—for example **`#&[& ?reader]`** after a rule whose head is
 these forms from **`#{…}`** sets, **`file#name`** labels, and LRPL **`#<expr>`**
 (§3).
 
-**Shape** — If a position’s grammar requires a **relation call** (or another fixed
-head) and the bound expression is not of an allowed shape, the sentence is
+**Shape** — If a position’s grammar requires a fixed syntactic role and the
+expanded or unquoted expression is not of an allowed shape, the sentence is
 **ill-formed** or the case is **implementation-defined**.
-
-**Head-position validity** — When expansion is used in a **head-compatible**
-position (a site that must parse as `HEAD` in §10 / Appendix), expansion is
-valid only if **every** expanded result is itself valid at that head grammar
-site. If any expanded result is not head-valid, the expanded form is invalid at
-that site and the program is rejected or that expansion case is rejected by host
-policy.
 
 **Syntax-level abstraction** — Because `#` splices the **syntax** reading of an
 lvar, you can abstract over forms that would otherwise be fixed at authoring time:
@@ -473,9 +480,15 @@ Rules combine **heads** and **tails** with `:-`. A **sentence** may be:
 RULE       = [ HEAD ':-' ]? EXPR [ ';' ABDUCTIVE ]? [ '-:' CONSTRAINT ]?
 NESTED-RULE = HEAD ':-' '(' RULE ')'
 EXPR       = TAIL | HEAD ':-' EXPR | '(' EXPR ')' [ '^' VAR ]?
-HEAD       = GOAL | RELATION | TOOL
+HEAD       = EXPR
 TAIL       = CLAUSE | CLAUSE ',' TAIL | '(' TAIL ')' [ '^' VAR ]?
 ```
+
+**Head shape** — **`HEAD`** is any **`EXPR`**: a relation call alone (`rel(?x)`)
+is a rule head; a bare lvar alone (`?x`) is a value with no standalone rule
+meaning until composed in a larger statement. Validity is determined by how the
+**whole** sentence is read, not by restricting heads to relation, goal, or tool
+call forms.
 
 **Conjunction** is `,`; **disjunction** is `|`; parentheses group. A **clause**
 is an atom optionally annotated with `^` / `^^` (§11), **`LVAR '=' ASYNC-ATOM`**
@@ -490,9 +503,28 @@ hierarchical task networks, and planning stays agent-chosen (§18.3, §16.6).
 **Grouping and metadata** — In `( EXPR ) ^ VAR`, the **meaning** is metadata access
 on the grouped expression (§11).
 
-**Namespaces in heads** — `HEAD` may be a **relation** (§9), **goal** (%…, §15), or
-**tool** call (`$…`, §14). Async vars `$x` without parentheses are not tool heads
-(§13).
+**Typical heads** — Heads are often **relations** (§9), **goals** (%…, §15), or
+**tool** calls (`$…`, §14), but any expression above may appear. Async vars `$x`
+without parentheses are values, not tool calls (§13).
+
+### Inference modes
+
+**Deductive** inference is **top-down**: from what is asserted toward what must
+hold. **Inductive** inference is **bottom-up**: from evidence toward conclusions.
+**Abductive** inference explores **branching worlds**: alternative bindings or
+cases that could explain the tail.
+
+By default, inference in a program is treated as **inductive**. A **goal** (`%…`,
+§15) shifts the surrounding work toward **deductive** reading (witness-seeking from
+stated heads). **Existential** operators (`:%`, `%:`, [logics.md §2](logics.md))
+introduce **abductive** branching (materialisation and alternative timelines). A
+single expression may mix all three readings at once.
+
+The arrows in rules and additional logics can be read as modelling these modes, but
+that reading is **not** an execution order: the **agent** may evaluate in any order
+or strategy, provided the **result** matches what strict adherence to those models
+would yield. In particular, **`:-`** does **not** mandate a fixed direction from
+head to tail or from tail to head.
 
 ---
 
@@ -1479,7 +1511,7 @@ EACH-ACT        = '@each' '(' BINDING ')'
 FOR-ACT         = '@for' '(' BINDING ',' TAIL ',' STEP ')'
 
 CONSTRAINT      = TAIL
-HEAD            = GOAL | RELATION | TOOL
+HEAD            = EXPR
 TAIL            = CLAUSE
                 | CLAUSE ',' TAIL
                 | '(' TAIL ')' [ '^' VAR ]?
@@ -1491,7 +1523,7 @@ ASYNC-ATOM      = TOOL | ASYNC-VAR
 BINDING         = CLAUSE | CLAUSE ',' BINDING
 STEP            = CLAUSE | CLAUSE ',' STEP
 
-EXPANSION       = '#' LVAR
+EXPANSION       = '#' LVAR | '#' STRING
 SPLICE          = '#' '&'
 OPERAND         = RELATION | VAR | LITERAL | COLLECTION | EXPANSION | SPLICE
                 | '(' OPERAND ')'
@@ -1542,7 +1574,7 @@ KEYWORD         = ':' NAME
 REGEX           = '/' REGEX-BODY '/'
 REGEX-BODY      = [^/]+
 
-LVAR            = '?' NAME | '_'
+LVAR            = '?' NAME | '_' | '_' NAME
 ASYNC-VAR       = '$' NAME
 NAME            = [a-z] [ a-z0-9\- ]*
 
@@ -1561,7 +1593,7 @@ when it is a surface relation call, a bare lvar (value reading), **`#?x`**, or
 **`#&`** at a collection splice site (syntax reading, §3; precedence §5.7).
 
 **Namespaces** — `$name` without `(` `)` is an async var; `$name(` … `)` is a tool
-call. Relation and goal heads use §9 and §15 respectively.
+call. **`HEAD`** is any **`EXPR`** (§10); relation and goal forms are §9 and §15.
 
 **Reserved goal label** — `%fail` is a reserved built-in goal label. The fixed
 form is `%fail(?reason, ?explanation)` (§15.7).

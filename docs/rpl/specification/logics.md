@@ -18,6 +18,13 @@ Every expression in (L)RPL is shorthand for a deeper structural commitment. For 
 
 The composition `true :- expr -: true` anchors the expression at both ends: as a positive existence ("head") and as a necessary validity ("tail").
 
+### 1.1.1 Implicit `true`
+
+**`true` is implicit** wherever an operator or canonical form leaves an operand
+position **empty**: that side is read as **`true`**. For example **`:- expr -:`**
+with no constraint is **`expr -: true`**, and existential forms below use the same
+rule (e.g. **`:% A`** means **`true :% A`**).
+
 ### 1.2 Fact vs. Proof
 
 There is a key distinction between a **fact** and a **proof** (truth). A statement like "There is a black swan" claims existence (fact), but does not constitute a proof. In canonical form:
@@ -48,21 +55,25 @@ In the base logic, these two are balanced. But at scale, managing these independ
 
 This logic governs **materialization and synchronization** of expressions. It introduces explicit lifecycle operators: **`:%`** (Head) and **`%:`** (Tail).
 
+**Assertion.** The **Log** is **assertion**: recording in the log is asserting what
+occurred. **`:%`** on the head side materialises that assertion ([§2.1](#21-the-four-operational-modes)).
+
 ### 2.1 The Four Operational Modes
 
-By decomposing canonical forms into existential components, we find four core states:
+By decomposing canonical forms into existential components, we find four core states.
+Empty operands read as **`true`** ([§1.1.1](#111-implicit-true)).
 
 | Mode         | Syntax         | Concept             | Description                                               |
 |--------------|---------------|---------------------|-----------------------------------------------------------|
-| The Log      | `true :% A`   | A Posteriori        | Permanent history—record of what has occurred             |
+| The Log      | `:% A` (`true :% A`) | Assertion     | Permanent history—what was asserted to have occurred      |
 | The Impulse  | `A :% true`   | Transient Trigger   | Immediate—lasts until the next quiescence                 |
 | Consistency  | `true %: A`   | Structural Invariant| Hard constraint—logic is invalid if it contradicts A      |
 | Eventually   | `A %: true`   | Liveness Promise    | Pending—obligation until A is met                         |
 
 ### 2.2 Analogy: The Lifecycle of the Swan
 
-- **The Log** (`true :% BlackSwan`):  
-  Grounded observation. We found a black swan—it’s part of permanent history.
+- **The Log** (`:% BlackSwan`, i.e. `true :% BlackSwan`):  
+  Grounded assertion. We found a black swan—it’s part of permanent history.
 
 - **The Impulse** (`BlackSwan :% true`):  
   Momentary sighting. Immediate effect; not necessarily a permanent law.
@@ -205,8 +216,8 @@ Reading this form in order:
 - Each branch equates **`?reader`** to the **syntax** of a small program:
   **`{?lang}(~ rel(?a, ?b)) :@ _prose`** — a **value** string template (§2, §6)
   whose `{?lang}` slot is the language name, defining a language whose
-  specification prose is `_prose` and whose statements read as `rel(?a, ?b)` under
-  structural matching.
+  specification prose is `_prose` (labelled don't-care, [rpl.md §3](rpl.md#3-variables))
+  and whose statements read as `rel(?a, ?b)` under structural matching.
 
 - The rule **head** **`[& ?reader]`** **gathers** every branch’s `?reader` into
   one list ([rpl.md §8](rpl.md#8-collection-destructuring)).
